@@ -4,9 +4,135 @@
 @source '../../storage/framework/views/*.php';
 @source "../**/*.blade.php";
 @source "../**/*.js";
-@source "../**/*.vue";
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    /* ── SEMAR Color Palette ── */
+    --color-primary: #463EE3;
+    --color-primary-hover: #3B34C8;
+    --color-primary-light: rgba(70, 62, 227, 0.08);
+    --color-primary-ring: rgba(70, 62, 227, 0.18);
+
+    --color-bg: #F5F5F5;
+    --color-surface: #FFFFFF;
+    --color-soft-surface: #E6E6FA;
+    --color-info: #87CEEB;
+    --color-info-soft: #B0E0E6;
+
+    --color-text: #111827;
+    --color-text-secondary: #6B7280;
+    --color-text-muted: #9CA3AF;
+    --color-border: #E5E7EB;
+    --color-border-strong: #D1D5DB;
+
+    /* Status tones derived from palette family */
+    --color-success: #3D8B6E;
+    --color-success-bg: #E6FAF0;
+    --color-warning: #A07828;
+    --color-warning-bg: #FDF6E3;
+    --color-danger: #B04048;
+    --color-danger-bg: #FDE8EA;
+}
+
+/* ── Focus & Form states ── */
+@layer base {
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    *:focus-visible {
+        outline: 2px solid var(--color-primary-ring);
+        outline-offset: 2px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--color-primary) !important;
+        box-shadow: 0 0 0 3px var(--color-primary-ring) !important;
+    }
+}
+
+/* ── Utility classes ── */
+@layer utilities {
+    .btn-primary {
+        background-color: var(--color-primary);
+        color: #FFFFFF;
+        font-weight: 500;
+        font-size: 0.875rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 0.5rem;
+        transition: background-color 150ms ease;
+    }
+    .btn-primary:hover {
+        background-color: var(--color-primary-hover);
+    }
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-outline {
+        background-color: transparent;
+        color: var(--color-primary);
+        border: 1px solid var(--color-primary);
+        font-weight: 500;
+        font-size: 0.875rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 0.5rem;
+        transition: all 150ms ease;
+    }
+    .btn-outline:hover {
+        background-color: var(--color-primary-light);
+    }
+
+    .btn-ghost {
+        background-color: transparent;
+        color: var(--color-text-secondary);
+        font-weight: 500;
+        font-size: 0.875rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 0.5rem;
+        transition: all 150ms ease;
+    }
+    .btn-ghost:hover {
+        background-color: var(--color-soft-surface);
+        color: var(--color-primary);
+    }
+
+    .card {
+        background-color: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: 0.75rem;
+    }
+
+    .input-field {
+        width: 100%;
+        border: 1px solid var(--color-border-strong);
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        color: var(--color-text);
+        background-color: var(--color-surface);
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .input-field::placeholder {
+        color: var(--color-text-muted);
+    }
+
+    /* Responsive sidebar */
+    .sidebar-overlay {
+        display: none;
+    }
+    @media (max-width: 1023px) {
+        .sidebar-desktop {
+            display: none;
+        }
+        .sidebar-mobile.open {
+            display: flex;
+        }
+        .sidebar-overlay.open {
+            display: block;
+        }
+    }
 }

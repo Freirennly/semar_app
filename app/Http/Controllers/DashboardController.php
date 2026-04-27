@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\SubmissionStatus;
+use App\Models\Submission;
+use App\Models\Assignment;
+use App\Models\Review;
+use Illuminate\Http\Request;
+
+class DashboardController extends Controller
+{
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->hasRole('student')) {
+            return $this->student($user);
+        } elseif ($user->hasRole('reviewer')) {
+            return $this->reviewer($user);
+        } elseif ($user->hasRole('ketua')) {
+            return $this->ketua();
+        } elseif ($user->hasRole('sekretariat')) {
+            return $this->sekretariat();
+        } elseif ($user->hasRole('admin')) {
+            return $this->admin();
+        }
+
+        abort(403);
+    }
+
+    private function student($user)
+    {
+        $submissions = $user->submissions()->latest()->get();
+        $metrics = [
+            ['label' => 'Total Pengajuan', 'value' => $submissions->count(), 'color' => 'blue'],
+            ['label' => 'Draft', 'value' => $submissions->where('status', SubmissionStatus::DRAFT)->count(), 'color' => 'slate'],
+            ['label' => 'Sedang Diproses', 'value' => $submissions->whereIn('status', [SubmissionStatus::SUBMITTED, SubmissionStatus::DOC_CHECK, SubmissionStatus::ASSIGNED, SubmissionStatus::UNDER_REVIEW, SubmissionStatus::PENDING_DECISION])->count(), 'color' => 'violet'],
+            ['label' => 'Perlu Revisi', 'value' => $submissions->where('status', SubmissionStatus::RESUBMISSION)->count(), 'color' => 'amber'],
+            ['label' => 'Selesai', 'value' => $submissions->whereIn('status', [SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED, SubmissionStatus::ARCHIVED])->count(), 'color' => 'emerald'],
+        ];
+        return view('dashboard.student', compact('submissions', 'metrics'));
+    }
+
+    private function reviewer($user)
+    {
+        $assignments = Assignment::where('reviewer_id', $user->id)->with('submission.student')->latest()->get();
+        $reviews = Review::where('reviewer_id', $user->id)->get();
+        $metrics = [
+            ['label' => 'Ditugaskan', 'value' => $assignments->count(), 'color' => 'blue'],
+            ['label' => 'Belum Direview', 'value' => $assignments->count() - $reviews->whereNotNull('submitted_at')->count(), 'color' => 'amber'],
+            ['label' => 'Selesai', 'value' => $reviews->whereNotNull('submitted_at')->count(), 'color' => 'emerald'],
+        ];
+        return view('dashboard.reviewer', compact('assignments', 'metrics'));
+    }
+
+    private function ketua()
+    {
+        $needAssign = Submission::whereIn('status', [SubmissionStatus::DOC_CHECK, SubmissionStatus::SUBMITTED])
+            ->whereDoesntHave('assignments')->with('student')->latest()->get();
+        $assigned = Submission::where('status', SubmissionStatus::ASSIGNED)->with('student', 'assignments.reviewer')->latest()->get();
+        $metrics = [
+            ['label' => 'Perlu Assign Reviewer', 'value' => $needAssign->count(), 'color' => 'amber'],
+            ['label' => 'Sudah Di-assign', 'value' => $assigned->count(), 'color' => 'blue'],
+            ['label' => 'Total Pengajuan Aktif', 'value' => Submission::whereNotIn('status', [SubmissionStatus::DRAFT, SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED, SubmissionStatus::ARCHIVED])->count(), 'color' => 'violet'],
+        ];
+        return view('dashboard.ketua', compact('needAssign', 'assigned', 'metrics'));
+    }
+
+    private function sekretariat()
+    {
+        $submitted = Submission::where('status', SubmissionStatus::SUBMITTED)->with('student')->latest()->get();
+        $pendingDecision = Submission::where('status', SubmissionStatus::PENDING_DECISION)
+            ->with('student', 'reviews.reviewer', 'assignments.reviewer')->latest()->get();
+        $metrics = [
+            ['label' => 'Perlu Cek Dokumen', 'value' => $submitted->count(), 'color' => 'amber'],
+            ['label' => 'Menunggu Keputusan', 'value' => $pendingDecision->count(), 'color' => 'violet'],
+            ['label' => 'Total Disetujui', 'value' => Submission::where('status', SubmissionStatus::APPROVED)->count(), 'color' => 'emerald'],
+            ['label' => 'Total Ditolak', 'value' => Submission::where('status', SubmissionStatus::DISAPPROVED)->count(), 'color' => 'red'],
+        ];
+        return view('dashboard.sekretariat', compact('submitted', 'pendingDecision', 'metrics'));
+    }
+
+    private function admin()
+    {
+        $metrics = [
+            ['label' => 'Total User', 'value' => \App\Models\User::count(), 'color' => 'blue'],
+            ['label' => 'Pengajuan Aktif', 'value' => Submission::whereNotIn('status', [SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED, SubmissionStatus::ARCHIVED])->count(), 'color' => 'violet'],
+            ['label' => 'Selesai', 'value' => Submission::whereIn('status', [SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED])->count(), 'color' => 'emerald'],
+        ];
+        $users = \App\Models\User::with('roles')->latest()->get();
+        return view('dashboard.admin', compact('metrics', 'users'));
+    }
+}
