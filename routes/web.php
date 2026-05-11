@@ -17,8 +17,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 use App\Http\Controllers\LandingController;
 
-// Landing Page
+// Landing Pages
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+Route::view('/tentang', 'about')->name('about');
+Route::view('/sop', 'sop')->name('sop');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {

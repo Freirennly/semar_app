@@ -16,9 +16,9 @@
 
             <!-- Desktop Menu -->
             <nav class="hidden md:flex items-center gap-8">
-                <a href="#beranda" class="text-sm font-medium text-white/90 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors duration-200">Beranda</a>
-                <a href="#tentang" class="text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors duration-200">Tentang Kami</a>
-                <a href="#contact" class="text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-colors duration-200">Contact</a>
+                <a href="{{ route('landing') }}" class="text-sm font-medium {{ request()->routeIs('landing') ? 'text-white bg-white/10' : 'text-white/80 hover:text-white hover:bg-white/10' }} px-3 py-2 rounded-lg transition-colors duration-200">Beranda</a>
+                <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-white bg-white/10' : 'text-white/80 hover:text-white hover:bg-white/10' }} px-3 py-2 rounded-lg transition-colors duration-200">Tentang Kami</a>
+                <a href="{{ route('sop') }}" class="text-sm font-medium {{ request()->routeIs('sop') ? 'text-white bg-white/10' : 'text-white/80 hover:text-white hover:bg-white/10' }} px-3 py-2 rounded-lg transition-colors duration-200">Pelajari SOP</a>
                 
                 <div class="h-6 w-px bg-white/20 mx-2"></div>
                 
@@ -47,9 +47,9 @@
     <!-- Mobile Menu Panel -->
     <div id="mobile-menu" class="hidden md:hidden bg-primary border-b border-white/10 shadow-xl absolute w-full left-0 origin-top">
         <div class="px-4 pt-2 pb-6 space-y-1">
-            <a href="#beranda" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-lg text-base font-medium text-white hover:bg-white/10 transition-colors">Beranda</a>
-            <a href="#tentang" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-lg text-base font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">Tentang Kami</a>
-            <a href="#contact" onclick="toggleMobileMenu()" class="block px-4 py-3 rounded-lg text-base font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors">Contact</a>
+            <a href="{{ route('landing') }}" class="block px-4 py-3 rounded-lg text-base font-medium {{ request()->routeIs('landing') ? 'text-white bg-white/10' : 'text-white/80 hover:text-white hover:bg-white/10' }} transition-colors">Beranda</a>
+            <a href="{{ route('about') }}" class="block px-4 py-3 rounded-lg text-base font-medium {{ request()->routeIs('about') ? 'text-white bg-white/10' : 'text-white/80 hover:text-white hover:bg-white/10' }} transition-colors">Tentang Kami</a>
+            <a href="{{ route('sop') }}" class="block px-4 py-3 rounded-lg text-base font-medium {{ request()->routeIs('sop') ? 'text-white bg-white/10' : 'text-white/80 hover:text-white hover:bg-white/10' }} transition-colors">Pelajari SOP</a>
             
             <div class="pt-4 pb-2 border-t border-white/10 mt-2">
                 @auth
