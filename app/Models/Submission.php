@@ -67,7 +67,12 @@ class Submission extends Model
     public function hasAllDocuments(): bool
     {
         $required = collect(DocType::cases())->pluck('value');
-        $uploaded = $this->documents()->pluck('doc_type');
+        
+        // Tambahkan fungsi map() untuk mengurai objek Enum menjadi teks murni
+        $uploaded = $this->documents()->pluck('doc_type')->map(function ($enum) {
+            return $enum->value ?? $enum;
+        });
+
         return $required->diff($uploaded)->isEmpty();
     }
 
@@ -89,5 +94,17 @@ class Submission extends Model
     public function totalAssignments(): int
     {
         return $this->assignments()->count();
+    }
+    
+    public function ecCertificate()
+    {
+        return $this->hasOne(SubmissionDocument::class)
+                    ->where('doc_type', 'EC_CERTIFICATE')
+                    ->latestOfMany();
+    }
+
+    public function isEcPublished(): bool
+    {
+        return $this->status === SubmissionStatus::PUBLISHED;
     }
 }

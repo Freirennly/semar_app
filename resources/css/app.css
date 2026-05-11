@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -6,33 +6,57 @@
 @source "../**/*.js";
 
 @theme {
-    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
     /* ── SEMAR Color Palette ── */
-    --color-primary: #463EE3;
-    --color-primary-hover: #3B34C8;
+    --color-primary: #463ee3;
+    --color-primary-hover: #3b34c8;
     --color-primary-light: rgba(70, 62, 227, 0.08);
     --color-primary-ring: rgba(70, 62, 227, 0.18);
 
-    --color-bg: #F5F5F5;
-    --color-surface: #FFFFFF;
-    --color-soft-surface: #E6E6FA;
-    --color-info: #87CEEB;
-    --color-info-soft: #B0E0E6;
+    --color-bg: #f5f5f5;
+    --color-surface: #ffffff;
+    --color-soft-surface: #e6e6fa;
+    --color-info: #87ceeb;
+    --color-info-soft: #b0e0e6;
 
     --color-text: #111827;
-    --color-text-secondary: #6B7280;
-    --color-text-muted: #9CA3AF;
-    --color-border: #E5E7EB;
-    --color-border-strong: #D1D5DB;
+    --color-text-secondary: #6b7280;
+    --color-text-muted: #9ca3af;
+    --color-border: #e5e7eb;
+    --color-border-strong: #d1d5db;
 
     /* Status tones derived from palette family */
-    --color-success: #3D8B6E;
-    --color-success-bg: #E6FAF0;
-    --color-warning: #A07828;
-    --color-warning-bg: #FDF6E3;
-    --color-danger: #B04048;
-    --color-danger-bg: #FDE8EA;
+    --color-success: #3d8b6e;
+    --color-success-bg: #e6faf0;
+    --color-warning: #a07828;
+    --color-warning-bg: #fdf6e3;
+    --color-danger: #b04048;
+    --color-danger-bg: #fde8ea;
+
+    /* Animation tokens */
+    --animate-fade-in: fade-in 0.4s ease-out both;
+    --animate-slide-up: slide-up 0.45s ease-out both;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ── Focus & Form states ── */
@@ -47,7 +71,9 @@
         outline-offset: 2px;
     }
 
-    input:focus, select:focus, textarea:focus {
+    input:focus,
+    select:focus,
+    textarea:focus {
         border-color: var(--color-primary) !important;
         box-shadow: 0 0 0 3px var(--color-primary-ring) !important;
     }
@@ -57,7 +83,7 @@
 @layer utilities {
     .btn-primary {
         background-color: var(--color-primary);
-        color: #FFFFFF;
+        color: #ffffff;
         font-weight: 500;
         font-size: 0.875rem;
         padding: 0.5rem 1.25rem;
@@ -114,10 +140,30 @@
         font-size: 0.875rem;
         color: var(--color-text);
         background-color: var(--color-surface);
-        transition: border-color 150ms ease, box-shadow 150ms ease;
+        transition:
+            border-color 150ms ease,
+            box-shadow 150ms ease;
     }
     .input-field::placeholder {
         color: var(--color-text-muted);
+    }
+
+    /* File upload drop zone */
+    .file-upload-zone {
+        border: 2px dashed var(--color-border-strong);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: all 200ms ease;
+        cursor: pointer;
+    }
+    .file-upload-zone:hover {
+        border-color: var(--color-primary);
+        background-color: var(--color-primary-light);
+    }
+    .file-upload-zone.drag-over {
+        border-color: var(--color-primary);
+        background-color: var(--color-primary-light);
+        box-shadow: 0 0 0 3px var(--color-primary-ring);
     }
 
     /* Responsive sidebar */

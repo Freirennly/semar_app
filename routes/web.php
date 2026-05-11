@@ -10,10 +10,20 @@ use App\Http\Controllers\DocCheckController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
-// Auth
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Auth Routes (Login & Register)
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    
+    // Rute Register Tambahan
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+
+    // Rute Password Reset (Placeholder agar tidak error di view Login)
+    Route::get('/forgot-password', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 use App\Http\Controllers\LandingController;
 
@@ -27,11 +37,30 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Student submissions
-    Route::resource('submissions', SubmissionController::class)->except(['destroy']);
-    Route::post('submissions/{submission}/submit', [SubmissionController::class, 'submit'])->name('submissions.submit');
-    Route::post('submissions/{submission}/upload-document', [SubmissionController::class, 'uploadDocument'])->name('submissions.upload-document');
-    Route::delete('submissions/{submission}/documents/{document}', [SubmissionController::class, 'deleteDocument'])->name('submissions.delete-document');
+    // Student-only submission routes
+    Route::middleware('role:student')->group(function () {
+        // Rute CRUD Dasar
+        Route::get('submissions', [SubmissionController::class, 'index'])->name('submissions.index');
+        Route::get('submissions/create', [SubmissionController::class, 'create'])->name('submissions.create');
+        Route::post('submissions', [SubmissionController::class, 'store'])->name('submissions.store');
+        Route::get('submissions/{submission}/edit', [SubmissionController::class, 'edit'])->name('submissions.edit');
+        Route::put('submissions/{submission}', [SubmissionController::class, 'update'])->name('submissions.update');
+        
+        // Rute Aksi Dokumen & Submit
+        Route::post('submissions/{submission}/submit', [SubmissionController::class, 'submit'])->name('submissions.submit');
+        Route::post('submissions/{submission}/upload-document', [SubmissionController::class, 'uploadDocument'])->name('submissions.upload-document');
+        Route::delete('submissions/{submission}/documents/{document}', [SubmissionController::class, 'deleteDocument'])->name('submissions.delete-document');
+        
+        // Rute Download Template
+        Route::get('/templates/download', [SubmissionController::class, 'downloadTemplate'])->name('templates.download');
+
+        // Rute Ethical Clearance (EC) Baru
+        Route::post('submissions/{submission}/confirm', [SubmissionController::class, 'confirmEcData'])->name('submissions.confirm');
+        Route::get('submissions/{submission}/download-ec', [SubmissionController::class, 'downloadEc'])->name('submissions.download-ec');
+    });
+
+    // Submission show — accessible by all authenticated roles (auth checked in controller/policy)
+    Route::get('submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
 
     // Ketua: assignments
     Route::middleware('role:ketua')->group(function () {

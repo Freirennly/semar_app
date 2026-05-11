@@ -31,6 +31,21 @@ class AuthController extends Controller
             'email' => 'Email atau password salah.',
         ])->onlyInput('email');
     }
+    // Menampilkan halaman form register
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    // Memproses data register
+    public function register(Request $request)
+    {
+        // Tambahkan logika validasi dan pembuatan user baru di sini
+        // Contoh:
+        // $request->validate([...]);
+        // User::create([...]);
+        // return redirect()->route('login')->with('success', 'Akun berhasil dibuat!');
+    }
 
     public function logout(Request $request)
     {
