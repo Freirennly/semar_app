@@ -14,6 +14,9 @@ enum SubmissionStatus: string
     case RESUBMISSION = 'RESUBMISSION';
     case DISAPPROVED = 'DISAPPROVED';
     case ARCHIVED = 'ARCHIVED';
+    case KIRIM_USER = 'KIRIM_USER';
+    case WAITING_TTD = 'WAITING_TTD';
+    case PUBLISHED = 'PUBLISHED';
 
     public function label(): string
     {

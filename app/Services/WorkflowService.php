@@ -16,7 +16,10 @@ class WorkflowService
         'ASSIGNED' => ['UNDER_REVIEW'],
         'UNDER_REVIEW' => ['PENDING_DECISION'],
         'PENDING_DECISION' => ['APPROVED', 'RESUBMISSION', 'DISAPPROVED'],
-        'APPROVED' => ['ARCHIVED'],
+        'APPROVED' => ['KIRIM_USER', 'ARCHIVED'], 
+        'KIRIM_USER' => ['WAITING_TTD'], 
+        'WAITING_TTD' => ['PUBLISHED'], 
+        'PUBLISHED' => ['ARCHIVED'], 
         'RESUBMISSION' => ['SUBMITTED'],
         'DISAPPROVED' => ['ARCHIVED'],
     ];
