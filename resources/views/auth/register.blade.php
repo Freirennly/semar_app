@@ -116,7 +116,7 @@
                 </div>
 
                 <!-- Footer -->
-                <p class="mt-auto pt-4 text-xs text-center text-gray-400">Universitas Sebelas Maret © 2026</p>
+                <p class="mt-auto pt-4 text-xs text-center text-gray-400">U&copy; {{ date('Y') }} Universitas Ultramen Surakarta. All rights reserved.</p>
             </div>
 
             <!-- KOLOM KANAN (Ilustrasi Register - ID Card Peneliti) -->

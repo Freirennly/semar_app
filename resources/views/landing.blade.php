@@ -8,10 +8,6 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
                 <!-- Text Content -->
                 <div class="max-w-2xl">
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-soft-surface text-primary text-sm font-semibold mb-6 border border-primary/10 shadow-sm">
-                        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                        Sistem Terintegrasi Kampus
-                    </div>
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-text tracking-tight mb-6 leading-tight">
                         Manajemen<br>
                         <span class="text-primary">Riset & Etika</span>
@@ -106,8 +102,7 @@
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
                 <div class="max-w-2xl">
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-white text-xs font-semibold mb-4 border border-white/20">
-                        <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                    <div class="text-white text-xs font-semibold mb-4">
                         Sistem Pemantauan Terpadu
                     </div>
                     <h2 class="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">Live Sync Data</h2>

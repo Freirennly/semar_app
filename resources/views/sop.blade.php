@@ -24,8 +24,8 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-6 tracking-widest uppercase border"
-             style="background:rgba(70,62,227,0.06); color:#463EE3; border-color:rgba(70,62,227,0.15);">
+        <div class="font-bold mb-6"
+             style="color:#463EE3;">
             Documentation Center
         </div>
         <h1 class="font-bold tracking-tight mb-4 leading-tight"

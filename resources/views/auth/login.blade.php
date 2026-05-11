@@ -77,7 +77,6 @@
 
                         <!-- Aksi Form -->
                         <div class="flex items-center justify-between mt-8">
-                            <a href="{{ route('password.request') }}" class="text-sm font-medium text-[#463EE3] hover:text-opacity-80 transition-colors">Forgot password?</a>
                             <button type="submit" class="rounded-full px-10 py-3 bg-[#463EE3] text-white font-semibold shadow-md hover:bg-opacity-90 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-[#E6E6FA] transition-all">
                                 Login
                             </button>
@@ -86,7 +85,7 @@
                 </div>
 
                 <!-- Footer -->
-                <p class="mt-auto pt-8 text-xs text-center text-gray-400">Universitas Sebelas Maret © 2026</p>
+                <p class="mt-auto pt-8 text-xs text-center text-gray-400">&copy; {{ date('Y') }} Universitas Ultramen Surakarta. All rights reserved.</p>
             </div>
 
             <!-- KOLOM KANAN (Ilustrasi KEP - Komisi Etik Penelitian) -->
