@@ -15,10 +15,15 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+use App\Http\Controllers\LandingController;
+
+// Landing Page
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+
 // Authenticated routes
 Route::middleware('auth')->group(function () {
 
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Student submissions
     Route::resource('submissions', SubmissionController::class)->except(['destroy']);
