@@ -89,10 +89,20 @@ Route::middleware('auth')->group(function () {
     });
 
     // Admin
+    Route::get('admin', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('users', [UserController::class, 'index'])->name('users.index');
         Route::post('users', [UserController::class, 'store'])->name('users.store');
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        // Placeholder Admin Modules
+        Route::view('proposals', 'admin.proposals.index')->name('proposals.index');
+        Route::view('reviewers', 'admin.reviewers.index')->name('reviewers.index');
+        Route::view('secretariat', 'admin.secretariat.index')->name('secretariat.index');
+        Route::view('announcements', 'admin.announcements.index')->name('announcements.index');
+        Route::view('reports', 'admin.reports.index')->name('reports.index');
+        Route::view('settings', 'admin.settings.index')->name('settings.index');
     });
 });
