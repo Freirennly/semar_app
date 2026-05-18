@@ -1,27 +1,38 @@
 <header class="h-16 bg-surface border-b border-border flex items-center justify-between px-4 sm:px-6 shrink-0">
-    <div class="flex items-center gap-3">
-        {{-- Mobile hamburger --}}
+    {{-- Left: Page title --}}
+    <div class="flex items-center gap-3 flex-1">
         <button onclick="toggleSidebar()" class="lg:hidden p-1.5 rounded-lg text-text-secondary hover:bg-soft-surface" aria-label="Toggle menu">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
         </button>
-        <h1 class="text-base font-semibold text-text">{{ $title ?? 'Dashboard' }}</h1>
+        <h1 class="text-base font-bold text-text truncate max-w-[120px] sm:max-w-none">{{ $title ?? 'Dashboard' }}</h1>
     </div>
 
-    <div class="flex items-center gap-3">
-        {{-- Search bar --}}
-        @hasanyrole('student|sekretariat|ketua|admin')
-        <form method="GET" action="{{ route('submissions.index') }}" class="hidden sm:flex items-center" role="search">
+    {{-- Center: Search bar --}}
+    <div class="hidden md:flex flex-1 justify-center">
+        <form method="GET" action="{{ route('submissions.index') }}" class="w-full max-w-md" role="search">
             <div class="relative">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari pengajuan..." class="input-field pl-9 pr-3 py-1.5 w-56 text-sm" aria-label="Cari pengajuan">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari data pengajuan..." class="input-field pl-9 pr-3 py-1.5 w-full text-sm bg-bg border-transparent focus:bg-white" aria-label="Cari pengajuan">
             </div>
         </form>
-        @endhasanyrole
+    </div>
 
-        <span class="text-sm text-text-secondary hidden sm:block">{{ auth()->user()->name }}</span>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="text-sm text-text-muted hover:text-primary transition-colors" aria-label="Keluar dari akun">Keluar</button>
-        </form>
+    {{-- Right: Actions --}}
+    <div class="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
+        {{-- Notifications --}}
+        <button class="p-1.5 text-text-muted hover:text-primary rounded-lg hover:bg-soft-surface transition-colors relative">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full border-2 border-surface"></span>
+        </button>
+
+        <div class="h-6 w-px bg-border hidden sm:block"></div>
+
+        <div class="flex items-center gap-3">
+            <div class="text-right hidden sm:block">
+                <p class="text-xs font-bold text-text leading-none">{{ auth()->user()->name }}</p>
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-tighter mt-1">{{ auth()->user()->roles->first()?->name ?? 'User' }}</p>
+            </div>
+            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=463EE3&color=fff" class="w-8 h-8 rounded-lg shadow-sm border border-border" alt="Profile">
+        </div>
     </div>
 </header>

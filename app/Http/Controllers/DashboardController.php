@@ -83,12 +83,6 @@ class DashboardController extends Controller
 
     private function admin()
     {
-        $metrics = [
-            ['label' => 'Total User', 'value' => \App\Models\User::count(), 'color' => 'blue'],
-            ['label' => 'Pengajuan Aktif', 'value' => Submission::whereNotIn('status', [SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED, SubmissionStatus::ARCHIVED])->count(), 'color' => 'violet'],
-            ['label' => 'Selesai', 'value' => Submission::whereIn('status', [SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED])->count(), 'color' => 'emerald'],
-        ];
-        $users = \App\Models\User::with('roles')->latest()->get();
-        return view('dashboard.admin', compact('metrics', 'users'));
+        return redirect()->route('admin.dashboard');
     }
 }

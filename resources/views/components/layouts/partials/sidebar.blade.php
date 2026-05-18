@@ -66,26 +66,63 @@
 
     {{-- Admin --}}
     @role('admin')
-    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ $r === 'dashboard' ? 'bg-primary-light text-primary font-semibold' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Overview Dashboard">
-        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ $r === 'admin.dashboard' ? 'bg-primary text-white font-semibold shadow-sm' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Overview Dashboard">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
         Overview
     </a>
-    <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'admin.users') ? 'bg-primary-light text-primary font-semibold' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Manajemen User">
-        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+    <a href="{{ route('admin.users.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'admin.users') ? 'bg-primary text-white font-semibold shadow-sm' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Manajemen User">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
         Manajemen User
+    </a>
+    <a href="{{ route('admin.proposals.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'admin.proposals') ? 'bg-primary text-white font-semibold shadow-sm' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Manajemen Pengajuan">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Manajemen Pengajuan
+    </a>
+    <a href="{{ route('admin.reviewers.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'admin.reviewers') ? 'bg-primary text-white font-semibold shadow-sm' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Manajemen Reviewer">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        Manajemen Reviewer
+    </a>
+    <a href="{{ route('admin.secretariat.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'admin.secretariat') ? 'bg-primary text-white font-semibold shadow-sm' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Manajemen Sekretaris">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        Manajemen Sekretaris
+    </a>
+    <a href="{{ route('admin.announcements.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'admin.announcements') ? 'bg-primary text-white font-semibold shadow-sm' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Manajemen Pengumuman">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5.882V19.297A1.705 1.705 0 019.336 21H4.104a.71.71 0 01-.7-.718V4.731a.71.71 0 01.7-.717h5.232c.9 0 1.631.733 1.631 1.631zM11 5.882c0-.9.731-1.631 1.631-1.631h5.232c.386 0 .7.314.7.717v15.849a.71.71 0 01-.701.718h-5.232a1.705 1.705 0 01-1.664-1.703V5.882zM7 10h2m-2 3h2m7-3h2m-2 3h2"/></svg>
+        Manajemen Pengumuman
+    </a>
+    <a href="{{ route('admin.reports.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'admin.reports') ? 'bg-primary text-white font-semibold shadow-sm' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Laporan & Statistik">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+        Laporan & Statistik
+    </a>
+    <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'admin.settings') ? 'bg-primary text-white font-semibold shadow-sm' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Setting">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Setting
     </a>
     @endrole
 </nav>
 
 {{-- User footer --}}
-<div class="p-4 border-t border-border">
-    <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full bg-soft-surface flex items-center justify-center text-primary text-xs font-bold">
-            {{ auth()->user()->initials }}
+<div class="p-4 border-t border-border space-y-4">
+    <a href="{{ route('landing') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:bg-soft-surface hover:text-primary transition-colors">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Landing Page
+    </a>
+    
+    <div class="flex items-center justify-between gap-3 px-3">
+        <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-full bg-soft-surface flex items-center justify-center text-primary text-xs font-bold shrink-0">
+                {{ auth()->user()->initials }}
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-text truncate">{{ auth()->user()->name }}</p>
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider">{{ auth()->user()->roles->first()?->name ?? 'User' }}</p>
+            </div>
         </div>
-        <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-text truncate">{{ auth()->user()->name }}</p>
-            <p class="text-xs text-text-muted truncate capitalize">{{ auth()->user()->roles->first()?->name ?? '-' }}</p>
-        </div>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="p-1.5 text-text-muted hover:text-danger rounded-md hover:bg-danger-bg transition-colors" title="Logout">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            </button>
+        </form>
     </div>
 </div>
