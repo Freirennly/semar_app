@@ -1,0 +1,65 @@
+<x-layouts.app :title="'Edit Pengajuan'">
+    <div class="mb-6 flex items-center gap-3">
+        <a href="{{ route('admin.proposals.index') }}" class="p-2 rounded-lg bg-white border border-border text-text-secondary hover:text-primary hover:border-primary/30 transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        </a>
+        <div>
+            <h2 class="text-xl font-bold text-text">Edit Pengajuan</h2>
+            <p class="text-sm text-text-secondary mt-1">Perbarui status atau judul pengajuan.</p>
+        </div>
+    </div>
+
+    <div class="card p-6 border-primary/10 shadow-sm max-w-3xl">
+        <form method="POST" action="{{ route('admin.proposals.update', $proposal) }}" class="space-y-5">
+            @csrf
+            @method('PUT')
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">Kode Pengajuan</label>
+                    <input type="text" value="{{ $proposal->code }}" class="input-field bg-bg cursor-not-allowed" disabled>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">Pengusul (Mahasiswa)</label>
+                    <input type="text" value="{{ optional($proposal->student)->name ?? 'Unknown' }}" class="input-field bg-bg cursor-not-allowed" disabled>
+                </div>
+            </div>
+
+            <div>
+                <label for="title" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">Judul Pengajuan</label>
+                <textarea name="title" id="title" rows="2" required class="input-field">{{ old('title', $proposal->title) }}</textarea>
+                @error('title')<p class="text-danger text-xs mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
+                <label for="status" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">Status Saat Ini</label>
+                <select name="status" id="status" required class="input-field">
+                    @php
+                        $statuses = [
+                            'DRAFT' => 'Draft',
+                            'SUBMITTED' => 'Submitted',
+                            'DOC_CHECK' => 'Doc Check (Sekretariat)',
+                            'ASSIGNED' => 'Assigned (Reviewer)',
+                            'UNDER_REVIEW' => 'Under Review',
+                            'PENDING_DECISION' => 'Pending Decision',
+                            'APPROVED' => 'Approved',
+                            'DISAPPROVED' => 'Disapproved',
+                            'RESUBMISSION' => 'Resubmission',
+                        ];
+                    @endphp
+                    @foreach($statuses as $val => $label)
+                        <option value="{{ $val }}" {{ (old('status', $proposal->status->value ?? $proposal->status) == $val) ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('status')<p class="text-danger text-xs mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-border mt-6">
+                <a href="{{ route('admin.proposals.index') }}" class="btn-ghost">Batal</a>
+                <button type="submit" class="btn-primary px-8">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</x-layouts.app>

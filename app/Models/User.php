@@ -23,6 +23,9 @@ class User extends Authenticatable
         'password',
         'nim_nip',
         'phone',
+        'is_active',
+        'expertise',
+        'position',
     ];
 
     /**

@@ -97,12 +97,13 @@ Route::middleware('auth')->group(function () {
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
-        // Placeholder Admin Modules
-        Route::view('proposals', 'admin.proposals.index')->name('proposals.index');
-        Route::view('reviewers', 'admin.reviewers.index')->name('reviewers.index');
-        Route::view('secretariat', 'admin.secretariat.index')->name('secretariat.index');
-        Route::view('announcements', 'admin.announcements.index')->name('announcements.index');
-        Route::view('reports', 'admin.reports.index')->name('reports.index');
-        Route::view('settings', 'admin.settings.index')->name('settings.index');
+        // Admin Modules
+        Route::resource('proposals', \App\Http\Controllers\Admin\ProposalController::class)->except(['create', 'store']);
+        Route::resource('reviewers', \App\Http\Controllers\Admin\ReviewerController::class)->except(['show']);
+        Route::resource('secretariat', \App\Http\Controllers\Admin\SecretariatController::class)->except(['show']);
+        Route::resource('announcements', \App\Http\Controllers\Admin\AnnouncementController::class)->except(['show']);
+        Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+        Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
     });
 });
