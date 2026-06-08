@@ -57,7 +57,7 @@ class AdminDashboardController extends Controller
                 return [$key => $item->count];
             });
 
-        $latestActivities = StatusHistory::with(['submission', 'user'])
+        $latestActivities = StatusHistory::with(['submission', 'changer'])
             ->latest()
             ->limit(10)
             ->get();

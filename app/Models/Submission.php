@@ -12,7 +12,7 @@ class Submission extends Model
 {
     protected $fillable = [
         'code', 'title', 'type', 'status', 'student_id',
-        'abstract', 'submitted_at', 'decided_at',
+        'abstract', 'submitted_at', 'decided_at', 'secretary_id'
     ];
 
     protected $casts = [
@@ -21,6 +21,21 @@ class Submission extends Model
         'decided_at' => 'datetime',
     ];
 
+    /**
+     * Hook Eloquent untuk mengisi otomatis kode pengajuan sebelum data masuk ke DB
+     */
+    protected static function booted()
+    {
+        static::creating(function ($submission) {
+            if (empty($submission->code)) {
+                $submission->code = static::generateCode();
+            }
+        });
+    }
+
+    /**
+     * Menggenerasikan kode registrasi unik berbasis tahun berjalan (SUB-2026-0001)
+     */
     public static function generateCode(): string
     {
         $year = date('Y');
@@ -64,16 +79,18 @@ class Submission extends Model
         return $this->hasOne(Decision::class)->latestOfMany();
     }
 
+    /**
+     * PERBAIKAN: Memeriksa apakah seluruh dokumen WAJIB dari template DB sudah terpenuhi
+     */
     public function hasAllDocuments(): bool
     {
-        $required = collect(DocType::cases())->pluck('value');
-        
-        // Tambahkan fungsi map() untuk mengurai objek Enum menjadi teks murni
-        $uploaded = $this->documents()->pluck('doc_type')->map(function ($enum) {
-            return $enum->value ?? $enum;
-        });
+        $requiredTemplateIds = DocumentTemplate::where('is_shown', true)
+            ->where('is_required', true)
+            ->pluck('id');
 
-        return $required->diff($uploaded)->isEmpty();
+        $uploadedTemplateIds = $this->documents()->pluck('document_template_id');
+
+        return $requiredTemplateIds->diff($uploadedTemplateIds)->isEmpty();
     }
 
     public function getDocumentCount(): int
@@ -81,9 +98,12 @@ class Submission extends Model
         return $this->documents()->count();
     }
 
+    /**
+     * PERBAIKAN: Menghitung total berkas yang berstatus wajib dari template database
+     */
     public function getRequiredDocumentCount(): int
     {
-        return count(DocType::cases());
+        return DocumentTemplate::where('is_shown', true)->where('is_required', true)->count();
     }
 
     public function completedReviewsCount(): int

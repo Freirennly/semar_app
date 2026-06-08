@@ -1,16 +1,39 @@
 <x-layouts.app :title="'Manajemen Pengajuan'">
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+    {{-- Header & Search/Filter Section --}}
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
         <div>
             <h2 class="text-xl font-bold text-text">Manajemen Pengajuan</h2>
             <p class="text-sm text-text-secondary mt-1">Pantau dan kelola seluruh pengajuan proposal dalam sistem SEMAR.</p>
         </div>
         
-        <form method="GET" action="{{ route('admin.proposals.index') }}" class="flex items-center gap-2 w-full sm:w-auto">
+        {{-- Unified Form for Search and Status Filter --}}
+        <form method="GET" action="{{ route('admin.proposals.index') }}" class="flex flex-col sm:flex-row items-center gap-2 w-full xl:w-auto">
+            {{-- Input Pencarian --}}
             <div class="relative w-full sm:w-64">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                 <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari judul atau pengusul..." class="input-field pl-9 pr-3 py-2 w-full text-sm">
             </div>
-            <button type="submit" class="btn-primary py-2 px-4 whitespace-nowrap">Cari</button>
+
+            {{-- Dropdown Filter Status --}}
+            <div class="w-full sm:w-48">
+                <select name="status" onchange="this.form.submit()" class="input-field py-2 px-3 w-full text-sm bg-white cursor-pointer appearance-none">
+                    <option value="">Semua Status</option>
+                    @foreach(\App\Enums\SubmissionStatus::cases() as $status)
+                        <option value="{{ $status->value }}" {{ request('status') === $status->value ? 'selected' : '' }}>
+                            {{ str_replace('_', ' ', $status->value) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button type="submit" class="btn-primary py-2 px-4 whitespace-nowrap flex-1 sm:flex-none">Cari</button>
+                @if(request('q') || request('status'))
+                    <a href="{{ route('admin.proposals.index') }}" class="px-4 py-2 bg-soft-surface text-text-secondary text-sm font-semibold rounded-xl hover:bg-border transition-colors whitespace-nowrap" title="Clear Filters">
+                        Reset
+                    </a>
+                @endif
+            </div>
         </form>
     </div>
 

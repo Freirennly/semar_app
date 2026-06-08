@@ -22,7 +22,7 @@ class StatusHistory extends Model
         return $this->belongsTo(Submission::class);
     }
 
-    public function user(): BelongsTo
+    public function changer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'changed_by');
     }

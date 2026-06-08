@@ -9,13 +9,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SubmissionDocument extends Model
 {
     protected $fillable = [
-        'submission_id', 'doc_type', 'file_path',
-        'original_name', 'mime', 'size', 'uploaded_by',
+        'submission_id', 
+        'document_template_id', // <- TAMBAHKAN INI
+        'doc_type', 
+        'file_path',
+        'original_name', 
+        'mime', 
+        'size', 
+        'uploaded_by',
     ];
 
     protected $casts = [
         'doc_type' => DocType::class,
     ];
+
+    /**
+     * Relasi ke Master Template Dokumen (Dinamis dari DB)
+     */
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(DocumentTemplate::class, 'document_template_id');
+    }
 
     public function submission(): BelongsTo
     {

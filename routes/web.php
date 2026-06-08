@@ -51,14 +51,13 @@ Route::middleware('auth')->group(function () {
         Route::post('submissions/{submission}/upload-document', [SubmissionController::class, 'uploadDocument'])->name('submissions.upload-document');
         Route::delete('submissions/{submission}/documents/{document}', [SubmissionController::class, 'deleteDocument'])->name('submissions.delete-document');
         
-        // Rute Download Template
-        Route::get('/templates/download', [SubmissionController::class, 'downloadTemplate'])->name('templates.download');
-
-        // Rute Ethical Clearance (EC) Baru
+        // Rute Ethical Clearance (EC) Konfirmasi & Download
         Route::post('submissions/{submission}/confirm', [SubmissionController::class, 'confirmEcData'])->name('submissions.confirm');
         Route::get('submissions/{submission}/download-ec', [SubmissionController::class, 'downloadEc'])->name('submissions.download-ec');
-    });
 
+        // --- TAMBAHKAN RUTE HALAMAN UTAMA ETHICAL CLEARANCE DI SINI ---
+        Route::get('ethical-clearance', [\App\Http\Controllers\EthicalClearanceController::class, 'index'])->name('ethical-clearance.index');
+    });
     // Submission show — accessible by all authenticated roles (auth checked in controller/policy)
     Route::get('submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
 
@@ -88,20 +87,32 @@ Route::middleware('auth')->group(function () {
         Route::post('decisions/{submission}', [DecisionController::class, 'store'])->name('decisions.store');
     });
 
-    // Admin
-    Route::get('admin', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+     // Admin
+Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+        
+        // Admin Dashboard Main Overview
+// Admin Dashboard Main Overview
+        Route::get('/', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard');
 
-    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        // Manajemen User
         Route::get('users', [UserController::class, 'index'])->name('users.index');
         Route::post('users', [UserController::class, 'store'])->name('users.store');
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
-        // Admin Modules
+        // Rute Khusus Unduh Berkas Proposal Admin (Dikunci di atas resource proposals)
+        Route::get('proposals/{proposal}/download', [\App\Http\Controllers\Admin\ProposalController::class, 'downloadProposal'])->name('proposals.download');
+
+        // Admin Modules Resource
         Route::resource('proposals', \App\Http\Controllers\Admin\ProposalController::class)->except(['create', 'store']);
         Route::resource('reviewers', \App\Http\Controllers\Admin\ReviewerController::class)->except(['show']);
         Route::resource('secretariat', \App\Http\Controllers\Admin\SecretariatController::class)->except(['show']);
         Route::resource('announcements', \App\Http\Controllers\Admin\AnnouncementController::class)->except(['show']);
+        
+        // Fitur Admin Template
+        Route::resource('templates', \App\Http\Controllers\Admin\TemplateController::class)->except(['create', 'show', 'edit']);
+        
+        // Fitur Admin Tambahan
         Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
         Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');

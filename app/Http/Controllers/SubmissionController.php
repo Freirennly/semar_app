@@ -6,6 +6,8 @@ use App\Enums\DocType;
 use App\Enums\SubmissionStatus;
 use App\Models\Submission;
 use App\Models\SubmissionDocument;
+use App\Models\DocumentTemplate;
+use App\Models\StatusHistory;
 use App\Services\WorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -15,6 +17,9 @@ class SubmissionController extends Controller
 {
     public function __construct(private WorkflowService $workflow) {}
 
+    /**
+     * Tampilan Beranda Pengajuan (Daftar Riwayat Pengajuan & Kartu Unduhan Template)
+     */
     public function index(Request $request)
     {
         $user = $request->user();
@@ -37,72 +42,106 @@ class SubmissionController extends Controller
 
         $submissions = $query->get();
 
-        return view('submissions.index', compact('submissions'));
+        // Mengambil master berkas template aktif untuk diunduh mahasiswa
+        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+
+        return view('submissions.index', compact('submissions', 'documentTemplates'));
     }
 
+    /**
+     * Menampilkan Form Pembuatan Pengajuan Baru Sisi Mahasiswa
+     */
     public function create()
     {
+        // Validasi hak akses otorisasi policy
         Gate::authorize('create', Submission::class);
-        return view('submissions.create');
+
+        // AMBIL MASTER TEMPLATE DOKUMEN DARI DATABASE AGAR BISA DI-LOOP PADA BLOK KARTU VIEW
+        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+
+        return view('submissions.create', compact('documentTemplates'));
     }
 
+    /**
+     * Menyimpan Draf Pengajuan Pertama Kali Beserta Seluruh Dokumen Array
+     */
     public function store(Request $request)
     {
-        Gate::authorize('create', Submission::class);
-
-        $data = $request->validate([
-            'title' => 'required|string|max:500',
-            'type' => 'required|string|max:100',
-            'abstract' => 'nullable|string|max:5000',
-            'file' => 'nullable|file|mimes:pdf|max:10240',
+        // 1. Validasi Informasi Utama Penelitian & Array Masukan Berkas
+        $request->validate([
+            'title'         => 'required|string|max:255',
+            'type'          => 'required|string',
+            'abstract'      => 'nullable|string',
+            'files.*'       => 'nullable|file|mimes:pdf|max:10240', // Validasi file di dalam array max 10MB
+            'hyperlinks.*'  => 'nullable|url',
         ]);
 
-        $user = $request->user();
+        // 2. Ambil Master Template untuk Validasi Aturan Wajib Atas Array Masukan
+        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
 
-        $submission = Submission::create([
-            'code' => Submission::generateCode(),
-            'title' => $data['title'],
-            'type' => $data['type'],
-            'abstract' => $data['abstract'] ?? null,
-            'status' => SubmissionStatus::DRAFT,
-            'student_id' => $user->id,
-        ]);
+        foreach ($documentTemplates as $template) {
+            $hasFile = $request->hasFile("files.{$template->id}");
+            $hasLink = $request->filled("hyperlinks.{$template->id}");
 
-        // Record initial status via WorkflowService pattern (manual for initial creation)
-        \App\Models\StatusHistory::create([
-            'submission_id' => $submission->id,
-            'from_status' => null,
-            'to_status' => SubmissionStatus::DRAFT->value,
-            'changed_by' => $user->id,
-            'note' => 'Pengajuan dibuat',
-            'created_at' => now(),
-        ]);
-
-        // Handle optional PDF file upload (stored as PROPOSAL doc_type)
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $path = $file->store('submissions/' . $submission->id, 'public');
-
-            SubmissionDocument::create([
-                'submission_id' => $submission->id,
-                'doc_type' => DocType::PROPOSAL->value,
-                'file_path' => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'mime' => $file->getClientMimeType(),
-                'size' => $file->getSize(),
-                'uploaded_by' => $user->id,
-            ]);
+            // Jika Template bersifat WAJIB, pastikan salah satu (file/link) terisi
+            if ($template->is_required && !$hasFile && !$hasLink) {
+                return back()->withErrors(["files.{$template->id}" => "Dokumen '{$template->name}' wajib diisi melalui File Upload atau Hyperlink GDrive."])->withInput();
+            }
         }
 
-        return redirect()->route('submissions.show', $submission)
-            ->with('success', 'Pengajuan berhasil dibuat. Silakan upload dokumen yang diperlukan.');
+        // 3. Buat Data Induk Pengajuan (Submission) dengan Cast Enum Valid
+        $submission = Submission::create([
+            'student_id' => auth()->id(), // Mengunci kepemilikan relasi mahasiswa pengusul
+            'title'      => $request->title,
+            'type'       => $request->type,
+            'abstract'   => $request->abstract,
+            'status'     => SubmissionStatus::DRAFT, // Menggunakan Enum asli terstandar proyek KEP SEMAR
+        ]);
+
+        // 4. Proses Simpan File atau Link Secara Iteratif Berbasis ID Template
+        foreach ($documentTemplates as $template) {
+            $hasFile = $request->hasFile("files.{$template->id}");
+            $hasLink = $request->filled("hyperlinks.{$template->id}");
+
+            if ($hasFile) {
+                $file = $request->file("files.{$template->id}");
+                $path = $file->store('submissions/' . $submission->id, 'public'); 
+
+                $submission->documents()->create([
+                    'document_template_id' => $template->id,
+                    'doc_type'             => str_contains(strtolower($template->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value,
+                    'file_path'            => $path,
+                    'original_name'        => $file->getClientOriginalName(),
+                    'mime'                 => $file->getClientMimeType(),
+                    'size'                 => $file->getSize(),
+                    'uploaded_by'          => auth()->id(),
+                    'type'                 => 'file'
+                ]);
+            } 
+            elseif ($hasLink) {
+                $submission->documents()->create([
+                    'document_template_id' => $template->id,
+                    'doc_type'             => str_contains(strtolower($template->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value,
+                    'file_path'            => $request->input("hyperlinks.{$template->id}"),
+                    'original_name'        => 'Link Google Drive',
+                    'mime'                 => 'text/url',
+                    'size'                 => 0,
+                    'uploaded_by'          => auth()->id(),
+                    'type'                 => 'link'
+                ]);
+            }
+        }
+
+        return redirect()->route('submissions.index')->with('success', 'Proposal beserta seluruh berkas berhasil disimpan sebagai draf!');
     }
 
+    /**
+     * Tampilan Detail Pengajuan Sisi Mahasiswa (Tempat Upload Dokumen Persyaratan)
+     */
     public function show(Request $request, Submission $submission)
     {
         $user = $request->user();
 
-        // Authorization: student can only view own, reviewer only assigned, others based on permission
         if ($user->hasRole('student') && $submission->student_id !== $user->id) {
             abort(403);
         }
@@ -111,13 +150,29 @@ class SubmissionController extends Controller
             if (! $isAssigned) abort(403);
         }
 
-        $submission->load(['documents', 'student', 'assignments.reviewer', 'reviews.reviewer', 'statusHistories.changer', 'decisions.decider']);
+        // Eager load seluruh relasi pendukung
+        $submission->load(['documents.template', 'student', 'assignments.reviewer', 'reviews.reviewer', 'statusHistories.changer', 'decisions.decider']);
 
-        $docTypes = DocType::cases();
-        $uploadedTypes = $submission->documents->pluck('doc_type')->map(fn($d) => $d->value)->toArray();
+        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+        $uploadedTemplateIds = $submission->documents->pluck('document_template_id')->toArray();
         $tab = $request->input('tab', 'details');
 
-        return view('submissions.show', compact('submission', 'docTypes', 'uploadedTypes', 'tab'));
+        return view('submissions.show', compact('submission', 'documentTemplates', 'uploadedTemplateIds', 'tab'));
+    }
+
+    /**
+     * Mengunduh file template master secara aman lewat sistem controller
+     */
+    public function downloadTemplate(DocumentTemplate $documentTemplate)
+    {
+        if (!Storage::disk('public')->exists($documentTemplate->file_path)) {
+            return back()->with('error', 'Mohon maaf, master berkas template tidak ditemukan di server.');
+        }
+
+        $extension = pathinfo($documentTemplate->file_path, PATHINFO_EXTENSION);
+        $safeName = str_replace(' ', '_', $documentTemplate->name) . '.' . $extension;
+
+        return Storage::disk('public')->download($documentTemplate->file_path, $safeName);
     }
 
     public function edit(Submission $submission)
@@ -141,13 +196,22 @@ class SubmissionController extends Controller
             ->with('success', 'Pengajuan berhasil diperbarui.');
     }
 
+    /**
+     * Final Submit Ajuan Mahasiswa
+     */
     public function submit(Request $request, Submission $submission)
     {
         $user = $request->user();
         if ($submission->student_id !== $user->id) abort(403);
 
-        if (! $submission->hasAllDocuments()) {
-            return back()->with('error', 'Semua dokumen wajib harus diupload sebelum submit.');
+        // Validasi Kelengkapan Berkas Dinamis langsung dari berkas terunggah
+        $requiredTemplateIds = DocumentTemplate::where('is_shown', true)->where('is_required', true)->pluck('id')->toArray();
+        $uploadedTemplateIds = $submission->documents->pluck('document_template_id')->toArray();
+
+        foreach ($requiredTemplateIds as $requiredId) {
+            if (!in_array($requiredId, $uploadedTemplateIds)) {
+                return back()->with('error', 'Gagal mengirim! Anda belum melengkapi berkas dokumen persyaratan yang bersifat Wajib.');
+            }
         }
 
         if (! in_array($submission->status, [SubmissionStatus::DRAFT, SubmissionStatus::RESUBMISSION])) {
@@ -161,6 +225,9 @@ class SubmissionController extends Controller
             ->with('success', 'Pengajuan berhasil disubmit!');
     }
 
+    /**
+     * Proses Unggah Dokumen Berkas Satuan Mahasiswa di Halaman Show
+     */
     public function uploadDocument(Request $request, Submission $submission)
     {
         $user = $request->user();
@@ -169,26 +236,37 @@ class SubmissionController extends Controller
             return back()->with('error', 'Tidak bisa upload dokumen pada status ini.');
         }
 
+        $allowedTemplateIds = DocumentTemplate::where('is_shown', true)->pluck('id')->toArray();
+        $allowedIdsString = implode(',', $allowedTemplateIds);
+
         $request->validate([
-            'doc_type' => 'required|in:PROPOSAL,ICF,SURAT_PENGANTAR',
-            'file' => 'required|file|mimes:pdf|max:10240',
+            'document_template_id' => 'required|in:' . $allowedIdsString,
+            'file' => 'required|file|mimes:pdf,docx,doc|max:10240',
         ]);
 
         $file = $request->file('file');
         $path = $file->store('submissions/' . $submission->id, 'public');
 
+        $currentTemplate = DocumentTemplate::find($request->document_template_id);
+        $backupEnumStr = str_contains(strtolower($currentTemplate->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value;
+
         SubmissionDocument::updateOrCreate(
-            ['submission_id' => $submission->id, 'doc_type' => $request->doc_type],
             [
+                'submission_id' => $submission->id, 
+                'document_template_id' => $request->document_template_id
+            ],
+            [
+                'doc_type' => $backupEnumStr,
                 'file_path' => $path,
                 'original_name' => $file->getClientOriginalName(),
                 'mime' => $file->getClientMimeType(),
                 'size' => $file->getSize(),
                 'uploaded_by' => $user->id,
+                'type' => 'file'
             ]
         );
 
-        return back()->with('success', 'Dokumen berhasil diupload.');
+        return back()->with('success', 'Dokumen berkas berhasil diupload.');
     }
 
     public function deleteDocument(Request $request, Submission $submission, SubmissionDocument $document)
@@ -204,65 +282,39 @@ class SubmissionController extends Controller
 
         return back()->with('success', 'Dokumen berhasil dihapus.');
     }
-    public function downloadTemplate()
-    {
-        // Tentukan lokasi file template disimpan (misal: storage/app/public/templates/template_protokol.docx)
-        $filePath = storage_path('app/public/templates/template_protokol.docx');
 
-        // Cek apakah file fisik tersebut benar-benar ada
-        if (!file_exists($filePath)) {
-            // Jika belum ada, kembalikan ke halaman sebelumnya dengan pesan error
-            return back()->with('error', 'Mohon maaf, file template saat ini belum diunggah oleh Admin.');
-        }
-
-        // Jika ada, langsung download filenya
-        return response()->download($filePath);
-    }
     public function confirmEcData(Request $request, Submission $submission)
     {
         $user = $request->user();
-        
-        // Pastikan hanya pemilik pengajuan yang bisa melakukan konfirmasi
         if ($submission->student_id !== $user->id) abort(403);
 
-        // Pastikan statusnya memang sedang dikirim ke user (KIRIM_USER)
         if ($submission->status !== SubmissionStatus::KIRIM_USER) {
             return back()->with('error', 'Status pengajuan tidak valid untuk konfirmasi saat ini.');
         }
 
-        // Ubah status ke tahap selanjutnya (misal: WAITING_TTD atau menunggu Ketua KEP)
-        // Catatan: Sesuaikan nama status WAITING_TTD dengan Enum yang Anda miliki di SubmissionStatus
         $this->workflow->transition($submission, SubmissionStatus::WAITING_TTD, $user, 'Peneliti telah mengonfirmasi draf sertifikat EC.');
 
         return back()->with('success', 'Draf sertifikat berhasil dikonfirmasi. Saat ini menunggu tanda tangan dari Ketua KEP.');
     }
 
-    /**
-     * Mengunduh file Sertifikat Laik Etik yang sudah di-publish.
-     */
     public function downloadEc(Request $request, Submission $submission)
     {
         $user = $request->user();
         
-        // Cek kepemilikan khusus untuk student
         if ($user->hasRole('student') && $submission->student_id !== $user->id) {
             abort(403);
         }
 
-        // Pastikan sertifikat sudah dipublikasikan oleh Admin
         if ($submission->status !== SubmissionStatus::PUBLISHED) {
             return back()->with('error', 'Sertifikat Laik Etik belum diterbitkan.');
         }
 
-        // Asumsi: File sertifikat final disimpan di tabel SubmissionDocument dengan doc_type 'EC_CERTIFICATE'
-        // Anda bisa menyesuaikan tipe dokumennya dengan Enum DocType Anda
         $ecDocument = $submission->documents()->where('doc_type', 'EC_CERTIFICATE')->first();
         
         if (!$ecDocument || !Storage::disk('public')->exists($ecDocument->file_path)) {
             return back()->with('error', 'Mohon maaf, file sertifikat tidak ditemukan di dalam sistem.');
         }
 
-        // Mengunduh file
         return Storage::disk('public')->download($ecDocument->file_path, 'Ethical_Clearance_' . $submission->code . '.pdf');
     }
 }

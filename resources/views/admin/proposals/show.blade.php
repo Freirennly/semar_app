@@ -1,0 +1,161 @@
+@php 
+    // Mengamankan variabel tab untuk layout global sidebar/navbar
+    $tab = $tab ?? 'details'; 
+@endphp
+
+<x-layouts.app :title="'Detail Pengajuan - ' . $proposal->code">
+    {{-- Breadcrumb & Kembali --}}
+    <div class="mb-6 animate-fade-in">
+        <nav class="text-xs text-text-muted font-medium mb-2" aria-label="Breadcrumb">
+            <a href="{{ route('admin.proposals.index') }}" class="hover:text-primary transition-colors">Manajemen Pengajuan</a> 
+            <span class="mx-1">/</span> 
+            <span class="text-text">{{ $proposal->code }}</span>
+        </nav>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-text">{{ $proposal->title }}</h2>
+                <p class="text-xs text-text-secondary mt-1 font-mono">
+                    {{ $proposal->code }} · Kategori: {{ $proposal->type }}
+                </p>
+            </div>
+            <div class="shrink-0">
+                <x-status-badge :status="$proposal->status" />
+            </div>
+        </div>
+    </div>
+
+    {{-- Kotak Indikator Flash Session (Notifikasi Sukses/Gagal) --}}
+    @if(session('success'))
+        <div class="mb-6 bg-success-bg border border-success/20 text-success rounded-xl px-4 py-3 text-sm flex items-center gap-2 shadow-sm animate-fade-in">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 bg-danger-bg border border-danger/20 text-danger rounded-xl px-4 py-3 text-sm flex items-center gap-2 shadow-sm animate-fade-in">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
+    {{-- LAYOUT UTAMA: 2 KOLOM PREMIUM --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        
+        {{-- KOLOM KIRI (2/3): Detail Berkas & Berkas Lampiran --}}
+        <div class="lg:col-span-2 space-y-6">
+            
+            {{-- Kartu 1: Informasi Ringkasan / Abstrak Usulan --}}
+            <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-4">
+                <h3 class="text-sm font-bold text-text uppercase tracking-wider border-b border-border pb-2">Informasi Usulan</h3>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <dt class="text-text-secondary text-xs font-medium">Nama Pengaju (Mahasiswa)</dt>
+                        <dd class="font-semibold text-text mt-0.5">{{ optional($proposal->student)->name ?? 'Unknown' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-text-secondary text-xs font-medium">NIM / NIP</dt>
+                        <dd class="font-semibold text-text mt-0.5 font-mono">{{ optional($proposal->student)->nim_nip ?? '-' }}</dd>
+                    </div>
+                    <div class="col-span-1 sm:col-span-2">
+                        <dt class="text-text-secondary text-xs font-medium">Abstrak / Ringkasan Penelitian</dt>
+                        <dd class="text-text leading-relaxed mt-1 whitespace-pre-line bg-slate-50/50 p-4 rounded-xl border border-border/60">{{ $proposal->abstract ?? 'Tidak ada abstrak.' }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            {{-- Kartu 2: Berkas Lampiran Persyaratan Mahasiswa --}}
+            <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-border pb-3 flex-wrap gap-2">
+                    <h3 class="text-sm font-bold text-text uppercase tracking-wider">Dokumen Lampiran Persyaratan</h3>
+                    
+                    {{-- Tombol Utama Unduh Berkas Proposal Asli (Menuju Fungsi downloadProposal Baru) --}}
+                    <a href="{{ route('admin.proposals.download', $proposal) }}" class="inline-flex items-center gap-1.5 bg-primary text-white hover:bg-primary-hover px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        Unduh File Utama
+                    </a>
+                </div>
+
+                {{-- Daftar Berkas Lampiran Hasil Loop Template Database --}}
+                <div class="divide-y divide-border/60">
+                    @forelse($proposal->documents as $doc)
+                        <div class="py-3.5 flex items-center justify-between gap-4 first:pt-0 last:pb-0">
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-text truncate">
+                                    {{ optional($doc->template)->name ?? $doc->original_name }}
+                                </p>
+                                <p class="text-xs text-text-muted mt-0.5 font-mono">
+                                    {{ $doc->original_name }} · {{ number_format($doc->size / 1024, 0) }} KB
+                                </p>
+                            </div>
+                            <div class="shrink-0">
+                                <a href="{{ \Illuminate\Support\Facades\Storage::url($doc->file_path) }}" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-text border border-border rounded-lg text-xs font-semibold transition-all">
+                                    Lihat File
+                                </a>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-6 text-xs text-text-muted italic">
+                            Belum ada dokumen persyaratan yang diunggah oleh mahasiswa ini.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+        </div>
+
+        {{-- KOLOM KANAN (1/3): Panel Aksi Cepat Alur Kerja KEP --}}
+        <div class="space-y-6">
+            
+            <div class="card p-5 bg-white border border-border rounded-2xl shadow-sm space-y-4">
+                <h4 class="text-xs font-bold text-text uppercase tracking-wider border-b border-border pb-2">Manajemen Alur Kerja</h4>
+                
+                {{-- FORM UPDATE FORMAL DENGAN PUT SPOOFING --}}
+                <form method="POST" action="{{ route('admin.proposals.update', $proposal) }}" class="space-y-4">
+                    @csrf
+                    @method('PUT') {{-- Mengatasi MethodNotAllowedHttpException --}}
+
+                    {{-- 1. Dropdown Pilih & Tugaskan Sekretariat --}}
+                    <div class="space-y-1.5">
+                        <label for="secretary_id" class="text-xs font-semibold text-text-secondary">Tugaskan Sekretariat</label>
+                        <select name="secretary_id" id="secretary_id" class="input-field py-2 px-3 w-full text-sm bg-white cursor-pointer border border-border rounded-xl focus:border-primary">
+                            <option value="">-- Pilih Anggota Sekretariat --</option>
+                            @foreach($secretaries as $sec)
+                                <option value="{{ $sec->id }}" {{ $proposal->secretary_id == $sec->id ? 'selected' : '' }}>
+                                    {{ $sec->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- 2. Dropdown Penyesuaian Status --}}
+                    <div class="space-y-1.5">
+                        <label for="status" class="text-xs font-semibold text-text-secondary">Ubah Status Pengajuan</label>
+                        <select name="status" id="status" class="input-field py-2 px-3 w-full text-sm bg-white cursor-pointer border border-border rounded-xl focus:border-primary">
+                            @foreach(\App\Enums\SubmissionStatus::cases() as $status)
+                                <option value="{{ $status->value }}" {{ ($proposal->status->value ?? $proposal->status) === $status->value ? 'selected' : '' }}>
+                                    {{ ucwords(str_replace('_', ' ', strtolower($status->value))) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Tombol Eksekusi Aksi Cepat --}}
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition-all shadow-sm">
+                            💾 Simpan Perubahan Alur
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {{-- Info Tambahan Penanda Waktu Log --}}
+            <div class="card p-4 bg-slate-50 border border-border/80 rounded-2xl text-xs text-text-secondary space-y-2">
+                <div class="flex justify-between"><span>Dibuat:</span><span class="font-mono text-text font-medium">{{ $proposal->created_at->format('d/m/Y H:i') }}</span></div>
+                <div class="flex justify-between"><span>Update Terakhir:</span><span class="font-mono text-text font-medium">{{ $proposal->updated_at->format('d/m/Y H:i') }}</span></div>
+            </div>
+
+        </div>
+
+    </div>
+</x-layouts.app>
