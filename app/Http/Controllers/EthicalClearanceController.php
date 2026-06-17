@@ -11,9 +11,9 @@ class EthicalClearanceController extends Controller
     {
         $user = $request->user();
         
-        // Mengambil pengajuan milik mahasiswa yang statusnya sudah PUBLISHED
+        // Mengambil pengajuan milik mahasiswa yang statusnya sudah DONE
         $approvedSubmissions = $user->submissions()
-            ->where('status', SubmissionStatus::PUBLISHED)
+            ->where('status', SubmissionStatus::DONE)
             ->latest()
             ->get();
 

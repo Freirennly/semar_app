@@ -16,9 +16,8 @@ class AssignmentController extends Controller
     public function index()
     {
         $submissions = Submission::whereIn('status', [
-            SubmissionStatus::DOC_CHECK,
-            SubmissionStatus::SUBMITTED,
-            SubmissionStatus::ASSIGNED,
+            SubmissionStatus::PROCESS,
+            SubmissionStatus::ON_REVIEW,
         ])->with('student', 'assignments.reviewer')->latest()->get();
 
         $reviewers = User::role('reviewer')->get();
@@ -49,9 +48,9 @@ class AssignmentController extends Controller
             'due_at' => $request->due_at,
         ]);
 
-        // Transition to ASSIGNED if not already
-        if ($submission->status === SubmissionStatus::DOC_CHECK || $submission->status === SubmissionStatus::SUBMITTED) {
-            $this->workflow->transition($submission, SubmissionStatus::ASSIGNED, $request->user(), "Reviewer ditugaskan: {$reviewer->name}");
+        // Transition to ON_REVIEW
+        if ($submission->status === SubmissionStatus::PROCESS) {
+            $this->workflow->transition($submission, SubmissionStatus::ON_REVIEW, $request->user(), "Reviewer ditugaskan: {$reviewer->name}");
         }
 
         return back()->with('success', "Reviewer {$reviewer->name} berhasil ditugaskan.");

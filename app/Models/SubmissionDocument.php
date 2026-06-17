@@ -40,4 +40,12 @@ class SubmissionDocument extends Model
     {
         return $this->belongsTo(User::class, 'uploaded_by');
     }
+
+    /**
+     * Get document type (file or link)
+     */
+    public function getTypeAttribute(): string
+    {
+        return $this->mime === 'text/url' ? 'link' : 'file';
+    }
 }

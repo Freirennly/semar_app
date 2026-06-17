@@ -64,10 +64,14 @@
             </div>
             <h3 class="text-sm font-bold" style="color:#0F0E2E">Dokumen yang Diupload</h3>
 
-            {{-- Completion counter --}}
             @php
                 $allDocs     = \App\Enums\DocType::cases();
-                $uploadedCnt = collect($allDocs)->filter(fn($dt) => $submission->documents->firstWhere('doc_type', $dt))->count();
+                $uploadedCnt = 0;
+                foreach ($allDocs as $dt) {
+                    if ($submission->documents->firstWhere('doc_type', $dt)) {
+                        $uploadedCnt++;
+                    }
+                }
                 $totalCnt    = count($allDocs);
                 $allComplete = $uploadedCnt >= $totalCnt;
             @endphp

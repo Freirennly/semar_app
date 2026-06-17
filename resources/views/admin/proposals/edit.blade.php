@@ -35,19 +35,19 @@
                 <label for="status" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">Status Saat Ini</label>
                 <select name="status" id="status" required class="input-field">
                     @php
-                        $statuses = [
-                            'DRAFT' => 'Draft',
-                            'SUBMITTED' => 'Submitted',
-                            'DOC_CHECK' => 'Doc Check (Sekretariat)',
-                            'ASSIGNED' => 'Assigned (Reviewer)',
-                            'UNDER_REVIEW' => 'Under Review',
-                            'PENDING_DECISION' => 'Pending Decision',
-                            'APPROVED' => 'Approved',
-                            'DISAPPROVED' => 'Disapproved',
-                            'RESUBMISSION' => 'Resubmission',
-                        ];
+                        $workflowService = app(\App\Services\WorkflowService::class);
+                        $currentStatus = $proposal->status;
+                        $allowed = $workflowService->getAllowedTransitions($currentStatus);
+                        
+                        $statusesToShow = [$currentStatus->value => $currentStatus->label()];
+                        foreach ($allowed as $nextStatusVal) {
+                            $enumCase = \App\Enums\SubmissionStatus::tryFrom($nextStatusVal);
+                            if ($enumCase) {
+                                $statusesToShow[$nextStatusVal] = $enumCase->label();
+                            }
+                        }
                     @endphp
-                    @foreach($statuses as $val => $label)
+                    @foreach($statusesToShow as $val => $label)
                         <option value="{{ $val }}" {{ (old('status', $proposal->status->value ?? $proposal->status) == $val) ? 'selected' : '' }}>
                             {{ $label }}
                         </option>

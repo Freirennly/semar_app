@@ -1,50 +1,102 @@
 <x-layouts.app :title="'Dashboard Reviewer'">
+    {{-- Header Section --}}
     <div class="mb-6">
-        <h2 class="text-xl font-bold text-text">Dashboard Reviewer</h2>
-        <p class="text-sm text-text-secondary mt-1">Daftar pengajuan yang ditugaskan untuk Anda review.</p>
+        <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Dashboard Reviewer</h1>
+        <p class="text-sm text-text-secondary mt-1.5">Kelola penugasan review etik penelitian Anda secara profesional.</p>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+
+    {{-- Statistik Review Pribadi (Flat cards, no global stats) --}}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
         @foreach($metrics as $m)
-            <x-metric-card :label="$m['label']" :value="$m['value']" :color="$m['color']" />
+            <div class="bg-white border border-border p-5 rounded-xl">
+                <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">{{ $m['label'] }}</p>
+                <p class="text-[28px] font-bold text-text mt-2 leading-none">{{ $m['value'] }}</p>
+            </div>
         @endforeach
     </div>
-    <div class="card">
-        <div class="px-6 py-4 border-b border-border"><h3 class="text-base font-semibold text-text">Review yang Ditugaskan</h3></div>
-        @if($assignments->isEmpty())
-        <div class="text-center py-16">
-            <div class="w-14 h-14 rounded-full bg-soft-surface mx-auto flex items-center justify-center mb-3"><svg class="w-7 h-7 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/></svg></div>
-            <p class="text-sm font-medium text-text">Belum ada penugasan review</p>
-            <p class="text-sm text-text-secondary mt-1">Anda akan mendapatkan notifikasi saat ada penugasan baru.</p>
+
+    @php
+        $activeAssignments = $assignments->where('status', '!=', 'COMPLETED');
+        $completedAssignments = $assignments->where('status', '==', 'COMPLETED');
+    @endphp
+
+    {{-- Main Content Grid --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- Left: Active Tasks (70% or lg:col-span-2) --}}
+        <div class="lg:col-span-2 bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-border bg-white">
+                <h2 class="text-[20px] font-semibold text-text">Tugas Review Aktif</h2>
+            </div>
+            
+            @if($activeAssignments->isEmpty())
+                <div class="text-center py-16 px-6">
+                    <div class="w-14 h-14 rounded-full bg-soft-surface mx-auto flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                    </div>
+                    <h3 class="text-sm font-semibold text-text">Semua tugas review selesai!</h3>
+                    <p class="text-xs text-text-secondary mt-1">Anda tidak memiliki tugas review aktif yang tertunda.</p>
+                </div>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
+                                <th class="px-6 py-4 font-semibold">Judul Usulan</th>
+                                <th class="px-6 py-4 font-semibold">Pengusul</th>
+                                <th class="px-6 py-4 font-semibold">Batas Waktu</th>
+                                <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            @foreach($activeAssignments as $a)
+                                <tr class="hover:bg-soft-surface/25 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div class="font-semibold text-text">{{ \Illuminate\Support\Str::title($a->submission->title) }}</div>
+                                        <div class="text-xs text-text-secondary font-mono mt-0.5">{{ $a->submission->code }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-text-secondary">{{ optional($a->submission->student)->name ?? '-' }}</td>
+                                    <td class="px-6 py-4 text-xs text-text-secondary whitespace-nowrap">
+                                        {{ $a->due_at ? $a->due_at->format('d/m/Y') : '—' }}
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <a href="{{ route('reviews.show', $a->submission) }}" class="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">
+                                            Isi Review
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
-        @else
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead><tr class="text-left text-text-muted text-xs uppercase tracking-wider">
-                    <th class="px-6 py-3 font-medium">Judul</th>
-                    <th class="px-6 py-3 font-medium hidden sm:table-cell">Pengaju</th>
-                    <th class="px-6 py-3 font-medium hidden sm:table-cell">Deadline</th>
-                    <th class="px-6 py-3 font-medium">Status</th>
-                    <th class="px-6 py-3 font-medium">Aksi</th>
-                </tr></thead>
-                <tbody class="divide-y divide-border">
-                    @foreach($assignments as $a)
-                    <tr class="hover:bg-soft-surface/30 transition-colors">
-                        <td class="px-6 py-3 font-medium text-text max-w-xs truncate">{{ $a->submission->title }}</td>
-                        <td class="px-6 py-3 text-text-secondary hidden sm:table-cell">{{ $a->submission->student->name }}</td>
-                        <td class="px-6 py-3 text-text-secondary hidden sm:table-cell">{{ $a->due_at ? $a->due_at->format('d M Y') : '—' }}</td>
-                        <td class="px-6 py-3">
-                            @if($a->status === 'COMPLETED')
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-success-bg text-success border border-success/20">Selesai</span>
-                            @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-warning-bg text-warning border border-warning/20">Belum</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-3"><a href="{{ route('reviews.show', $a->submission) }}" class="text-primary hover:text-primary-hover text-sm font-medium">{{ $a->status === 'COMPLETED' ? 'Lihat' : 'Review' }}</a></td>
-                    </tr>
+
+        {{-- Right: Completed Review History (30% or lg:col-span-1) --}}
+        <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-border bg-white">
+                <h2 class="text-[20px] font-semibold text-text">Riwayat Review</h2>
+            </div>
+            
+            @if($completedAssignments->isEmpty())
+                <div class="text-center py-12 px-6">
+                    <p class="text-xs text-text-muted italic">Belum ada riwayat review yang selesai.</p>
+                </div>
+            @else
+                <div class="divide-y divide-border overflow-y-auto max-h-[400px]">
+                    @foreach($completedAssignments as $a)
+                        <div class="p-4 hover:bg-soft-surface/20 transition-colors">
+                            <p class="text-xs font-semibold text-text line-clamp-2">{{ \Illuminate\Support\Str::title($a->submission->title) }}</p>
+                            <div class="flex items-center justify-between mt-2.5 text-[10px] text-text-secondary">
+                                <span class="font-mono">{{ $a->submission->code }}</span>
+                                <span class="font-bold text-success">Selesai Dinilai</span>
+                            </div>
+                            <div class="mt-2 text-right">
+                                <a href="{{ route('reviews.show', $a->submission) }}" class="text-xs font-bold text-primary hover:underline">Lihat Detail →</a>
+                            </div>
+                        </div>
                     @endforeach
-                </tbody>
-            </table>
+                </div>
+            @endif
         </div>
-        @endif
     </div>
 </x-layouts.app>

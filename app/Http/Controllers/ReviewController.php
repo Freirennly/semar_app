@@ -58,17 +58,21 @@ class ReviewController extends Controller
 
         $assignment->update(['status' => 'COMPLETED']);
 
-        // If submission is ASSIGNED, move to UNDER_REVIEW
-        if ($submission->status === SubmissionStatus::ASSIGNED) {
-            $this->workflow->transition($submission, SubmissionStatus::UNDER_REVIEW, $user, 'Review pertama diterima');
-        }
 
-        // Check if all reviews complete → PENDING_DECISION
+        // Check if all reviews complete -> notify admins
         $totalAssignments = $submission->assignments()->count();
         $completedReviews = $submission->reviews()->whereNotNull('submitted_at')->count();
 
-        if ($completedReviews >= $totalAssignments && $submission->status === SubmissionStatus::UNDER_REVIEW) {
-            $this->workflow->transition($submission, SubmissionStatus::PENDING_DECISION, $user, 'Semua review telah masuk');
+        if ($completedReviews >= $totalAssignments && $submission->status === SubmissionStatus::ON_REVIEW) {
+            $admins = \App\Models\User::role('admin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new \App\Notifications\SubmissionWorkflowNotification(
+                    'Hasil Review Masuk',
+                    "Hasil review untuk proposal \"{$submission->title}\" telah diunggah lengkap. Menunggu keputusan.",
+                    $submission->id,
+                    route('decisions.show', $submission)
+                ));
+            }
         }
 
         return redirect()->route('reviews.index')

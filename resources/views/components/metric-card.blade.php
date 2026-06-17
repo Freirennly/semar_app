@@ -17,7 +17,7 @@ $styles = [
 ];
 $s = $styles[$color] ?? ['border-l-primary', 'bg-soft-surface text-primary'];
 @endphp
-<div class="card border-l-4 {{ $s[0] }} p-5 hover:shadow-md transition-all duration-200 group">
+<div class="card border-l-4 {{ $s[0] }} p-5 transition-all duration-200 group">
     <div class="flex items-start justify-between">
         <div>
             <p class="text-sm text-text-secondary">{{ $label }}</p>

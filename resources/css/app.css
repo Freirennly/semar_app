@@ -7,6 +7,7 @@
 
 @theme {
     --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-serif: "Lora", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
     /* ── SEMAR Color Palette ── */
     --color-primary: #463ee3;
@@ -81,13 +82,19 @@
 
 /* ── Utility classes ── */
 @layer utilities {
+    .font-academic {
+        font-family: var(--font-serif);
+        font-size: 1rem;
+        line-height: 1.75;
+    }
+
     .btn-primary {
         background-color: var(--color-primary);
         color: #ffffff;
         font-weight: 500;
         font-size: 0.875rem;
-        padding: 0.5rem 1.25rem;
-        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
         transition: background-color 150ms ease;
     }
     .btn-primary:hover {
@@ -104,8 +111,8 @@
         border: 1px solid var(--color-primary);
         font-weight: 500;
         font-size: 0.875rem;
-        padding: 0.5rem 1.25rem;
-        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
         transition: all 150ms ease;
     }
     .btn-outline:hover {
@@ -117,8 +124,8 @@
         color: var(--color-text-secondary);
         font-weight: 500;
         font-size: 0.875rem;
-        padding: 0.5rem 1.25rem;
-        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
         transition: all 150ms ease;
     }
     .btn-ghost:hover {
@@ -129,14 +136,14 @@
     .card {
         background-color: var(--color-surface);
         border: 1px solid var(--color-border);
-        border-radius: 0.75rem;
+        border-radius: 1rem;
     }
 
     .input-field {
         width: 100%;
         border: 1px solid var(--color-border-strong);
-        border-radius: 0.5rem;
-        padding: 0.5rem 0.75rem;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
         font-size: 0.875rem;
         color: var(--color-text);
         background-color: var(--color-surface);

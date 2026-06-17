@@ -27,6 +27,6 @@ class SubmissionPolicy
     {
         return $user->hasPermissionTo('submission.update_own_draft')
             && $submission->student_id === $user->id
-            && in_array($submission->status, [SubmissionStatus::DRAFT, SubmissionStatus::RESUBMISSION]);
+            && $submission->status === SubmissionStatus::RESUBMISSION;
     }
 }

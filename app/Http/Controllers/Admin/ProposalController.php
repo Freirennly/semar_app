@@ -8,8 +8,14 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
+use App\Services\WorkflowService;
+use App\Enums\SubmissionStatus;
+use Illuminate\Support\Facades\Storage;
+
 class ProposalController extends Controller
 {
+    public function __construct(private WorkflowService $workflow) {}
+
     /**
      * Menampilkan daftar seluruh proposal (Halaman Index Admin)
      */
@@ -86,8 +92,29 @@ class ProposalController extends Controller
             $validated['title'] = $proposal->title;
         }
 
-        // Jalankan update ke database
-        $proposal->update($validated);
+        if ($request->filled('title')) {
+            $proposal->title = $validated['title'];
+        }
+
+        $secretaryChanged = false;
+        if ($request->has('secretary_id')) {
+            if ($proposal->secretary_id != $validated['secretary_id']) {
+                $proposal->secretary_id = $validated['secretary_id'];
+                $secretaryChanged = true;
+            }
+        }
+
+        $proposal->save();
+
+        $newStatus = SubmissionStatus::tryFrom($validated['status']);
+
+        if (!$newStatus) {
+            return redirect()->back()->with('error', 'Status pengajuan tidak valid.');
+        }
+
+        if ($proposal->status !== $newStatus) {
+            $this->workflow->transition($proposal, $newStatus, $request->user(), 'Status diperbarui oleh Admin');
+        }
 
         // Bersihkan cache statistik report admin
         Cache::forget('admin_reports_stats');
@@ -101,6 +128,29 @@ class ProposalController extends Controller
         // Jika datang dari form edit biasa, kembalikan ke index utama
         return redirect()->route('admin.proposals.index')
             ->with('success', 'Pengajuan berhasil diperbarui.');
+    }
+
+    /**
+     * Mengunduh berkas proposal utama mahasiswa
+     */
+    public function downloadProposal(Submission $proposal)
+    {
+        $document = $proposal->documents()
+            ->where(function($q) {
+                $q->where('doc_type', \App\Enums\DocType::PROPOSAL->value ?? 'PROPOSAL')
+                  ->orWhere('original_name', 'like', '%proposal%');
+            })
+            ->first();
+
+        if (!$document) {
+            $document = $proposal->documents()->where('type', 'file')->first();
+        }
+
+        if (!$document || $document->type !== 'file') {
+            return back()->with('error', 'Berkas proposal utama tidak ditemukan atau hanya berupa link.');
+        }
+
+        return Storage::disk('public')->download($document->file_path, $document->original_name);
     }
 
     /**

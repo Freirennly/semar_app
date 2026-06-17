@@ -1,32 +1,27 @@
 <x-layouts.app :title="$submission->title">
-    <div class="mb-6">
-        <nav class="text-sm text-text-muted mb-2" aria-label="Breadcrumb"><a href="{{ route('submissions.index') }}" class="hover:text-primary">Pengajuan</a> <span class="mx-1">/</span> <span class="text-text">{{ $submission->code }}</span></nav>
-        <div class="flex items-center gap-3">
-            <h2 class="text-xl font-bold text-text">{{ $submission->title }}</h2>
+    {{-- Header & Breadcrumb --}}
+    <div class="mb-6 animate-fade-in">
+        <nav class="text-[12px] text-text-secondary mb-2" aria-label="Breadcrumb">
+            <a href="{{ route('submissions.index') }}" class="hover:text-primary transition-colors">Pengajuan</a> 
+            <span class="mx-1">/</span> 
+            <span class="text-text">{{ $submission->code }}</span>
+        </nav>
+        <div class="flex items-start md:items-center justify-between gap-4 flex-wrap">
+            <div class="space-y-2">
+                <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight">{{ $submission->title }}</h1>
+                <p class="text-[14px] text-text-secondary">
+                    <span class="font-semibold text-text">{{ $submission->code }}</span> · {{ $submission->type }} · {{ $submission->student->name }}
+                </p>
+            </div>
             <x-status-badge :status="$submission->status" />
         </div>
-        <p class="text-sm text-text-secondary mt-1">{{ $submission->code }} · {{ $submission->type }} · {{ $submission->student->name }}</p>
     </div>
 
-    {{-- KOTAK INDIKATOR EROR & SUKSES (Penting untuk melihat balikan dari Controller) --}}
-    @if(session('success'))
-        <div class="mb-6 bg-success-bg border border-success/20 text-success rounded-xl px-4 py-3 text-sm flex items-center gap-2">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="mb-6 bg-danger-bg border border-danger/20 text-danger rounded-xl px-4 py-3 text-sm flex items-center gap-2">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ session('error') }}
-        </div>
-    @endif
-
+    {{-- Error Alerts --}}
     @if($errors->any())
-        <div class="mb-6 bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">
+        <div class="mb-6 bg-danger-bg border border-danger/20 text-danger rounded-xl px-5 py-3 text-[14px] shadow-sm">
             <p class="font-bold mb-1">⚠️ Gagal Memproses File:</p>
-            <ul class="list-disc pl-5 space-y-1 text-xs">
+            <ul class="list-disc pl-5 space-y-0.5 text-[12px]">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -37,66 +32,80 @@
     {{-- Tabs --}}
     @php $tab = $tab ?? 'details'; @endphp
     <div class="border-b border-border mb-6">
-        <nav class="flex gap-0 -mb-px" aria-label="Tabs">
+        <nav class="flex gap-4 -mb-px" aria-label="Tabs">
             @foreach(['details' => 'Details', 'documents' => 'Dokumen', 'history' => 'Status History'] as $key => $label)
-            <a href="{{ route('submissions.show', $submission) }}?tab={{ $key }}" class="px-4 py-3 text-sm font-medium border-b-2 transition-colors {{ $tab === $key ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text hover:border-border-strong' }}">{{ $label }}</a>
+                <a href="{{ route('submissions.show', $submission) }}?tab={{ $key }}" class="px-4 py-3 text-[14px] font-medium border-b-2 transition-colors {{ $tab === $key ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text hover:border-border-strong' }}">{{ $label }}</a>
             @endforeach
         </nav>
     </div>
 
     @if($tab === 'details')
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 card p-6">
-            <h3 class="text-base font-semibold text-text mb-4">Informasi Pengajuan</h3>
-            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                <div><span class="text-text-secondary text-xs font-medium block">Kode</span><span class="font-medium text-text mt-0.5 block">{{ $submission->code }}</span></div>
-                <div><span class="text-text-secondary text-xs font-medium block">Jenis</span><span class="font-medium text-text mt-0.5 block">{{ $submission->type }}</span></div>
-                <div><span class="text-text-secondary text-xs font-medium block">Pengaju</span><span class="font-medium text-text mt-0.5 block">{{ $submission->student->name }}</span></div>
-                <div><span class="text-text-secondary text-xs font-medium block">NIM/NIP</span><span class="font-medium text-text mt-0.5 block">{{ $submission->student->nim_nip ?? '-' }}</span></div>
-                <div class="col-span-1 sm:col-span-2"><span class="text-text-secondary text-xs font-medium block">Abstrak</span><span class="font-medium text-text mt-0.5 block whitespace-pre-line">{{ $submission->abstract ?? 'Tidak ada abstrak.' }}</span></div>
+        <div class="lg:col-span-2 card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
+            <h2 class="text-xl md:text-[24px] font-semibold text-text border-b border-border pb-2">Informasi Pengajuan</h2>
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-[14px]">
+                <div>
+                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">Kode</span>
+                    <span class="font-semibold text-text mt-1 block">{{ $submission->code }}</span>
+                </div>
+                <div>
+                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">Jenis</span>
+                    <span class="font-semibold text-text mt-1 block">{{ $submission->type }}</span>
+                </div>
+                <div>
+                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">Pengaju</span>
+                    <span class="font-semibold text-text mt-1 block">{{ $submission->student->name }}</span>
+                </div>
+                <div>
+                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">NIM/NIP</span>
+                    <span class="font-semibold text-text mt-1 block">{{ $submission->student->nim_nip ?? '-' }}</span>
+                </div>
+                <div class="col-span-1 sm:col-span-2">
+                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide mb-2">Abstrak</span>
+                    <div class="font-academic text-text p-4 bg-slate-50 border border-border rounded-xl whitespace-pre-line">{{ $submission->abstract ?? 'Tidak ada abstrak.' }}</div>
+                </div>
             </dl>
         </div>
         
-        <div class="card p-6">
-            <h3 class="text-base font-semibold text-text mb-4">Checklist Dokumen</h3>
+        <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm h-fit space-y-6">
+            <h2 class="text-xl md:text-[24px] font-semibold text-text border-b border-border pb-2">Checklist Dokumen</h2>
             
-            {{-- Penghitungan kelengkapan dokumen berbasis data dinamis --}}
             @php
                 $requiredTemplateIds = $documentTemplates->where('is_required', true)->pluck('id')->toArray();
                 $uploadedTemplateIds = $submission->documents->pluck('document_template_id')->toArray();
                 $hasAllDocs = collect($requiredTemplateIds)->every(fn($id) => in_array($id, $uploadedTemplateIds));
             @endphp
 
-            <p class="text-sm text-text-secondary mb-3">
-                {{ $submission->documents->whereNotNull('document_template_id')->count() }} / {{ $documentTemplates->where('is_required', true)->count() }} dokumen wajib terupload
+            <p class="text-[14px] text-text-secondary">
+                <span class="font-bold text-text">{{ $submission->documents->whereNotNull('document_template_id')->count() }}</span> / {{ $documentTemplates->where('is_required', true)->count() }} dokumen wajib terupload
             </p>
             
-            <div class="space-y-2.5">
+            <div class="space-y-3">
                 @foreach($documentTemplates as $template)
-                @php $uploaded = in_array($template->id, $uploadedTemplateIds); @endphp
-                <div class="flex items-center gap-2.5 py-1.5">
-                    @if($uploaded)
-                    <svg class="w-5 h-5 text-success shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                    @else
-                    <svg class="w-5 h-5 text-text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-                    @endif
-                    <span class="text-sm {{ $uploaded ? 'text-text font-medium' : 'text-text-muted' }} truncate max-w-[150px]">{{ $template->name }}</span>
-                    <span class="text-xs {{ $uploaded ? 'text-success' : 'text-danger' }} ml-auto">{{ $uploaded ? 'Sudah' : 'Belum' }}</span>
-                </div>
+                    @php $uploaded = in_array($template->id, $uploadedTemplateIds); @endphp
+                    <div class="flex items-center gap-3 py-1.5">
+                        @if($uploaded)
+                            <svg class="w-5 h-5 text-success shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        @else
+                            <svg class="w-5 h-5 text-text-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                        @endif
+                        <span class="text-[14px] {{ $uploaded ? 'text-text font-medium' : 'text-text-secondary' }} truncate max-w-[160px]">{{ $template->name }}</span>
+                        <span class="text-[12px] {{ $uploaded ? 'text-success font-semibold' : 'text-danger font-semibold' }} ml-auto">{{ $uploaded ? 'Sudah' : 'Belum' }}</span>
+                    </div>
                 @endforeach
             </div>
 
             @role('student')
-            @if(in_array($submission->status, [\App\Enums\SubmissionStatus::DRAFT, \App\Enums\SubmissionStatus::RESUBMISSION]))
+            @if($submission->status === \App\Enums\SubmissionStatus::RESUBMISSION)
                 @if($hasAllDocs)
-                <form method="POST" action="{{ route('submissions.submit', $submission) }}" class="mt-5">
-                    @csrf
-                    <button type="submit" class="w-full btn-primary py-2.5">Submit Pengajuan</button>
-                </form>
+                    <form method="POST" action="{{ route('submissions.submit', $submission) }}" class="mt-6">
+                        @csrf
+                        <button type="submit" class="w-full btn-primary">Kirim Revisi</button>
+                    </form>
                 @else
-                <div class="mt-5 bg-warning-bg border border-warning/20 rounded-lg px-4 py-3 text-sm text-warning" role="alert">
-                    Upload semua dokumen wajib sebelum submit. Buka tab <strong>Dokumen</strong> untuk mengupload.
-                </div>
+                    <div class="mt-6 bg-warning-bg border border-warning/20 rounded-xl px-4 py-3 text-[14px] text-warning" role="alert">
+                        Upload semua dokumen wajib sebelum kirim revisi. Buka tab <strong>Dokumen</strong> untuk mengupload.
+                    </div>
                 @endif
             @endif
             @endrole
@@ -104,86 +113,119 @@
     </div>
     @endif
 
-    {{-- KONTEN TAB 2: DOKUMEN (DIUBAH MENJADI DINAMIS DATABASE) --}}
+    {{-- KONTEN TAB 2: DOKUMEN --}}
     @if($tab === 'documents')
-    <div class="card p-6">
-        <h3 class="text-base font-semibold text-text mb-2">Dokumen Pendukung</h3>
-        <p class="text-sm text-text-secondary mb-5">Semua dokumen wajib harus diupload dalam format PDF (maks. 10MB).</p>
+    <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
+        <div>
+            <h2 class="text-xl md:text-[24px] font-semibold text-text">Dokumen Pendukung</h2>
+            <p class="text-[14px] text-text-secondary mt-1">Semua dokumen wajib harus diupload dalam format PDF (maks. 10MB).</p>
+        </div>
         <div class="space-y-4">
             @foreach($documentTemplates as $template)
-            @php
-                // Cari berkas mahasiswa berdasarkan id master template dokumen
-                $doc = $submission->documents->firstWhere('document_template_id', $template->id);
-                $canUpload = auth()->user()->hasRole('student') && in_array($submission->status, [\App\Enums\SubmissionStatus::DRAFT, \App\Enums\SubmissionStatus::RESUBMISSION]);
-            @endphp
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-border rounded-lg {{ $doc ? 'bg-surface' : 'bg-bg' }}">
-                <div class="flex items-center gap-3 min-w-0 mb-3 sm:mb-0">
-                    @if($doc)
-                    <div class="w-9 h-9 rounded-lg bg-success-bg flex items-center justify-center shrink-0"><svg class="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
-                    @else
-                    <div class="w-9 h-9 rounded-lg bg-danger-bg flex items-center justify-center shrink-0"><svg class="w-4 h-4 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg></div>
-                    @endif
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2">
-                            <p class="text-sm font-medium text-text">{{ $template->name }}</p>
-                            @if($template->is_required)
-                                <span class="text-[9px] font-extrabold px-1 bg-red-50 text-red-500 rounded border border-red-100 uppercase">Wajib</span>
+                @php
+                    $doc = $submission->documents->firstWhere('document_template_id', $template->id);
+                    $canUpload = auth()->user()->hasRole('student') && $submission->status === \App\Enums\SubmissionStatus::RESUBMISSION;
+                @endphp
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl {{ $doc ? 'bg-surface' : 'bg-slate-50/50' }} gap-4">
+                    <div class="flex items-start gap-4 min-w-0">
+                        @if($doc)
+                            <div class="w-10 h-10 rounded-xl bg-success-bg flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            </div>
+                        @else
+                            <div class="w-10 h-10 rounded-xl bg-danger-bg flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                            </div>
+                        @endif
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <p class="text-[14px] font-semibold text-text">{{ $template->name }}</p>
+                                @if($template->is_required)
+                                    <span class="text-[10px] font-bold px-1.5 bg-red-50 text-red-500 rounded border border-red-100 uppercase">Wajib</span>
+                                @endif
+                            </div>
+                            @if($doc)
+                                <p class="text-[12px] text-text-secondary mt-1 truncate max-w-md">{{ $doc->original_name }} · {{ number_format($doc->size / 1024, 0) }} KB</p>
+                            @else
+                                <p class="text-[12px] text-danger mt-1">Belum diupload</p>
                             @endif
                         </div>
-                        @if($doc)<p class="text-xs text-text-muted mt-0.5">{{ $doc->original_name }} · {{ number_format($doc->size / 1024, 0) }} KB</p>
-                        @else<p class="text-xs text-danger mt-0.5">Belum diupload</p>@endif
+                    </div>
+                    
+                    <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
+                        @if($doc)
+                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
+                            @if($canUpload)
+                                <form method="POST" action="{{ route('submissions.delete-document', [$submission, $doc]) }}" class="inline">
+                                    @csrf 
+                                    @method('DELETE')
+                                    <button type="submit" class="text-[12px] text-danger hover:text-danger/80 font-bold px-3 py-1.5 border border-danger/20 rounded-lg hover:bg-danger-bg transition-colors" onclick="return confirm('Hapus dokumen ini?')" aria-label="Hapus dokumen {{ $template->name }}">Hapus</button>
+                                </form>
+                            @endif
+                        @endif
+                        
+                        @if($canUpload && !$doc)
+                            <form method="POST" action="{{ route('submissions.upload-document', $submission) }}" enctype="multipart/form-data" class="w-full bg-soft-surface/50 p-4 rounded-xl border border-border mt-2">
+                                @csrf
+                                <input type="hidden" name="document_template_id" value="{{ $template->id }}">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                                    <div class="space-y-2">
+                                        <label class="block text-[12px] font-semibold text-text-secondary">Unggah Berkas PDF</label>
+                                        <input type="file" name="file" accept=".pdf" class="w-full text-[12px] text-text border border-border rounded-lg bg-white file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-[12px] file:font-semibold file:bg-slate-100 file:text-text-secondary hover:file:bg-slate-200 cursor-pointer" aria-label="Pilih file {{ $template->name }}">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-[12px] font-semibold text-text-secondary">Atau Link Google Drive</label>
+                                        <div class="flex gap-2">
+                                            <input type="url" name="hyperlink" placeholder="https://drive.google.com/..." class="input-field py-2">
+                                            <button type="submit" class="btn-primary text-xs shrink-0 py-2">Upload</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        @endif
                     </div>
                 </div>
-                
-                <div class="flex items-center gap-2 shrink-0 flex-wrap">
-                    @if($doc)
-                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="btn-outline text-xs px-3 py-1.5">Lihat</a>
-                        @if($canUpload)
-                        <form method="POST" action="{{ route('submissions.delete-document', [$submission, $doc]) }}" class="inline">@csrf @method('DELETE')
-                            <button type="submit" class="text-xs text-danger hover:text-danger/80 font-medium px-3 py-1.5 border border-danger/20 rounded-lg hover:bg-danger-bg transition-colors" onclick="return confirm('Hapus dokumen ini?')" aria-label="Hapus dokumen {{ $template->name }}">Hapus</button>
-                        </form>
-                        @endif
-                    @endif
-                    
-                    {{-- Form Upload yang Baru: Mengirimkan document_template_id --}}
-                    @if($canUpload && !$doc)
-                    <form method="POST" action="{{ route('submissions.upload-document', $submission) }}" enctype="multipart/form-data" class="flex items-center gap-2">@csrf
-                        <input type="hidden" name="document_template_id" value="{{ $template->id }}">
-                        <input type="file" name="file" accept=".pdf" required class="text-xs text-text-secondary file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-soft-surface file:text-primary hover:file:bg-info-soft" aria-label="Pilih file {{ $template->name }}">
-                        <button type="submit" class="btn-primary text-xs px-3 py-1.5">Upload</button>
-                    </form>
-                    @endif
-                </div>
-            </div>
             @endforeach
         </div>
     </div>
     @endif
 
+    {{-- KONTEN TAB 3: RIWAYAT --}}
     @if($tab === 'history')
-    <div class="card p-6">
-        <h3 class="text-base font-semibold text-text mb-4">Riwayat Status</h3>
+    <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
+        <h2 class="text-xl md:text-[24px] font-semibold text-text border-b border-border pb-2">Riwayat Status</h2>
         @if($submission->statusHistories->isEmpty())
-        <p class="text-sm text-text-secondary">Belum ada riwayat.</p>
+            <p class="text-[14px] text-text-secondary">Belum ada riwayat.</p>
         @else
-        <div class="relative">
-            <div class="absolute left-3 top-0 bottom-0 w-0.5 bg-border"></div>
-            @foreach($submission->statusHistories as $h)
-            <div class="relative flex gap-4 pb-6 last:pb-0">
-                <div class="relative z-10 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 {{ $loop->first ? 'bg-primary border-primary' : 'bg-surface border-border-strong' }}">
-                    @if($loop->first)<div class="w-2 h-2 rounded-full bg-white"></div>@endif
-                </div>
-                <div class="flex-1 pt-0.5">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        @if($h->from_status)<x-status-badge :status="$h->from_status" /><span class="text-text-muted">→</span>@endif
-                        <x-status-badge :status="$h->to_status" />
-                    </div>
-                    <p class="text-xs text-text-muted mt-1">{{ $h->created_at->format('d M Y, H:i') }} — oleh {{ optional($h->changer)->name ?? 'System' }}</p>
-                    @if($h->note)<p class="text-sm text-text-secondary mt-1 bg-soft-surface rounded-lg px-3 py-2">"{{ $h->note }}"</p>@endif
+            <div class="relative pl-6">
+                <div class="absolute left-3 top-0 bottom-0 w-0.5 bg-border"></div>
+                <div class="space-y-6">
+                    @foreach($submission->statusHistories as $h)
+                        <div class="relative flex gap-4">
+                            <div class="absolute -left-[23px] top-1.5 z-10 w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center shrink-0 {{ $loop->first ? 'bg-primary border-primary' : 'bg-white border-border-strong' }}">
+                                @if($loop->first)<div class="w-1.5 h-1.5 rounded-full bg-white"></div>@endif
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    @if($h->from_status)
+                                        <x-status-badge :status="$h->from_status" />
+                                        <span class="text-text-muted">→</span>
+                                    @endif
+                                    <x-status-badge :status="$h->to_status" />
+                                </div>
+                                <p class="text-[12px] text-text-secondary mt-1">
+                                    {{ $h->created_at->format('d M Y, H:i') }} — oleh <span class="font-semibold text-text">{{ optional($h->changer)->name ?? 'System' }}</span>
+                                </p>
+                                @if($h->note)
+                                    <div class="text-[14px] text-text-secondary mt-2 bg-slate-50 rounded-xl px-4 py-3 border border-border italic">
+                                        "{{ $h->note }}"
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
-            @endforeach
-        </div>
         @endif
     </div>
     @endif

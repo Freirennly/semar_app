@@ -95,7 +95,8 @@ class SubmissionController extends Controller
             'title'      => $request->title,
             'type'       => $request->type,
             'abstract'   => $request->abstract,
-            'status'     => SubmissionStatus::DRAFT, // Menggunakan Enum asli terstandar proyek KEP SEMAR
+            'status'     => SubmissionStatus::NEW_PROPOSAL, // Menggunakan Enum asli terstandar proyek KEP SEMAR
+            'submitted_at' => now(),
         ]);
 
         // 4. Proses Simpan File atau Link Secara Iteratif Berbasis ID Template
@@ -132,7 +133,18 @@ class SubmissionController extends Controller
             }
         }
 
-        return redirect()->route('submissions.index')->with('success', 'Proposal beserta seluruh berkas berhasil disimpan sebagai draf!');
+        // Notify admins about new proposal
+        $admins = \App\Models\User::role('admin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new \App\Notifications\SubmissionWorkflowNotification(
+                'Proposal Baru Diajukan',
+                "Mahasiswa {$submission->student->name} telah mengajukan proposal baru: \"{$submission->title}\".",
+                $submission->id,
+                route('admin.proposals.show', $submission)
+            ));
+        }
+
+        return redirect()->route('submissions.index')->with('success', 'Proposal beserta seluruh berkas berhasil diajukan!');
     }
 
     /**
@@ -178,20 +190,91 @@ class SubmissionController extends Controller
     public function edit(Submission $submission)
     {
         Gate::authorize('update', $submission);
-        return view('submissions.edit', compact('submission'));
+        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+        return view('submissions.edit', compact('submission', 'documentTemplates'));
     }
 
     public function update(Request $request, Submission $submission)
     {
         Gate::authorize('update', $submission);
 
-        $data = $request->validate([
+        $request->validate([
             'title' => 'required|string|max:500',
             'type' => 'required|string|max:100',
             'abstract' => 'nullable|string|max:5000',
+            'files.*' => 'nullable|file|mimes:pdf|max:10240',
+            'hyperlinks.*' => 'nullable|url',
         ]);
 
-        $submission->update($data);
+        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+
+        foreach ($documentTemplates as $template) {
+            $hasFile = $request->hasFile("files.{$template->id}");
+            $hasLink = $request->filled("hyperlinks.{$template->id}");
+            $hasExisting = $submission->documents()->where('document_template_id', $template->id)->exists();
+
+            if ($template->is_required && !$hasFile && !$hasLink && !$hasExisting) {
+                return back()->withErrors(["files.{$template->id}" => "Dokumen '{$template->name}' wajib diisi melalui File Upload atau Hyperlink GDrive."])->withInput();
+            }
+        }
+
+        $submission->update([
+            'title' => $request->title,
+            'type' => $request->type,
+            'abstract' => $request->abstract,
+        ]);
+
+        foreach ($documentTemplates as $template) {
+            $hasFile = $request->hasFile("files.{$template->id}");
+            $newLink = $request->input("hyperlinks.{$template->id}");
+            $oldDoc = $submission->documents()->where('document_template_id', $template->id)->first();
+
+            if ($hasFile) {
+                if ($oldDoc) {
+                    if ($oldDoc->type === 'file') {
+                        Storage::disk('public')->delete($oldDoc->file_path);
+                    }
+                    $oldDoc->delete();
+                }
+
+                $file = $request->file("files.{$template->id}");
+                $path = $file->store('submissions/' . $submission->id, 'public'); 
+
+                $submission->documents()->create([
+                    'document_template_id' => $template->id,
+                    'doc_type'             => str_contains(strtolower($template->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value,
+                    'file_path'            => $path,
+                    'original_name'        => $file->getClientOriginalName(),
+                    'mime'                 => $file->getClientMimeType(),
+                    'size'                 => $file->getSize(),
+                    'uploaded_by'          => auth()->id(),
+                    'type'                 => 'file'
+                ]);
+            } elseif ($newLink) {
+                if (!$oldDoc || $oldDoc->type !== 'link' || $oldDoc->file_path !== $newLink) {
+                    if ($oldDoc) {
+                        if ($oldDoc->type === 'file') {
+                            Storage::disk('public')->delete($oldDoc->file_path);
+                        }
+                        $oldDoc->delete();
+                    }
+
+                    $submission->documents()->create([
+                        'document_template_id' => $template->id,
+                        'doc_type'             => str_contains(strtolower($template->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value,
+                        'file_path'            => $newLink,
+                        'original_name'        => 'Link Google Drive',
+                        'mime'                 => 'text/url',
+                        'size'                 => 0,
+                        'uploaded_by'          => auth()->id(),
+                        'type'                 => 'link'
+                    ]);
+                }
+            } elseif ($oldDoc && $oldDoc->type === 'link' && $request->has("hyperlinks.{$template->id}") && !$newLink) {
+                $oldDoc->delete();
+            }
+        }
+
         return redirect()->route('submissions.show', $submission)
             ->with('success', 'Pengajuan berhasil diperbarui.');
     }
@@ -214,15 +297,15 @@ class SubmissionController extends Controller
             }
         }
 
-        if (! in_array($submission->status, [SubmissionStatus::DRAFT, SubmissionStatus::RESUBMISSION])) {
+        if ($submission->status !== SubmissionStatus::RESUBMISSION) {
             return back()->with('error', 'Pengajuan tidak dalam status yang bisa di-submit.');
         }
 
-        $this->workflow->transition($submission, SubmissionStatus::SUBMITTED, $user, 'Pengajuan disubmit oleh mahasiswa');
+        $this->workflow->transition($submission, SubmissionStatus::REVISED, $user, 'Revisi dikirim oleh mahasiswa');
         $submission->update(['submitted_at' => now()]);
 
         return redirect()->route('submissions.show', $submission)
-            ->with('success', 'Pengajuan berhasil disubmit!');
+            ->with('success', 'Revisi proposal berhasil dikirim!');
     }
 
     /**
@@ -232,7 +315,7 @@ class SubmissionController extends Controller
     {
         $user = $request->user();
         if ($submission->student_id !== $user->id) abort(403);
-        if (! in_array($submission->status, [SubmissionStatus::DRAFT, SubmissionStatus::RESUBMISSION])) {
+        if ($submission->status !== SubmissionStatus::RESUBMISSION) {
             return back()->with('error', 'Tidak bisa upload dokumen pada status ini.');
         }
 
@@ -241,21 +324,34 @@ class SubmissionController extends Controller
 
         $request->validate([
             'document_template_id' => 'required|in:' . $allowedIdsString,
-            'file' => 'required|file|mimes:pdf,docx,doc|max:10240',
+            'file' => 'nullable|file|mimes:pdf|max:10240',
+            'hyperlink' => 'nullable|url',
         ]);
 
-        $file = $request->file('file');
-        $path = $file->store('submissions/' . $submission->id, 'public');
+        $hasFile = $request->hasFile('file');
+        $hasLink = $request->filled('hyperlink');
+
+        if (!$hasFile && !$hasLink) {
+            return back()->withErrors(['file' => 'Pilih file PDF atau masukkan link Google Drive.']);
+        }
+
+        $oldDoc = $submission->documents()->where('document_template_id', $request->document_template_id)->first();
+        if ($oldDoc) {
+            if ($oldDoc->type === 'file') {
+                Storage::disk('public')->delete($oldDoc->file_path);
+            }
+            $oldDoc->delete();
+        }
 
         $currentTemplate = DocumentTemplate::find($request->document_template_id);
         $backupEnumStr = str_contains(strtolower($currentTemplate->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value;
 
-        SubmissionDocument::updateOrCreate(
-            [
-                'submission_id' => $submission->id, 
-                'document_template_id' => $request->document_template_id
-            ],
-            [
+        if ($hasFile) {
+            $file = $request->file('file');
+            $path = $file->store('submissions/' . $submission->id, 'public');
+
+            $submission->documents()->create([
+                'document_template_id' => $request->document_template_id,
                 'doc_type' => $backupEnumStr,
                 'file_path' => $path,
                 'original_name' => $file->getClientOriginalName(),
@@ -263,8 +359,19 @@ class SubmissionController extends Controller
                 'size' => $file->getSize(),
                 'uploaded_by' => $user->id,
                 'type' => 'file'
-            ]
-        );
+            ]);
+        } else {
+            $submission->documents()->create([
+                'document_template_id' => $request->document_template_id,
+                'doc_type' => $backupEnumStr,
+                'file_path' => $request->hyperlink,
+                'original_name' => 'Link Google Drive',
+                'mime' => 'text/url',
+                'size' => 0,
+                'uploaded_by' => $user->id,
+                'type' => 'link'
+            ]);
+        }
 
         return back()->with('success', 'Dokumen berkas berhasil diupload.');
     }
@@ -273,7 +380,7 @@ class SubmissionController extends Controller
     {
         $user = $request->user();
         if ($submission->student_id !== $user->id) abort(403);
-        if (! in_array($submission->status, [SubmissionStatus::DRAFT, SubmissionStatus::RESUBMISSION])) {
+        if ($submission->status !== SubmissionStatus::RESUBMISSION) {
             return back()->with('error', 'Tidak bisa menghapus dokumen pada status ini.');
         }
 
@@ -288,11 +395,11 @@ class SubmissionController extends Controller
         $user = $request->user();
         if ($submission->student_id !== $user->id) abort(403);
 
-        if ($submission->status !== SubmissionStatus::KIRIM_USER) {
+        if ($submission->status !== SubmissionStatus::APPROVED) {
             return back()->with('error', 'Status pengajuan tidak valid untuk konfirmasi saat ini.');
         }
 
-        $this->workflow->transition($submission, SubmissionStatus::WAITING_TTD, $user, 'Peneliti telah mengonfirmasi draf sertifikat EC.');
+        $this->workflow->transition($submission, SubmissionStatus::WAITING_SIGNATURE, $user, 'Peneliti telah mengonfirmasi draf sertifikat EC.');
 
         return back()->with('success', 'Draf sertifikat berhasil dikonfirmasi. Saat ini menunggu tanda tangan dari Ketua KEP.');
     }
@@ -305,7 +412,7 @@ class SubmissionController extends Controller
             abort(403);
         }
 
-        if ($submission->status !== SubmissionStatus::PUBLISHED) {
+        if ($submission->status !== SubmissionStatus::DONE) {
             return back()->with('error', 'Sertifikat Laik Etik belum diterbitkan.');
         }
 

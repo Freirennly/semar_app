@@ -32,14 +32,11 @@ class AdminDashboardController extends Controller
             'total_users' => User::count(),
             'total_submissions' => Submission::count(),
             'active_submissions' => Submission::whereNotIn('status', [
-                SubmissionStatus::DRAFT, 
-                SubmissionStatus::APPROVED, 
-                SubmissionStatus::DISAPPROVED, 
-                SubmissionStatus::ARCHIVED,
-                SubmissionStatus::PUBLISHED
+                SubmissionStatus::REJECTED,
+                SubmissionStatus::DONE
             ])->count(),
-            'approved' => Submission::where('status', SubmissionStatus::APPROVED)->count(),
-            'disapproved' => Submission::where('status', SubmissionStatus::DISAPPROVED)->count(),
+            'approved' => Submission::whereIn('status', [SubmissionStatus::APPROVED, SubmissionStatus::DONE])->count(),
+            'disapproved' => Submission::where('status', SubmissionStatus::REJECTED)->count(),
             'resubmission' => Submission::where('status', SubmissionStatus::RESUBMISSION)->count(),
             'total_reviewers' => User::role('reviewer')->count(),
             'total_secretariat' => User::role('sekretariat')->count(),

@@ -14,10 +14,27 @@ class LandingController extends Controller
     public function index()
     {
         // 1. Total jumlah proposal/protokol penelitian
-        $totalProtokol = Submission::count();
+        $totalProtokol = 0;
+        try {
+            $totalProtokol = Submission::count();
+        } catch (\Throwable $e) {
+            $totalProtokol = 0;
+        }
 
         // 2. Total reviewer aktif/tervalidasi
-        $totalReviewer = User::role('reviewer')->count();
+        $totalReviewer = 0;
+        try {
+            if (class_exists(\Spatie\Permission\Models\Role::class)) {
+                $roleExists = \Spatie\Permission\Models\Role::where('name', 'reviewer')
+                    ->where('guard_name', 'web')
+                    ->exists();
+                if ($roleExists) {
+                    $totalReviewer = User::role('reviewer')->count();
+                }
+            }
+        } catch (\Throwable $e) {
+            $totalReviewer = 0;
+        }
 
         // 3. Hari kerja rata-rata (statis)
         $avgWorkDays = 14;

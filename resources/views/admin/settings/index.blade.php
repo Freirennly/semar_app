@@ -4,12 +4,7 @@
         <p class="text-sm text-text-secondary mt-1">Konfigurasi parameter global dan preferensi aplikasi SEMAR.</p>
     </div>
 
-    @if(session('success'))
-        <div class="mb-6 bg-success-bg border border-success/20 text-success rounded-xl px-4 py-3 text-sm flex items-center gap-2 max-w-4xl">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            {{ session('success') }}
-        </div>
-    @endif
+
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Configuration Form -->

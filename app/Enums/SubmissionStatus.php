@@ -4,65 +4,62 @@ namespace App\Enums;
 
 enum SubmissionStatus: string
 {
-    case DRAFT = 'DRAFT';
-    case SUBMITTED = 'SUBMITTED';
-    case DOC_CHECK = 'DOC_CHECK';
-    case ASSIGNED = 'ASSIGNED';
-    case UNDER_REVIEW = 'UNDER_REVIEW';
-    case PENDING_DECISION = 'PENDING_DECISION';
+    case NEW_PROPOSAL = 'NEW_PROPOSAL';
+    case PROCESS = 'PROCESS';
+    case ON_REVIEW = 'ON_REVIEW';
     case APPROVED = 'APPROVED';
+    case APPROVED_WITH_REVISION = 'APPROVED_WITH_REVISION';
     case RESUBMISSION = 'RESUBMISSION';
-    case DISAPPROVED = 'DISAPPROVED';
-    case ARCHIVED = 'ARCHIVED';
-    case KIRIM_USER = 'KIRIM_USER';
-    case WAITING_TTD = 'WAITING_TTD';
-    case PUBLISHED = 'PUBLISHED';
+    case REVISED = 'REVISED';
+    case REJECTED = 'REJECTED';
+    case WAITING_SIGNATURE = 'WAITING_SIGNATURE';
+    case DONE = 'DONE';
 
     public function label(): string
     {
         return match ($this) {
-            self::DRAFT => 'Draft',
-            self::SUBMITTED => 'Diajukan',
-            self::DOC_CHECK => 'Pemeriksaan Dokumen',
-            self::ASSIGNED => 'Reviewer Ditugaskan',
-            self::UNDER_REVIEW => 'Sedang Direview',
-            self::PENDING_DECISION => 'Menunggu Keputusan',
+            self::NEW_PROPOSAL => 'Proposal Baru',
+            self::PROCESS => 'Diproses Sekretariat',
+            self::ON_REVIEW => 'Sedang Direview',
             self::APPROVED => 'Disetujui',
+            self::APPROVED_WITH_REVISION => 'Disetujui dengan Revisi',
             self::RESUBMISSION => 'Perlu Revisi',
-            self::DISAPPROVED => 'Ditolak',
-            self::ARCHIVED => 'Diarsipkan',
+            self::REVISED => 'Revisi Dikirim',
+            self::REJECTED => 'Ditolak',
+            self::WAITING_SIGNATURE => 'Menunggu Tanda Tangan',
+            self::DONE => 'Selesai',
         };
     }
 
     public function badgeClass(): string
     {
         return match ($this) {
-            self::DRAFT => 'bg-slate-100 text-slate-600',
-            self::SUBMITTED => 'bg-blue-50 text-blue-700',
-            self::DOC_CHECK => 'bg-sky-50 text-sky-700',
-            self::ASSIGNED => 'bg-indigo-50 text-indigo-700',
-            self::UNDER_REVIEW => 'bg-violet-50 text-violet-700',
-            self::PENDING_DECISION => 'bg-amber-50 text-amber-700',
+            self::NEW_PROPOSAL => 'bg-blue-50 text-blue-700',
+            self::PROCESS => 'bg-cyan-50 text-cyan-700',
+            self::ON_REVIEW => 'bg-violet-50 text-violet-700',
             self::APPROVED => 'bg-emerald-50 text-emerald-700',
+            self::APPROVED_WITH_REVISION => 'bg-amber-50 text-amber-700',
             self::RESUBMISSION => 'bg-orange-50 text-orange-700',
-            self::DISAPPROVED => 'bg-red-50 text-red-700',
-            self::ARCHIVED => 'bg-slate-100 text-slate-500',
+            self::REVISED => 'bg-teal-50 text-teal-700',
+            self::REJECTED => 'bg-red-50 text-red-700',
+            self::WAITING_SIGNATURE => 'bg-rose-50 text-rose-700',
+            self::DONE => 'bg-emerald-100 text-emerald-800',
         };
     }
 
     public function borderColor(): string
     {
         return match ($this) {
-            self::DRAFT => 'border-l-slate-400',
-            self::SUBMITTED => 'border-l-blue-500',
-            self::DOC_CHECK => 'border-l-sky-500',
-            self::ASSIGNED => 'border-l-indigo-500',
-            self::UNDER_REVIEW => 'border-l-violet-500',
-            self::PENDING_DECISION => 'border-l-amber-500',
+            self::NEW_PROPOSAL => 'border-l-blue-500',
+            self::PROCESS => 'border-l-cyan-500',
+            self::ON_REVIEW => 'border-l-violet-500',
             self::APPROVED => 'border-l-emerald-500',
+            self::APPROVED_WITH_REVISION => 'border-l-amber-500',
             self::RESUBMISSION => 'border-l-orange-500',
-            self::DISAPPROVED => 'border-l-red-500',
-            self::ARCHIVED => 'border-l-slate-400',
+            self::REVISED => 'border-l-teal-500',
+            self::REJECTED => 'border-l-red-500',
+            self::WAITING_SIGNATURE => 'border-l-rose-500',
+            self::DONE => 'border-l-emerald-600',
         };
     }
 }

@@ -49,6 +49,11 @@ class Submission extends Model
         return $this->belongsTo(User::class, 'student_id');
     }
 
+    public function secretary(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'secretary_id');
+    }
+
     public function documents(): HasMany
     {
         return $this->hasMany(SubmissionDocument::class);
@@ -72,6 +77,11 @@ class Submission extends Model
     public function statusHistories(): HasMany
     {
         return $this->hasMany(StatusHistory::class)->orderByDesc('created_at');
+    }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class)->orderByDesc('created_at');
     }
 
     public function latestDecision()
@@ -125,6 +135,6 @@ class Submission extends Model
 
     public function isEcPublished(): bool
     {
-        return $this->status === SubmissionStatus::PUBLISHED;
+        return $this->status === SubmissionStatus::DONE;
     }
 }

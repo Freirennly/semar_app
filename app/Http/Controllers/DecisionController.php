@@ -15,7 +15,7 @@ class DecisionController extends Controller
 
     public function index()
     {
-        $submissions = Submission::where('status', SubmissionStatus::PENDING_DECISION)
+        $submissions = Submission::where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'reviews.reviewer', 'assignments.reviewer')
             ->latest()
             ->get();
@@ -34,7 +34,7 @@ class DecisionController extends Controller
         $user = $request->user();
 
         $data = $request->validate([
-            'decision' => 'required|in:APPROVED,RESUBMISSION,DISAPPROVED',
+            'decision' => 'required|in:APPROVED,APPROVED_WITH_REVISION,REJECTED',
             'notes' => 'nullable|string|max:5000',
         ]);
 
@@ -48,8 +48,8 @@ class DecisionController extends Controller
 
         $newStatus = match ($data['decision']) {
             'APPROVED' => SubmissionStatus::APPROVED,
-            'RESUBMISSION' => SubmissionStatus::RESUBMISSION,
-            'DISAPPROVED' => SubmissionStatus::DISAPPROVED,
+            'APPROVED_WITH_REVISION' => SubmissionStatus::APPROVED_WITH_REVISION,
+            'REJECTED' => SubmissionStatus::REJECTED,
         };
 
         $this->workflow->transition($submission, $newStatus, $user, $data['notes']);

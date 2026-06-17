@@ -34,10 +34,20 @@ class DashboardController extends Controller
         $submissions = $user->submissions()->latest()->get();
         $metrics = [
             ['label' => 'Total Pengajuan', 'value' => $submissions->count(), 'color' => 'blue'],
-            ['label' => 'Draft', 'value' => $submissions->where('status', SubmissionStatus::DRAFT)->count(), 'color' => 'slate'],
-            ['label' => 'Sedang Diproses', 'value' => $submissions->whereIn('status', [SubmissionStatus::SUBMITTED, SubmissionStatus::DOC_CHECK, SubmissionStatus::ASSIGNED, SubmissionStatus::UNDER_REVIEW, SubmissionStatus::PENDING_DECISION])->count(), 'color' => 'violet'],
+            ['label' => 'Proposal Baru', 'value' => $submissions->where('status', SubmissionStatus::NEW_PROPOSAL)->count(), 'color' => 'slate'],
+            ['label' => 'Sedang Diproses', 'value' => $submissions->whereIn('status', [
+                SubmissionStatus::PROCESS,
+                SubmissionStatus::ON_REVIEW,
+                SubmissionStatus::REVISED,
+                SubmissionStatus::WAITING_SIGNATURE
+            ])->count(), 'color' => 'violet'],
             ['label' => 'Perlu Revisi', 'value' => $submissions->where('status', SubmissionStatus::RESUBMISSION)->count(), 'color' => 'amber'],
-            ['label' => 'Selesai', 'value' => $submissions->whereIn('status', [SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED, SubmissionStatus::ARCHIVED])->count(), 'color' => 'emerald'],
+            ['label' => 'Selesai', 'value' => $submissions->whereIn('status', [
+                SubmissionStatus::APPROVED,
+                SubmissionStatus::APPROVED_WITH_REVISION,
+                SubmissionStatus::REJECTED,
+                SubmissionStatus::DONE
+            ])->count(), 'color' => 'emerald'],
         ];
         return view('dashboard.student', compact('submissions', 'metrics'));
     }
@@ -56,27 +66,31 @@ class DashboardController extends Controller
 
     private function ketua()
     {
-        $needAssign = Submission::whereIn('status', [SubmissionStatus::DOC_CHECK, SubmissionStatus::SUBMITTED])
+        $needAssign = Submission::where('status', SubmissionStatus::PROCESS)
             ->whereDoesntHave('assignments')->with('student')->latest()->get();
-        $assigned = Submission::where('status', SubmissionStatus::ASSIGNED)->with('student', 'assignments.reviewer')->latest()->get();
+        $assigned = Submission::where('status', SubmissionStatus::ON_REVIEW)
+            ->with('student', 'assignments.reviewer')->latest()->get();
         $metrics = [
             ['label' => 'Perlu Assign Reviewer', 'value' => $needAssign->count(), 'color' => 'amber'],
             ['label' => 'Sudah Di-assign', 'value' => $assigned->count(), 'color' => 'blue'],
-            ['label' => 'Total Pengajuan Aktif', 'value' => Submission::whereNotIn('status', [SubmissionStatus::DRAFT, SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED, SubmissionStatus::ARCHIVED])->count(), 'color' => 'violet'],
+            ['label' => 'Total Pengajuan Aktif', 'value' => Submission::whereNotIn('status', [SubmissionStatus::REJECTED, SubmissionStatus::DONE])->count(), 'color' => 'violet'],
         ];
         return view('dashboard.ketua', compact('needAssign', 'assigned', 'metrics'));
     }
 
     private function sekretariat()
     {
-        $submitted = Submission::where('status', SubmissionStatus::SUBMITTED)->with('student')->latest()->get();
-        $pendingDecision = Submission::where('status', SubmissionStatus::PENDING_DECISION)
+        $submitted = Submission::whereIn('status', [
+            SubmissionStatus::NEW_PROPOSAL,
+            SubmissionStatus::REVISED
+        ])->with('student')->latest()->get();
+        $pendingDecision = Submission::where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'reviews.reviewer', 'assignments.reviewer')->latest()->get();
         $metrics = [
             ['label' => 'Perlu Cek Dokumen', 'value' => $submitted->count(), 'color' => 'amber'],
             ['label' => 'Menunggu Keputusan', 'value' => $pendingDecision->count(), 'color' => 'violet'],
             ['label' => 'Total Disetujui', 'value' => Submission::where('status', SubmissionStatus::APPROVED)->count(), 'color' => 'emerald'],
-            ['label' => 'Total Ditolak', 'value' => Submission::where('status', SubmissionStatus::DISAPPROVED)->count(), 'color' => 'red'],
+            ['label' => 'Total Ditolak', 'value' => Submission::where('status', SubmissionStatus::REJECTED)->count(), 'color' => 'red'],
         ];
         return view('dashboard.sekretariat', compact('submitted', 'pendingDecision', 'metrics'));
     }
