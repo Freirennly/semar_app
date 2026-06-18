@@ -65,14 +65,14 @@
             <h3 class="text-sm font-bold" style="color:#0F0E2E">Dokumen yang Diupload</h3>
 
             @php
-                $allDocs     = \App\Enums\DocType::cases();
+                $documentTemplates = \App\Models\DocumentTemplate::visible()->get();
                 $uploadedCnt = 0;
-                foreach ($allDocs as $dt) {
-                    if ($submission->documents->firstWhere('doc_type', $dt)) {
+                foreach ($documentTemplates as $template) {
+                    if ($submission->documents->firstWhere('document_template_id', $template->id)) {
                         $uploadedCnt++;
                     }
                 }
-                $totalCnt    = count($allDocs);
+                $totalCnt    = count($documentTemplates);
                 $allComplete = $uploadedCnt >= $totalCnt;
             @endphp
             <span class="ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full"
@@ -84,8 +84,8 @@
 
         {{-- Document rows --}}
         <div class="divide-y" style="border-color:rgba(70,62,227,0.05);">
-            @foreach(\App\Enums\DocType::cases() as $dtype)
-                @php $doc = $submission->documents->firstWhere('doc_type', $dtype); @endphp
+            @foreach($documentTemplates as $template)
+                @php $doc = $submission->documents->firstWhere('document_template_id', $template->id); @endphp
                 <div class="flex items-center justify-between px-5 py-4 transition-colors duration-150"
                      onmouseover="this.style.background='rgba(70,62,227,0.02)'"
                      onmouseout="this.style.background='transparent'">
@@ -95,14 +95,15 @@
                         @if($doc)
                         <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                              style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.2);">
-                            <svg class="w-4 h-4" fill="none" stroke="#15803d" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
+                             <svg class="w-4 h-4" fill="none" stroke="#15803d" stroke-width="2.5" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                             </svg>
                         </div>
                         @else
                         <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                             style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.18);">
-                            <svg class="w-4 h-4" fill="none" stroke="#b91c1c" stroke-width="2" viewBox="0 0 24 24">
+                             style="background:{{ $template->is_required ? 'rgba(239,68,68,0.08)' : 'rgba(142,140,173,0.08)' }};
+                                    border:1px solid {{ $template->is_required ? 'rgba(239,68,68,0.18)' : 'rgba(142,140,173,0.18)' }};">
+                            <svg class="w-4 h-4" fill="none" stroke="{{ $template->is_required ? '#b91c1c' : '#5A587A' }}" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                             </svg>
                         </div>
@@ -110,27 +111,48 @@
 
                         {{-- Label & file name --}}
                         <div class="min-w-0">
-                            <p class="text-sm font-semibold" style="color:#0F0E2E">{{ $dtype->label() }}</p>
+                            <p class="text-sm font-semibold" style="color:#0F0E2E">
+                                {{ $template->name }}
+                                @if($template->is_required)
+                                    <span class="text-red-500 font-bold" title="Wajib">*</span>
+                                @endif
+                            </p>
                             @if($doc)
                                 <p class="text-xs font-light truncate mt-0.5" style="color:#8E8CAD">{{ $doc->original_name }}</p>
                             @else
-                                <p class="text-xs font-semibold mt-0.5" style="color:#b91c1c">Belum diupload</p>
+                                <p class="text-xs font-semibold mt-0.5" style="color:{{ $template->is_required ? '#b91c1c' : '#5A587A' }}">
+                                    {{ $template->is_required ? 'Belum diupload' : 'Opsional' }}
+                                </p>
                             @endif
                         </div>
                     </div>
 
                     @if($doc)
-                    <a href="{{ Storage::url($doc->file_path) }}" target="_blank"
-                       class="text-xs font-bold px-3.5 py-1.5 rounded-lg border flex-shrink-0 ml-4 inline-flex items-center gap-1.5 transition-all duration-150"
-                       style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white;
-                              box-shadow:0 1px 4px rgba(70,62,227,0.08);"
-                       onmouseover="this.style.background='#463EE3'; this.style.color='white'; this.style.borderColor='#463EE3'; this.style.boxShadow='0 3px 10px rgba(70,62,227,0.25)'"
-                       onmouseout="this.style.background='white'; this.style.color='#463EE3'; this.style.borderColor='rgba(70,62,227,0.22)'; this.style.boxShadow='0 1px 4px rgba(70,62,227,0.08)'">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                        </svg>
-                        Lihat
-                    </a>
+                        @if($doc->type === 'file')
+                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank"
+                           class="text-xs font-bold px-3.5 py-1.5 rounded-lg border flex-shrink-0 ml-4 inline-flex items-center gap-1.5 transition-all duration-150"
+                           style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white;
+                                  box-shadow:0 1px 4px rgba(70,62,227,0.08);"
+                           onmouseover="this.style.background='#463EE3'; this.style.color='white'; this.style.borderColor='#463EE3'; this.style.boxShadow='0 3px 10px rgba(70,62,227,0.25)'"
+                           onmouseout="this.style.background='white'; this.style.color='#463EE3'; this.style.borderColor='rgba(70,62,227,0.22)'; this.style.boxShadow='0 1px 4px rgba(70,62,227,0.08)'">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                            Lihat
+                        </a>
+                        @else
+                        <a href="{{ $doc->file_path }}" target="_blank"
+                           class="text-xs font-bold px-3.5 py-1.5 rounded-lg border flex-shrink-0 ml-4 inline-flex items-center gap-1.5 transition-all duration-150"
+                           style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white;
+                                  box-shadow:0 1px 4px rgba(70,62,227,0.08);"
+                           onmouseover="this.style.background='#463EE3'; this.style.color='white'; this.style.borderColor='#463EE3'; this.style.boxShadow='0 3px 10px rgba(70,62,227,0.25)'"
+                           onmouseout="this.style.background='white'; this.style.color='#463EE3'; this.style.borderColor='rgba(70,62,227,0.22)'; this.style.boxShadow='0 1px 4px rgba(70,62,227,0.08)'">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                            Buka Link
+                        </a>
+                        @endif
                     @else
                     <span class="text-[10px] font-bold px-3 py-1.5 rounded-lg flex-shrink-0 ml-4"
                           style="background:rgba(239,68,68,0.08); color:#b91c1c; border:1px solid rgba(239,68,68,0.15);">
@@ -179,9 +201,8 @@
 
             {{-- Progress bar --}}
             <div class="px-5 pb-4">
-                <div class="w-full h-1.5 rounded-full overflow-hidden" style="background:rgba(0,0,0,0.06);">
-                    <div class="h-full rounded-full transition-all duration-500"
-                         style="width:{{ min(100, round($submission->getDocumentCount() / $submission->getRequiredDocumentCount() * 100)) }}%;
+                <div class="h-full rounded-full transition-all duration-500"
+                        style="width:{{ $progress }}%;
                                 background:{{ $submission->hasAllDocuments() ? '#22C55E' : '#F59E0B' }};">
                     </div>
                 </div>

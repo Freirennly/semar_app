@@ -12,13 +12,15 @@ class Submission extends Model
 {
     protected $fillable = [
         'code', 'title', 'type', 'status', 'student_id',
-        'abstract', 'submitted_at', 'decided_at', 'secretary_id'
+        'abstract', 'submitted_at', 'decided_at', 'secretary_id',
+        'ec_number', 'signatory_id', 'confirmed_title', 'confirmed_researcher_name', 'signed_at', 'ec_certificate_path', 'verification_token'
     ];
 
     protected $casts = [
         'status' => SubmissionStatus::class,
         'submitted_at' => 'datetime',
         'decided_at' => 'datetime',
+        'signed_at' => 'datetime',
     ];
 
     /**
@@ -52,6 +54,11 @@ class Submission extends Model
     public function secretary(): BelongsTo
     {
         return $this->belongsTo(User::class, 'secretary_id');
+    }
+
+    public function signatory(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'signatory_id');
     }
 
     public function documents(): HasMany
@@ -94,7 +101,7 @@ class Submission extends Model
      */
     public function hasAllDocuments(): bool
     {
-        $requiredTemplateIds = DocumentTemplate::where('is_shown', true)
+        $requiredTemplateIds = DocumentTemplate::visible()
             ->where('is_required', true)
             ->pluck('id');
 
@@ -113,7 +120,7 @@ class Submission extends Model
      */
     public function getRequiredDocumentCount(): int
     {
-        return DocumentTemplate::where('is_shown', true)->where('is_required', true)->count();
+        return DocumentTemplate::visible()->where('is_required', true)->count();
     }
 
     public function completedReviewsCount(): int

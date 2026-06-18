@@ -13,8 +13,12 @@ class DecisionController extends Controller
 {
     public function __construct(private WorkflowService $workflow) {}
 
-    public function index()
+    public function index(Request $request)
     {
+        if (! $request->user()->hasRole('sekretariat')) {
+            abort(403, 'Hanya Sekretariat yang dapat mengelola keputusan.');
+        }
+
         $submissions = Submission::where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'reviews.reviewer', 'assignments.reviewer')
             ->latest()
@@ -23,14 +27,22 @@ class DecisionController extends Controller
         return view('decisions.index', compact('submissions'));
     }
 
-    public function show(Submission $submission)
+    public function show(Request $request, Submission $submission)
     {
+        if (! $request->user()->hasRole('sekretariat')) {
+            abort(403, 'Hanya Sekretariat yang dapat mengelola keputusan.');
+        }
+
         $submission->load(['student', 'documents', 'reviews.reviewer', 'assignments.reviewer', 'statusHistories.changer', 'decisions.decider']);
         return view('decisions.show', compact('submission'));
     }
 
     public function store(Request $request, Submission $submission)
     {
+        if (! $request->user()->hasRole('sekretariat')) {
+            abort(403, 'Hanya Sekretariat yang dapat mengelola keputusan.');
+        }
+
         $user = $request->user();
 
         $data = $request->validate([

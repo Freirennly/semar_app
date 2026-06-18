@@ -31,6 +31,7 @@ use App\Http\Controllers\LandingController;
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 Route::view('/tentang', 'about')->name('about');
 Route::view('/sop', 'sop')->name('sop');
+Route::get('verify/ec/{token}', [\App\Http\Controllers\VerificationController::class, 'show'])->name('verification.verify')->middleware('throttle:verification');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
@@ -65,12 +66,11 @@ Route::middleware('auth')->group(function () {
     });
     // Submission show — accessible by all authenticated roles (auth checked in controller/policy)
     Route::get('submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
+    Route::get('submissions/{submission}/certificate', [SubmissionController::class, 'downloadCertificate'])->name('submissions.certificate')->middleware('throttle:downloads');
 
-    // Ketua: assignments
+    // Ketua: signing only
     Route::middleware('role:ketua')->group(function () {
-        Route::get('assignments', [AssignmentController::class, 'index'])->name('assignments.index');
-        Route::post('assignments/{submission}', [AssignmentController::class, 'store'])->name('assignments.store');
-        Route::delete('assignments/{assignment}', [AssignmentController::class, 'destroy'])->name('assignments.destroy');
+        Route::post('submissions/{submission}/sign', [SubmissionController::class, 'sign'])->name('submissions.sign');
     });
 
     // Reviewer: reviews
@@ -80,8 +80,12 @@ Route::middleware('auth')->group(function () {
         Route::post('reviews/{submission}', [ReviewController::class, 'store'])->name('reviews.store');
     });
 
-    // Sekretariat: doc check + decisions
+    // Sekretariat: doc check + decisions + assignments
     Route::middleware('role:sekretariat')->group(function () {
+        Route::get('assignments', [AssignmentController::class, 'index'])->name('assignments.index');
+        Route::post('assignments/{submission}', [AssignmentController::class, 'store'])->name('assignments.store');
+        Route::delete('assignments/{assignment}', [AssignmentController::class, 'destroy'])->name('assignments.destroy');
+
         Route::get('doccheck', [DocCheckController::class, 'index'])->name('doccheck.index');
         Route::get('doccheck/{submission}', [DocCheckController::class, 'show'])->name('doccheck.show');
         Route::post('doccheck/{submission}/approve', [DocCheckController::class, 'approve'])->name('doccheck.approve');
@@ -107,6 +111,7 @@ Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(functi
 
         // Rute Khusus Unduh Berkas Proposal Admin (Dikunci di atas resource proposals)
         Route::get('proposals/{proposal}/download', [\App\Http\Controllers\Admin\ProposalController::class, 'downloadProposal'])->name('proposals.download');
+        Route::post('proposals/{proposal}/draft', [\App\Http\Controllers\Admin\ProposalController::class, 'storeDraft'])->name('proposals.store-draft');
 
         // Admin Modules Resource
         Route::resource('proposals', \App\Http\Controllers\Admin\ProposalController::class)->except(['create', 'store']);
@@ -114,8 +119,12 @@ Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(functi
         Route::resource('secretariat', \App\Http\Controllers\Admin\SecretariatController::class)->except(['show']);
         Route::resource('announcements', \App\Http\Controllers\Admin\AnnouncementController::class)->except(['show']);
         
-        // Fitur Admin Template
-        Route::resource('templates', \App\Http\Controllers\Admin\TemplateController::class)->except(['create', 'show', 'edit']);
+        // Fitur Admin Template Dokumen
+        Route::resource('templates', \App\Http\Controllers\Admin\DocumentTemplateController::class)->except(['show', 'destroy']);
+        Route::post('templates/{template}/toggle-required', [\App\Http\Controllers\Admin\DocumentTemplateController::class, 'toggleRequired'])->name('templates.toggle-required');
+        Route::post('templates/{template}/toggle-shown', [\App\Http\Controllers\Admin\DocumentTemplateController::class, 'toggleShown'])->name('templates.toggle-shown');
+        Route::post('templates/{template}/archive', [\App\Http\Controllers\Admin\DocumentTemplateController::class, 'archive'])->name('templates.archive');
+        Route::post('templates/{template}/restore', [\App\Http\Controllers\Admin\DocumentTemplateController::class, 'restore'])->name('templates.restore');
         
         // Fitur Admin Tambahan
         Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');

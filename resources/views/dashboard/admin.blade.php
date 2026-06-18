@@ -5,8 +5,8 @@
         <p class="text-sm text-text-secondary mt-1.5">Sistem Manajemen Pengajuan & Validasi Penelitian SEMAR.</p>
     </div>
 
-    {{-- Stat Cards Grid (4 Cards Only, flat, border-based) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    {{-- Stat Cards Grid (6 Cards, flat, border-based) --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-6">
         {{-- Card 1: Total Pengajuan --}}
         <div class="bg-white border border-border p-6 rounded-xl flex items-center justify-between">
             <div>
@@ -67,7 +67,163 @@
                 </svg>
             </div>
         </div>
+
+        {{-- Card 5: Sertifikat Hilang --}}
+        <div class="bg-white border border-border p-6 rounded-xl flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Sertifikat Hilang</p>
+                <p class="text-[32px] font-bold text-danger mt-2 leading-none">{{ number_format($missingCertificatesCount) }}</p>
+            </div>
+            <div class="p-3 bg-red-50 text-danger rounded-lg">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+        </div>
+
+        {{-- Card 6: Backup Terakhir --}}
+        <div class="bg-white border border-border p-6 rounded-xl flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Backup Terakhir</p>
+                <p class="text-[12px] font-bold text-text mt-3 leading-none truncate max-w-[120px]" title="{{ $lastBackupTime }}">{{ $lastBackupTime }}</p>
+            </div>
+            <div class="p-3 bg-soft-surface text-primary rounded-lg">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                </svg>
+            </div>
+        </div>
     </div>
+
+    {{-- Document Integrity & Template Health --}}
+    @if(isset($templateMetrics) && isset($integrityMetrics))
+    <div class="bg-white border border-border rounded-xl p-6 mb-6">
+        <div class="border-b border-border pb-3 mb-5 flex items-center justify-between">
+            <div>
+                <h2 class="text-sm font-bold text-text uppercase tracking-wider">Integritas & Kesehatan Dokumen</h2>
+                <p class="text-xs text-text-secondary mt-0.5">Status template dan integritas data dokumen pengajuan.</p>
+            </div>
+            <a href="{{ route('admin.templates.index') }}" class="text-xs font-bold text-primary hover:underline">
+                Kelola Template →
+            </a>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Total</p>
+                <p class="text-[22px] font-bold text-text mt-1 leading-none">{{ $templateMetrics['total'] }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Aktif</p>
+                <p class="text-[22px] font-bold mt-1 leading-none" style="color:#15803d">{{ $templateMetrics['active'] }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Sembunyikan</p>
+                <p class="text-[22px] font-bold mt-1 leading-none" style="color:#8E8CAD">{{ $templateMetrics['hidden'] }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Arsip</p>
+                <p class="text-[22px] font-bold mt-1 leading-none" style="color:#b91c1c">{{ $templateMetrics['archived'] }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Dok. Hilang</p>
+                <p class="text-[22px] font-bold mt-1 leading-none {{ $integrityMetrics['missing_required'] > 0 ? 'text-danger' : 'text-text' }}">{{ $integrityMetrics['missing_required'] }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider">File Rusak</p>
+                <p class="text-[22px] font-bold mt-1 leading-none {{ $integrityMetrics['broken_files'] > 0 ? 'text-danger' : 'text-text' }}">{{ $integrityMetrics['broken_files'] }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Link Invalid</p>
+                <p class="text-[22px] font-bold mt-1 leading-none {{ $integrityMetrics['invalid_links'] > 0 ? 'text-warning' : 'text-text' }}">{{ $integrityMetrics['invalid_links'] }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-text-muted uppercase tracking-wider">Orphan</p>
+                <p class="text-[22px] font-bold mt-1 leading-none {{ $integrityMetrics['orphan_records'] > 0 ? 'text-danger' : 'text-text' }}">{{ $integrityMetrics['orphan_records'] }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Queue: Draft EC Required --}}
+    @if(isset($draftEcRequired) && $draftEcRequired->isNotEmpty())
+        <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden mb-6 animate-fade-in">
+            <div class="px-6 py-4 border-b border-border bg-slate-50/70">
+                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-primary">Draf Sertifikat Diperlukan (Draft EC Required)</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/30">
+                            <th class="px-6 py-4 font-semibold">Kode</th>
+                            <th class="px-6 py-4 font-semibold">Judul</th>
+                            <th class="px-6 py-4 font-semibold">Peneliti</th>
+                            <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                        @foreach($draftEcRequired as $sub)
+                            <tr class="hover:bg-soft-surface/25 transition-colors">
+                                <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-text line-clamp-1" title="{{ $sub->title }}">
+                                        {{ \Illuminate\Support\Str::title($sub->title) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-text-secondary truncate max-w-[140px]">{{ optional($sub->student)->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <a href="{{ route('admin.proposals.show', $sub) }}" class="inline-flex items-center justify-center bg-primary hover:bg-primary-hover text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all">
+                                        Buat Draft EC
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
+    {{-- Queue: Certificates Generated --}}
+    @if(isset($certificatesGenerated) && $certificatesGenerated->isNotEmpty())
+        <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden mb-6 animate-fade-in">
+            <div class="px-6 py-4 border-b border-border bg-slate-50/70">
+                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-success">Sertifikat Terbit (Certificates Generated)</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/30">
+                            <th class="px-6 py-4 font-semibold">Kode</th>
+                            <th class="px-6 py-4 font-semibold">Judul</th>
+                            <th class="px-6 py-4 font-semibold">Nomor EC</th>
+                            <th class="px-6 py-4 font-semibold">Peneliti</th>
+                            <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                        @foreach($certificatesGenerated as $sub)
+                            <tr class="hover:bg-soft-surface/25 transition-colors">
+                                <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-text line-clamp-1" title="{{ $sub->title }}">
+                                        {{ \Illuminate\Support\Str::title($sub->title) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-text-secondary">{{ $sub->ec_number }}</td>
+                                <td class="px-6 py-4 text-text-secondary truncate max-w-[140px]">{{ optional($sub->student)->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <a href="{{ route('submissions.certificate', $sub) }}" class="inline-flex items-center justify-center bg-success hover:bg-success/90 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all">
+                                        Unduh
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 
     {{-- Main Grid (70/30 Split) --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

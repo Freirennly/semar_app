@@ -112,6 +112,80 @@
                 </div>
             </div>
 
+            @if($proposal->status->value === 'APPROVED')
+                <div class="card p-5 bg-white border border-border rounded-2xl space-y-4">
+                    <h4 class="text-xs font-bold text-text uppercase tracking-wider border-b border-border pb-2">Draft Ethical Clearance</h4>
+
+                    @if(session('success'))
+                        <div class="p-3 bg-success/10 border border-success/20 text-success rounded-lg text-xs font-semibold">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+
+                    @if($errors->has('ec_number') || $errors->has('signatory_id'))
+                        <div class="p-3 bg-danger/10 border border-danger/20 text-danger rounded-lg text-xs font-semibold">
+                            {{ $errors->first('ec_number') ?: $errors->first('signatory_id') }}
+                        </div>
+                    @endif
+
+                    <form action="{{ route('admin.proposals.store-draft', $proposal) }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label for="ec_number" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Nomor EC</label>
+                            <input type="text" name="ec_number" id="ec_number" value="{{ old('ec_number', $proposal->ec_number) }}" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" placeholder="Contoh: EC/2026/001" required>
+                        </div>
+
+                        <div>
+                            <label for="signatory_id" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Ketua Penandatangan</label>
+                            <select name="signatory_id" id="signatory_id" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" required>
+                                <option value="">-- Pilih Ketua KEP --</option>
+                                @foreach($chairmen as $chairman)
+                                    <option value="{{ $chairman->id }}" {{ old('signatory_id', $proposal->signatory_id) == $chairman->id ? 'selected' : '' }}>
+                                        {{ $chairman->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150">
+                            Simpan Draft EC
+                        </button>
+                    </form>
+                </div>
+            @elseif($proposal->ec_number)
+                <div class="card p-5 bg-white border border-border rounded-2xl space-y-4">
+                    <h4 class="text-xs font-bold text-text uppercase tracking-wider border-b border-border pb-2">Detail Ethical Clearance</h4>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <p class="text-text-secondary text-xs font-medium">Nomor EC</p>
+                            <p class="font-semibold text-text mt-0.5">{{ $proposal->ec_number }}</p>
+                        </div>
+                        <div>
+                            <p class="text-text-secondary text-xs font-medium">Penandatangan</p>
+                            <p class="font-semibold text-text mt-0.5">{{ $proposal->signatory ? $proposal->signatory->name : '-' }}</p>
+                        </div>
+                        @if($proposal->confirmed_title)
+                            <div>
+                                <p class="text-text-secondary text-xs font-medium">Judul Terkonfirmasi</p>
+                                <p class="font-semibold text-text mt-0.5">{{ $proposal->confirmed_title }}</p>
+                            </div>
+                        @endif
+                        @if($proposal->confirmed_researcher_name)
+                            <div>
+                                <p class="text-text-secondary text-xs font-medium">Peneliti Terkonfirmasi</p>
+                                <p class="font-semibold text-text mt-0.5">{{ $proposal->confirmed_researcher_name }}</p>
+                            </div>
+                        @endif
+                        @if($proposal->signed_at)
+                            <div>
+                                <p class="text-text-secondary text-xs font-medium">Ditandatangani Pada</p>
+                                <p class="font-semibold text-text mt-0.5">{{ $proposal->signed_at->format('d/m/Y H:i') }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             {{-- Info Tambahan Penanda Waktu Log --}}
             <div class="card p-4 bg-slate-50 border border-border/80 rounded-2xl text-xs text-text-secondary space-y-2">
                 <div class="flex justify-between"><span>Dibuat:</span><span class="font-mono text-text font-medium">{{ $proposal->created_at->format('d/m/Y H:i') }}</span></div>

@@ -6,14 +6,18 @@
     </div>
 
     {{-- Ringkasan Tugas (Flat cards) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
         <div class="bg-white border border-border p-5 rounded-xl">
             <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Perlu Cek Dokumen</p>
             <p class="text-[28px] font-bold text-warning mt-2 leading-none">{{ $submitted->count() }}</p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Perlu Assign Reviewer</p>
+            <p class="text-[28px] font-bold text-primary mt-2 leading-none">{{ $needAssign->count() }}</p>
+        </div>
+        <div class="bg-white border border-border p-5 rounded-xl">
             <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Menunggu Keputusan Akhir</p>
-            <p class="text-[28px] font-bold text-primary mt-2 leading-none">{{ $pendingDecision->count() }}</p>
+            <p class="text-[28px] font-bold text-violet-600 mt-2 leading-none">{{ $pendingDecision->count() }}</p>
         </div>
     </div>
 
@@ -66,6 +70,102 @@
                                             <a href="{{ route('doccheck.show', $sub) }}" class="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">
                                                 Cek Dokumen
                                             </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Perlu Assign Reviewer --}}
+            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+                <div class="px-6 py-4 border-b border-border flex items-center justify-between bg-white">
+                    <h2 class="text-[20px] font-semibold text-text">Perlu Assign Reviewer</h2>
+                    <a href="{{ route('assignments.index') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
+                </div>
+                @if($needAssign->isEmpty())
+                    <div class="text-center py-12 px-6">
+                        <p class="text-xs text-text-muted italic">Tidak ada pengajuan baru yang perlu di-assign reviewer.</p>
+                    </div>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 font-semibold">Kode</th>
+                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
+                                    <th class="px-6 py-4 font-semibold font-medium">Pengaju</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                @foreach($needAssign as $sub)
+                                    <tr class="hover:bg-soft-surface/25 transition-colors">
+                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        </td>
+                                        <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <a href="{{ route('assignments.index') }}?focus={{ $sub->id }}" class="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">
+                                                Assign
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Proposal Dalam Review --}}
+            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+                <div class="px-6 py-4 border-b border-border bg-white">
+                    <h2 class="text-[20px] font-semibold text-text">Proposal Dalam Review</h2>
+                </div>
+                @if($assigned->isEmpty())
+                    <div class="text-center py-12 px-6">
+                        <p class="text-xs text-text-muted italic">Tidak ada proposal yang sedang aktif direview.</p>
+                    </div>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 font-semibold">Kode</th>
+                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
+                                    <th class="px-6 py-4 font-semibold">Reviewer Ditugaskan</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                @foreach($assigned as $sub)
+                                    <tr class="hover:bg-soft-surface/25 transition-colors">
+                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[180px]" title="{{ $sub->title }}">
+                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-text-secondary">
+                                            <div class="space-y-1">
+                                                @foreach($sub->assignments as $asg)
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span class="truncate max-w-[110px]" title="{{ $asg->reviewer->name }}">{{ $asg->reviewer->name }}</span>
+                                                        <span class="font-bold shrink-0 {{ $asg->status === 'COMPLETED' ? 'text-success' : 'text-warning' }}">
+                                                            {{ $asg->status === 'COMPLETED' ? 'Selesai' : 'Belum' }}
+                                                        </span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                                            @php
+                                                $totalAsg = $sub->assignments->count();
+                                                $doneAsg = $sub->assignments->where('status', 'COMPLETED')->count();
+                                            @endphp
+                                            <span class="text-xs font-bold text-text">{{ $doneAsg }} / {{ $totalAsg }} Selesai</span>
                                         </td>
                                     </tr>
                                 @endforeach

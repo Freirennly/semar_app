@@ -20,7 +20,7 @@ class SubmissionDocument extends Model
     ];
 
     protected $casts = [
-        'doc_type' => DocType::class,
+        //
     ];
 
     /**

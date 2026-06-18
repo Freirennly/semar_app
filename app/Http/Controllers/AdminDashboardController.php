@@ -65,12 +65,63 @@ class AdminDashboardController extends Controller
             ->groupBy('roles.name')
             ->get();
 
+        $draftEcRequired = Submission::with('student')
+            ->where('status', SubmissionStatus::APPROVED)
+            ->whereNull('ec_number')
+            ->latest()
+            ->get();
+
+        $certificatesGenerated = Submission::with('student')
+            ->where('status', SubmissionStatus::DONE)
+            ->latest()
+            ->get();
+
+        $missingCertificatesCount = 0;
+        $doneSubmissions = Submission::where('status', SubmissionStatus::DONE)->get();
+        foreach ($doneSubmissions as $sub) {
+            if (empty($sub->ec_certificate_path) || !\Illuminate\Support\Facades\Storage::exists($sub->ec_certificate_path)) {
+                $missingCertificatesCount++;
+            }
+        }
+
+        $backupDir = storage_path('app/private/backups/ec');
+        $backupFiles = glob("{$backupDir}/ec-backup-*.zip");
+        $lastBackupTime = 'N/A';
+        if (!empty($backupFiles)) {
+            sort($backupFiles);
+            $latestFile = end($backupFiles);
+            $lastBackupTime = date('Y-m-d H:i:s', filemtime($latestFile));
+        }
+
+        // Document Template & Integrity Metrics
+        $templateMetrics = [
+            'total' => \App\Models\DocumentTemplate::count(),
+            'active' => \App\Models\DocumentTemplate::where('is_archived', false)->where('is_shown', true)->count(),
+            'archived' => \App\Models\DocumentTemplate::where('is_archived', true)->count(),
+            'hidden' => \App\Models\DocumentTemplate::where('is_shown', false)->where('is_archived', false)->count(),
+        ];
+
+        $integrityService = app(\App\Services\DocumentIntegrityService::class);
+        $integrityResult = $integrityService->validateAll();
+        $integrityMetrics = [
+            'missing_required' => $integrityResult['missing_required'],
+            'broken_files' => $integrityResult['broken_files'],
+            'invalid_links' => $integrityResult['invalid_links'],
+            'orphan_records' => $integrityResult['orphan_records'],
+        ];
+
         return view('dashboard.admin', compact(
             'metrics', 
             'latestSubmissions', 
             'statusDistribution', 
             'latestActivities', 
-            'userSummary'
+            'userSummary',
+            'draftEcRequired',
+            'certificatesGenerated',
+            'missingCertificatesCount',
+            'lastBackupTime',
+            'templateMetrics',
+            'integrityMetrics'
         ));
     }
 }

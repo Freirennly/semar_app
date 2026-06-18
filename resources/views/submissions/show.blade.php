@@ -108,6 +108,28 @@
                     </div>
                 @endif
             @endif
+
+            @if($submission->status === \App\Enums\SubmissionStatus::APPROVED && !empty($submission->ec_number))
+                <div class="mt-6 border-t border-border pt-6 space-y-4">
+                    <h3 class="text-sm font-bold text-text uppercase tracking-wider">Konfirmasi Ethical Clearance</h3>
+                    <p class="text-xs text-text-secondary">Silakan periksa dan konfirmasi judul penelitian serta nama peneliti sebelum ditandatangani oleh Ketua.</p>
+                    
+                    <form method="POST" action="{{ route('submissions.confirm', $submission) }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label for="confirmed_title" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Judul Penelitian</label>
+                            <input type="text" name="confirmed_title" id="confirmed_title" value="{{ old('confirmed_title', $submission->title) }}" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" required>
+                        </div>
+                        <div>
+                            <label for="confirmed_researcher_name" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Nama Peneliti</label>
+                            <input type="text" name="confirmed_researcher_name" id="confirmed_researcher_name" value="{{ old('confirmed_researcher_name', $submission->student->name) }}" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" required>
+                        </div>
+                        <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150">
+                            Konfirmasi Data
+                        </button>
+                    </form>
+                </div>
+            @endif
             @endrole
         </div>
     </div>

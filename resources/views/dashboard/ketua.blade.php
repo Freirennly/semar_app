@@ -26,12 +26,14 @@
     {{-- Ringkasan Statistik Keputusan & Tugas (Flat cards) --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Perlu Assign Reviewer</p>
-            <p class="text-[28px] font-bold text-warning mt-2 leading-none">{{ $needAssign->count() }}</p>
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Menunggu Tanda Tangan</p>
+            <p class="text-[28px] font-bold text-warning mt-2 leading-none">{{ $waitingSignature->count() }}</p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Sedang Direview</p>
-            <p class="text-[28px] font-bold text-primary mt-2 leading-none">{{ $assigned->count() }}</p>
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Total Pengajuan Aktif</p>
+            <p class="text-[28px] font-bold text-primary mt-2 leading-none">
+                {{ \App\Models\Submission::whereNotIn('status', [\App\Enums\SubmissionStatus::REJECTED, \App\Enums\SubmissionStatus::DONE])->count() }}
+            </p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
             <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Keputusan (Disetujui / Ditolak)</p>
@@ -47,14 +49,14 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Left: Tasks (70% or lg:col-span-2) --}}
         <div class="lg:col-span-2 space-y-6">
-            {{-- Perlu Assign Reviewer --}}
+            {{-- Waiting for Signature --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border bg-white">
-                    <h2 class="text-[20px] font-semibold text-text">Perlu Assign Reviewer</h2>
+                    <h2 class="text-[20px] font-semibold text-text">Waiting for Signature</h2>
                 </div>
-                @if($needAssign->isEmpty())
+                @if($waitingSignature->isEmpty())
                     <div class="text-center py-12 px-6">
-                        <p class="text-xs text-text-muted italic">Tidak ada pengajuan baru yang perlu di-assign reviewer.</p>
+                        <p class="text-xs text-text-muted italic">Tidak ada pengajuan menunggu tanda tangan saat ini.</p>
                     </div>
                 @else
                     <div class="overflow-x-auto">
@@ -68,7 +70,7 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
-                                @foreach($needAssign as $sub)
+                                @foreach($waitingSignature as $sub)
                                     <tr class="hover:bg-soft-surface/25 transition-colors">
                                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
                                         <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
@@ -76,9 +78,12 @@
                                         </td>
                                         <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
                                         <td class="px-6 py-4 text-right">
-                                            <a href="{{ route('assignments.index') }}?focus={{ $sub->id }}" class="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">
-                                                Assign
-                                            </a>
+                                            <form action="{{ route('submissions.sign', $sub) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menandatangani sertifikat laik etik untuk pengajuan ini?')">
+                                                @csrf
+                                                <button type="submit" class="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">
+                                                    Tandatangani
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -88,14 +93,14 @@
                 @endif
             </div>
 
-            {{-- Proposal Dalam Review --}}
+            {{-- Recently Signed Certificates --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border bg-white">
-                    <h2 class="text-[20px] font-semibold text-text">Proposal Dalam Review</h2>
+                    <h2 class="text-[20px] font-semibold text-text">Recently Signed Certificates</h2>
                 </div>
-                @if($assigned->isEmpty())
+                @if(!isset($recentlySigned) || $recentlySigned->isEmpty())
                     <div class="text-center py-12 px-6">
-                        <p class="text-xs text-text-muted italic">Tidak ada proposal yang sedang aktif direview.</p>
+                        <p class="text-xs text-text-muted italic">Belum ada sertifikat yang ditandatangani baru-baru ini.</p>
                     </div>
                 @else
                     <div class="overflow-x-auto">
@@ -104,35 +109,69 @@
                                 <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
                                     <th class="px-6 py-4 font-semibold">Kode</th>
                                     <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold">Reviewer Ditugaskan</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Progress</th>
+                                    <th class="px-6 py-4 font-semibold font-medium">Peneliti</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Unduh</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
-                                @foreach($assigned as $sub)
+                                @foreach($recentlySigned as $sub)
                                     <tr class="hover:bg-soft-surface/25 transition-colors">
                                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[180px]" title="{{ $sub->title }}">
+                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
                                             {{ \Illuminate\Support\Str::title($sub->title) }}
                                         </td>
-                                        <td class="px-6 py-4 text-xs text-text-secondary">
-                                            <div class="space-y-1">
-                                                @foreach($sub->assignments as $asg)
-                                                    <div class="flex items-center justify-between gap-2">
-                                                        <span class="truncate max-w-[110px]" title="{{ $asg->reviewer->name }}">{{ $asg->reviewer->name }}</span>
-                                                        <span class="font-bold shrink-0 {{ $asg->status === 'COMPLETED' ? 'text-success' : 'text-warning' }}">
-                                                            {{ $asg->status === 'COMPLETED' ? 'Selesai' : 'Belum' }}
-                                                        </span>
-                                                    </div>
-                                                @endforeach
-                                            </div>
+                                        <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
+                                        <td class="px-6 py-4 text-right">
+                                            @if($sub->ec_certificate_path)
+                                                <a href="{{ route('submissions.certificate', $sub) }}" class="inline-flex items-center justify-center bg-success hover:bg-success/90 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                                                    Download
+                                                </a>
+                                            @else
+                                                <span class="text-xs text-text-muted">-</span>
+                                            @endif
                                         </td>
-                                        <td class="px-6 py-4 text-right whitespace-nowrap">
-                                            @php
-                                                $totalAsg = $sub->assignments->count();
-                                                $doneAsg = $sub->assignments->where('status', 'COMPLETED')->count();
-                                            @endphp
-                                            <span class="text-xs font-bold text-text">{{ $doneAsg }} / {{ $totalAsg }} Selesai</span>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Certificates Verified --}}
+            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+                <div class="px-6 py-4 border-b border-border bg-white">
+                    <h2 class="text-[20px] font-semibold text-text">Certificates Verified</h2>
+                </div>
+                @if(!isset($verifiedLogs) || $verifiedLogs->isEmpty())
+                    <div class="text-center py-12 px-6">
+                        <p class="text-xs text-text-muted italic">Belum ada riwayat verifikasi publik baru-baru ini.</p>
+                    </div>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 font-semibold">Kode</th>
+                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
+                                    <th class="px-6 py-4 font-semibold">Detail Log Verifikasi</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Waktu</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                @foreach($verifiedLogs as $log)
+                                    <tr class="hover:bg-soft-surface/25 transition-colors">
+                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">
+                                            {{ $log->submission ? $log->submission->code : 'N/A' }}
+                                        </td>
+                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $log->submission ? $log->submission->title : '' }}">
+                                            {{ $log->submission ? \Illuminate\Support\Str::title($log->submission->title) : 'Unknown Submission' }}
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-text-secondary">
+                                            {{ $log->description }}
+                                        </td>
+                                        <td class="px-6 py-4 text-right text-xs text-text-secondary whitespace-nowrap">
+                                            {{ $log->created_at->diffForHumans() }}
                                         </td>
                                     </tr>
                                 @endforeach

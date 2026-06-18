@@ -80,7 +80,7 @@
                     @foreach($submissions as $sub)
                     @php
                         $docCount  = $sub->documents->count();
-                        $docTotal  = \App\Models\DocumentTemplate::where('is_required', true)->count();
+                        $docTotal  = \App\Models\DocumentTemplate::visible()->where('is_required', true)->count();
                         $docFull   = $docCount >= $docTotal;
                         $docPct    = $docTotal > 0 ? min(100, round($docCount / $docTotal * 100)) : 100;
                     @endphp

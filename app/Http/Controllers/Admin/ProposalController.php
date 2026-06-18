@@ -49,12 +49,14 @@ class ProposalController extends Controller
     public function show(Submission $proposal)
     {
         // Eager load dokumen beserta master template dari DB, dan data mahasiswa pengusul
-        $proposal->load(['documents.template', 'student']);
+        $proposal->load(['documents.template', 'student', 'signatory']);
 
         // Ambil data user yang memiliki role 'sekretariat' untuk dropdown di kolom kanan
         $secretaries = User::whereHas('roles', function($q) {
             $q->where('name', 'sekretariat');
         })->get();
+
+        $chairmen = User::role('ketua')->get();
 
         // Ambil parameter tab dari request (default ke 'details' jika kosong)
         $tab = request()->input('tab', 'details');
@@ -63,8 +65,53 @@ class ProposalController extends Controller
             'proposal'    => $proposal,
             'submission'  => $proposal, 
             'secretaries' => $secretaries,
+            'chairmen'    => $chairmen,
             'tab'         => $tab,
         ]);
+    }
+
+    /**
+     * Menyimpan draf Ethical Clearance oleh Admin
+     */
+    public function storeDraft(Request $request, Submission $proposal)
+    {
+        if ($proposal->status !== SubmissionStatus::APPROVED) {
+            abort(403, 'Draft Ethical Clearance hanya dapat dibuat jika proposal telah disetujui (APPROVED).');
+        }
+
+        $validated = $request->validate([
+            'ec_number' => 'required|string|max:255',
+            'signatory_id' => 'required|exists:users,id',
+        ]);
+
+        $signatory = User::findOrFail($validated['signatory_id']);
+        if (!$signatory->hasRole('ketua')) {
+            return back()->withErrors(['signatory_id' => 'Penandatangan harus memiliki peran ketua.'])->withInput();
+        }
+
+        $proposal->update([
+            'ec_number' => $validated['ec_number'],
+            'signatory_id' => $validated['signatory_id'],
+        ]);
+
+        try {
+            if ($proposal->student) {
+                $proposal->student->notify(new \App\Notifications\EcDraftCreated($proposal));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to notify student of EC Draft: " . $e->getMessage());
+        }
+
+        \App\Models\ActivityLog::create([
+            'user_id' => auth()->id(),
+            'submission_id' => $proposal->id,
+            'old_status' => $proposal->status->value,
+            'new_status' => $proposal->status->value,
+            'description' => 'Admin membuat/memperbarui draf Ethical Clearance dengan nomor ' . $validated['ec_number'],
+        ]);
+
+        return redirect()->route('admin.proposals.show', $proposal)
+            ->with('success', 'Draft Ethical Clearance berhasil disimpan.');
     }
 
     /**
@@ -105,6 +152,17 @@ class ProposalController extends Controller
         }
 
         $proposal->save();
+
+        if ($secretaryChanged && $proposal->secretary_id) {
+            try {
+                $secretary = User::find($proposal->secretary_id);
+                if ($secretary) {
+                    $secretary->notify(new \App\Notifications\SecretaryAssigned($proposal));
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to notify secretary: " . $e->getMessage());
+            }
+        }
 
         $newStatus = SubmissionStatus::tryFrom($validated['status']);
 

@@ -38,6 +38,62 @@
             </div>
         @endif
 
+        {{-- Document Completion Checklist --}}
+        @if(isset($docCompletionData) && $docCompletionData)
+            <div class="bg-white border border-border p-6 rounded-xl mb-6">
+                <div class="border-b border-border pb-3 mb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-sm font-bold text-text uppercase tracking-wider">Kelengkapan Dokumen</h2>
+                        <p class="text-xs text-text-secondary mt-0.5">Pengajuan: <span class="font-semibold text-text">{{ $docCompletionData['submission']->code }}</span></p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold {{ $docCompletionData['completion_pct'] >= 100 ? 'text-success' : 'text-primary' }}">
+                            {{ $docCompletionData['uploaded_count'] }} / {{ $docCompletionData['total_required'] }} Dokumen Wajib
+                        </span>
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-full {{ $docCompletionData['completion_pct'] >= 100 ? 'bg-emerald-50 text-emerald-700' : 'bg-soft-surface text-primary' }}">
+                            {{ $docCompletionData['completion_pct'] }}%
+                        </span>
+                    </div>
+                </div>
+
+                {{-- Progress Bar --}}
+                <div class="w-full h-2 rounded-full bg-soft-surface mb-4 overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500 {{ $docCompletionData['completion_pct'] >= 100 ? 'bg-success' : 'bg-primary' }}"
+                         style="width: {{ $docCompletionData['completion_pct'] }}%"></div>
+                </div>
+
+                {{-- Checklist --}}
+                <div class="space-y-2">
+                    @foreach($docCompletionData['required'] as $tpl)
+                        <div class="flex items-center gap-3 px-3 py-2 rounded-lg {{ in_array($tpl->id, $docCompletionData['uploaded_ids']) ? 'bg-emerald-50/50' : 'bg-red-50/50' }}">
+                            @if(in_array($tpl->id, $docCompletionData['uploaded_ids']))
+                                <svg class="w-4 h-4 text-success flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                <span class="text-xs font-medium text-text">{{ $tpl->name }}</span>
+                                <span class="ml-auto text-[10px] font-bold text-success">Diunggah</span>
+                            @else
+                                <svg class="w-4 h-4 text-danger flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                <span class="text-xs font-medium text-text">{{ $tpl->name }}</span>
+                                <span class="ml-auto text-[10px] font-bold text-danger">Belum Diunggah</span>
+                            @endif
+                        </div>
+                    @endforeach
+                    @foreach($docCompletionData['optional'] as $tpl)
+                        <div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-soft-surface/30">
+                            @if(in_array($tpl->id, $docCompletionData['uploaded_ids']))
+                                <svg class="w-4 h-4 text-success flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                <span class="text-xs font-medium text-text">{{ $tpl->name }}</span>
+                                <span class="ml-auto text-[10px] font-bold text-success">Diunggah</span>
+                            @else
+                                <svg class="w-4 h-4 text-warning flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <span class="text-xs font-medium text-text-secondary">{{ $tpl->name }}</span>
+                                <span class="ml-auto text-[10px] font-bold text-text-muted">Opsional</span>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         {{-- Timeline Section (Flat & Elegant) --}}
         <div class="bg-white border border-border p-6 rounded-xl mb-6">
             <div class="border-b border-border pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -113,6 +169,99 @@
                         <p class="text-[10px] text-text-secondary mt-0.5">Sertifikat Etik terbit.</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Queue: Waiting EC Confirmation --}}
+    @if(isset($waitingEcConfirmation) && $waitingEcConfirmation->isNotEmpty())
+        <div class="mb-6 bg-white border border-border rounded-xl overflow-hidden animate-fade-in">
+            <div class="px-6 py-4 border-b border-border bg-slate-50/70">
+                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-warning">Menunggu Konfirmasi Sertifikat (Waiting EC Confirmation)</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <tbody class="divide-y divide-border">
+                        @foreach($waitingEcConfirmation as $sub)
+                            <tr class="hover:bg-soft-surface/25 transition-colors">
+                                <td class="px-6 py-4 font-mono text-xs text-text-secondary w-24">{{ $sub->code }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-text">
+                                        {{ \Illuminate\Support\Str::title($sub->title) }}
+                                    </span>
+                                    <span class="text-xs text-text-secondary block mt-0.5">Nomor EC: {{ $sub->ec_number }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <a href="{{ route('submissions.show', $sub) }}" class="inline-flex items-center justify-center bg-primary hover:bg-primary-hover text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">
+                                        Konfirmasi Sekarang
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
+    {{-- Queue: Ethical Clearance Ready --}}
+    @if(isset($ecReady) && $ecReady->isNotEmpty())
+        <div class="mb-6 bg-white border border-border rounded-xl overflow-hidden animate-fade-in">
+            <div class="px-6 py-4 border-b border-border bg-slate-50/70">
+                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-success">Sertifikat Etik Terbit (Ethical Clearance Ready)</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <tbody class="divide-y divide-border">
+                        @foreach($ecReady as $sub)
+                            <tr class="hover:bg-soft-surface/25 transition-colors">
+                                <td class="px-6 py-4 font-mono text-xs text-text-secondary w-24">{{ $sub->code }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-text">
+                                        {{ \Illuminate\Support\Str::title($sub->title) }}
+                                    </span>
+                                    <span class="text-xs text-text-secondary block mt-0.5">Nomor EC: {{ $sub->ec_number }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <a href="{{ route('submissions.certificate', $sub) }}" class="inline-flex items-center justify-center bg-success hover:bg-success/90 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">
+                                        Unduh Sertifikat
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
+    {{-- Recent Downloads --}}
+    @if(isset($recentDownloads) && $recentDownloads->isNotEmpty())
+        <div class="mb-6 bg-white border border-border rounded-xl overflow-hidden animate-fade-in">
+            <div class="px-6 py-4 border-b border-border bg-slate-50/70">
+                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-primary">Riwayat Unduhan Terakhir (Recent Downloads)</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <tbody class="divide-y divide-border">
+                        @foreach($recentDownloads as $log)
+                            <tr class="hover:bg-soft-surface/25 transition-colors">
+                                <td class="px-6 py-4 font-mono text-xs text-text-secondary w-24">
+                                    {{ $log->submission ? $log->submission->code : 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="font-semibold text-text">
+                                        {{ $log->submission ? \Illuminate\Support\Str::title($log->submission->title) : 'Unknown Submission' }}
+                                    </span>
+                                    <span class="text-xs text-text-secondary block mt-0.5">{{ $log->description }}</span>
+                                </td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap text-xs text-text-secondary w-40">
+                                    {{ $log->created_at->diffForHumans() }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
     @endif

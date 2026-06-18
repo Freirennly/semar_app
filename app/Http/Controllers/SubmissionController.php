@@ -43,7 +43,7 @@ class SubmissionController extends Controller
         $submissions = $query->get();
 
         // Mengambil master berkas template aktif untuk diunduh mahasiswa
-        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+        $documentTemplates = DocumentTemplate::visible()->get();
 
         return view('submissions.index', compact('submissions', 'documentTemplates'));
     }
@@ -57,7 +57,7 @@ class SubmissionController extends Controller
         Gate::authorize('create', Submission::class);
 
         // AMBIL MASTER TEMPLATE DOKUMEN DARI DATABASE AGAR BISA DI-LOOP PADA BLOK KARTU VIEW
-        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+        $documentTemplates = DocumentTemplate::visible()->get();
 
         return view('submissions.create', compact('documentTemplates'));
     }
@@ -77,7 +77,7 @@ class SubmissionController extends Controller
         ]);
 
         // 2. Ambil Master Template untuk Validasi Aturan Wajib Atas Array Masukan
-        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+        $documentTemplates = DocumentTemplate::visible()->get();
 
         foreach ($documentTemplates as $template) {
             $hasFile = $request->hasFile("files.{$template->id}");
@@ -110,7 +110,7 @@ class SubmissionController extends Controller
 
                 $submission->documents()->create([
                     'document_template_id' => $template->id,
-                    'doc_type'             => str_contains(strtolower($template->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value,
+                    'doc_type'             => $template->code,
                     'file_path'            => $path,
                     'original_name'        => $file->getClientOriginalName(),
                     'mime'                 => $file->getClientMimeType(),
@@ -122,7 +122,7 @@ class SubmissionController extends Controller
             elseif ($hasLink) {
                 $submission->documents()->create([
                     'document_template_id' => $template->id,
-                    'doc_type'             => str_contains(strtolower($template->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value,
+                    'doc_type'             => $template->code,
                     'file_path'            => $request->input("hyperlinks.{$template->id}"),
                     'original_name'        => 'Link Google Drive',
                     'mime'                 => 'text/url',
@@ -136,6 +136,12 @@ class SubmissionController extends Controller
         // Notify admins about new proposal
         $admins = \App\Models\User::role('admin')->get();
         foreach ($admins as $admin) {
+            try {
+                $admin->notify(new \App\Notifications\NewProposalSubmitted($submission));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to notify admin on new proposal: " . $e->getMessage());
+            }
+
             $admin->notify(new \App\Notifications\SubmissionWorkflowNotification(
                 'Proposal Baru Diajukan',
                 "Mahasiswa {$submission->student->name} telah mengajukan proposal baru: \"{$submission->title}\".",
@@ -165,7 +171,7 @@ class SubmissionController extends Controller
         // Eager load seluruh relasi pendukung
         $submission->load(['documents.template', 'student', 'assignments.reviewer', 'reviews.reviewer', 'statusHistories.changer', 'decisions.decider']);
 
-        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+        $documentTemplates = DocumentTemplate::visible()->get();
         $uploadedTemplateIds = $submission->documents->pluck('document_template_id')->toArray();
         $tab = $request->input('tab', 'details');
 
@@ -190,7 +196,7 @@ class SubmissionController extends Controller
     public function edit(Submission $submission)
     {
         Gate::authorize('update', $submission);
-        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+        $documentTemplates = DocumentTemplate::visible()->get();
         return view('submissions.edit', compact('submission', 'documentTemplates'));
     }
 
@@ -206,7 +212,7 @@ class SubmissionController extends Controller
             'hyperlinks.*' => 'nullable|url',
         ]);
 
-        $documentTemplates = DocumentTemplate::where('is_shown', true)->get();
+        $documentTemplates = DocumentTemplate::visible()->get();
 
         foreach ($documentTemplates as $template) {
             $hasFile = $request->hasFile("files.{$template->id}");
@@ -242,7 +248,7 @@ class SubmissionController extends Controller
 
                 $submission->documents()->create([
                     'document_template_id' => $template->id,
-                    'doc_type'             => str_contains(strtolower($template->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value,
+                    'doc_type'             => $template->code,
                     'file_path'            => $path,
                     'original_name'        => $file->getClientOriginalName(),
                     'mime'                 => $file->getClientMimeType(),
@@ -261,7 +267,7 @@ class SubmissionController extends Controller
 
                     $submission->documents()->create([
                         'document_template_id' => $template->id,
-                        'doc_type'             => str_contains(strtolower($template->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value,
+                        'doc_type'             => $template->code,
                         'file_path'            => $newLink,
                         'original_name'        => 'Link Google Drive',
                         'mime'                 => 'text/url',
@@ -288,7 +294,7 @@ class SubmissionController extends Controller
         if ($submission->student_id !== $user->id) abort(403);
 
         // Validasi Kelengkapan Berkas Dinamis langsung dari berkas terunggah
-        $requiredTemplateIds = DocumentTemplate::where('is_shown', true)->where('is_required', true)->pluck('id')->toArray();
+        $requiredTemplateIds = DocumentTemplate::visible()->where('is_required', true)->pluck('id')->toArray();
         $uploadedTemplateIds = $submission->documents->pluck('document_template_id')->toArray();
 
         foreach ($requiredTemplateIds as $requiredId) {
@@ -319,7 +325,7 @@ class SubmissionController extends Controller
             return back()->with('error', 'Tidak bisa upload dokumen pada status ini.');
         }
 
-        $allowedTemplateIds = DocumentTemplate::where('is_shown', true)->pluck('id')->toArray();
+        $allowedTemplateIds = DocumentTemplate::visible()->pluck('id')->toArray();
         $allowedIdsString = implode(',', $allowedTemplateIds);
 
         $request->validate([
@@ -344,7 +350,7 @@ class SubmissionController extends Controller
         }
 
         $currentTemplate = DocumentTemplate::find($request->document_template_id);
-        $backupEnumStr = str_contains(strtolower($currentTemplate->name), 'proposal') ? DocType::PROPOSAL->value : DocType::ICF->value;
+        $backupEnumStr = $currentTemplate->code;
 
         if ($hasFile) {
             $file = $request->file('file');
@@ -399,9 +405,45 @@ class SubmissionController extends Controller
             return back()->with('error', 'Status pengajuan tidak valid untuk konfirmasi saat ini.');
         }
 
+        if (empty($submission->ec_number)) {
+            return back()->with('error', 'Draft Ethical Clearance belum dibuat oleh Admin.');
+        }
+
+        $request->validate([
+            'confirmed_title' => 'required|string|max:500',
+            'confirmed_researcher_name' => 'required|string|max:255',
+        ]);
+
+        $submission->update([
+            'confirmed_title' => $request->confirmed_title,
+            'confirmed_researcher_name' => $request->confirmed_researcher_name,
+        ]);
+
         $this->workflow->transition($submission, SubmissionStatus::WAITING_SIGNATURE, $user, 'Peneliti telah mengonfirmasi draf sertifikat EC.');
 
         return back()->with('success', 'Draf sertifikat berhasil dikonfirmasi. Saat ini menunggu tanda tangan dari Ketua KEP.');
+    }
+
+    public function sign(Request $request, Submission $submission)
+    {
+        $user = $request->user();
+        if (! $user->hasRole('ketua')) abort(403);
+        if ($submission->signatory_id !== $user->id) abort(403);
+
+        if ($submission->status !== SubmissionStatus::WAITING_SIGNATURE) {
+            return back()->with('error', 'Status pengajuan tidak valid untuk ditandatangani saat ini.');
+        }
+
+        if (empty($submission->ec_number) ||
+            empty($submission->signatory_id) ||
+            empty($submission->confirmed_title) ||
+            empty($submission->confirmed_researcher_name)) {
+            return back()->with('error', 'Dokumen Ethical Clearance belum lengkap untuk ditandatangani.');
+        }
+
+        $this->workflow->transition($submission, SubmissionStatus::DONE, $user, 'Sertifikat Laik Etik telah ditandatangani oleh Ketua KEP.');
+
+        return back()->with('success', 'Sertifikat Laik Etik berhasil ditandatangani.');
     }
 
     public function downloadEc(Request $request, Submission $submission)
@@ -423,5 +465,38 @@ class SubmissionController extends Controller
         }
 
         return Storage::disk('public')->download($ecDocument->file_path, 'Ethical_Clearance_' . $submission->code . '.pdf');
+    }
+
+    public function downloadCertificate(Request $request, Submission $submission)
+    {
+        $user = $request->user();
+
+        $allowed = false;
+        if ($user->hasRole('admin') || $user->hasRole('sekretariat')) {
+            $allowed = true;
+        } elseif ($user->hasRole('student') && $submission->student_id === $user->id) {
+            $allowed = true;
+        } elseif ($user->hasRole('ketua') && $submission->signatory_id === $user->id) {
+            $allowed = true;
+        }
+
+        if (! $allowed) {
+            abort(403);
+        }
+
+        if (empty($submission->ec_certificate_path) || ! Storage::exists($submission->ec_certificate_path)) {
+            abort(404);
+        }
+
+        // Log the download event
+        \App\Models\ActivityLog::create([
+            'user_id' => $user->id,
+            'submission_id' => $submission->id,
+            'old_status' => $submission->status->value,
+            'new_status' => $submission->status->value,
+            'description' => "Sertifikat diunduh oleh {$user->name}. IP: " . $request->ip(),
+        ]);
+
+        return Storage::download($submission->ec_certificate_path, 'EC-' . $submission->code . '.pdf');
     }
 }
