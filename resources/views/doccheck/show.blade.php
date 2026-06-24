@@ -7,7 +7,7 @@
     {{-- Breadcrumb --}}
     <nav class="flex items-center gap-1.5 mb-4 text-xs font-medium" style="color:#8E8CAD">
         <a href="{{ route('doccheck.index') }}"
-           class="transition-colors duration-150 hover:underline"
+           class="transition-colors duration-150 hover:text-primary hover:underline"
            style="color:#463EE3">Cek Dokumen</a>
         <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -74,6 +74,10 @@
                 }
                 $totalCnt    = count($documentTemplates);
                 $allComplete = $uploadedCnt >= $totalCnt;
+                
+                // PERBAIKAN: Menghitung variabel $calcProgress langsung di Blade untuk menghindari error undefined
+                $requiredCount = $submission->getRequiredDocumentCount() > 0 ? $submission->getRequiredDocumentCount() : 1;
+                $calcProgress = min(100, round(($submission->getDocumentCount() / $requiredCount) * 100));
             @endphp
             <span class="ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full"
                   style="background:{{ $allComplete ? 'rgba(34,197,94,0.12)' : '#E6E6FA' }};
@@ -129,7 +133,7 @@
 
                     @if($doc)
                         @if($doc->type === 'file')
-                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank"
+                        <a href="{{ route('submissions.view-document', $doc->id) }}" target="_blank"
                            class="text-xs font-bold px-3.5 py-1.5 rounded-lg border flex-shrink-0 ml-4 inline-flex items-center gap-1.5 transition-all duration-150"
                            style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white;
                                   box-shadow:0 1px 4px rgba(70,62,227,0.08);"
@@ -201,8 +205,10 @@
 
             {{-- Progress bar --}}
             <div class="px-5 pb-4">
-                <div class="h-full rounded-full transition-all duration-500"
-                        style="width:{{ $progress }}%;
+                <div class="w-full h-1.5 rounded-full overflow-hidden" style="background:rgba(0,0,0,0.06);">
+                    {{-- PERBAIKAN: Menggunakan $calcProgress yang dihitung aman di atas agar progress bar tampil proporsional --}}
+                    <div class="h-full rounded-full transition-all duration-500"
+                         style="width:{{ $calcProgress }}%;
                                 background:{{ $submission->hasAllDocuments() ? '#22C55E' : '#F59E0B' }};">
                     </div>
                 </div>
