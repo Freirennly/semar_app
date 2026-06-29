@@ -28,18 +28,78 @@ class DashboardController extends Controller
 
         abort(403);
     }
-
     private function student($user)
     {
         $submissions = $user->submissions()->latest()->get();
         $metrics = [
             ['label' => 'Total Pengajuan', 'value' => $submissions->count(), 'color' => 'blue'],
-            ['label' => 'Draft', 'value' => $submissions->where('status', SubmissionStatus::DRAFT)->count(), 'color' => 'slate'],
-            ['label' => 'Sedang Diproses', 'value' => $submissions->whereIn('status', [SubmissionStatus::SUBMITTED, SubmissionStatus::DOC_CHECK, SubmissionStatus::ASSIGNED, SubmissionStatus::UNDER_REVIEW, SubmissionStatus::PENDING_DECISION])->count(), 'color' => 'violet'],
+            ['label' => 'Proposal Baru', 'value' => $submissions->where('status', SubmissionStatus::NEW_PROPOSAL)->count(), 'color' => 'slate'],
+            ['label' => 'Sedang Diproses', 'value' => $submissions->whereIn('status', [
+                SubmissionStatus::PROCESS,
+                SubmissionStatus::ON_REVIEW,
+                SubmissionStatus::REVISED,
+                SubmissionStatus::WAITING_SIGNATURE
+            ])->count(), 'color' => 'violet'],
             ['label' => 'Perlu Revisi', 'value' => $submissions->where('status', SubmissionStatus::RESUBMISSION)->count(), 'color' => 'amber'],
-            ['label' => 'Selesai', 'value' => $submissions->whereIn('status', [SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED, SubmissionStatus::ARCHIVED])->count(), 'color' => 'emerald'],
+            ['label' => 'Selesai', 'value' => $submissions->whereIn('status', [
+                SubmissionStatus::APPROVED,
+                SubmissionStatus::APPROVED_WITH_REVISION,
+                SubmissionStatus::REJECTED,
+                SubmissionStatus::DONE
+            ])->count(), 'color' => 'emerald'],
         ];
-        return view('dashboard.student', compact('submissions', 'metrics'));
+
+        $waitingEcConfirmation = $user->submissions()
+            ->where('status', SubmissionStatus::APPROVED)
+            ->whereNotNull('ec_number')
+            ->latest()
+            ->get();
+
+        $ecReady = $user->submissions()
+            ->where('status', SubmissionStatus::DONE)
+            ->whereNotNull('ec_certificate_path')
+            ->latest()
+            ->get();
+
+        $recentDownloads = \App\Models\ActivityLog::where('user_id', $user->id)
+            ->where('description', 'like', 'Sertifikat diunduh%')
+            ->with('submission')
+            ->latest()
+            ->limit(5)
+            ->get();
+
+        // Document completion metrics for latest active submission
+        $docCompletionData = null;
+        $latestActive = $submissions->whereNotIn('status', [
+            SubmissionStatus::REJECTED,
+            SubmissionStatus::DONE,
+        ])->first();
+
+        if ($latestActive) {
+            $requiredTemplates = \App\Models\DocumentTemplate::visible()
+                ->where('is_required', true)->get();
+            $optionalTemplates = \App\Models\DocumentTemplate::visible()
+                ->where('is_required', false)->get();
+            $uploadedIds = $latestActive->documents->pluck('document_template_id')->toArray();
+
+            $missingRequired = $requiredTemplates->filter(fn($t) => !in_array($t->id, $uploadedIds));
+            $uploadedCount = count(array_intersect($requiredTemplates->pluck('id')->toArray(), $uploadedIds));
+            $totalRequired = $requiredTemplates->count();
+            $completionPct = $totalRequired > 0 ? round(($uploadedCount / $totalRequired) * 100) : 100;
+
+            $docCompletionData = [
+                'submission' => $latestActive,
+                'required' => $requiredTemplates,
+                'optional' => $optionalTemplates,
+                'uploaded_ids' => $uploadedIds,
+                'missing' => $missingRequired,
+                'uploaded_count' => $uploadedCount,
+                'total_required' => $totalRequired,
+                'completion_pct' => $completionPct,
+            ];
+        }
+
+        return view('dashboard.student', compact('submissions', 'metrics', 'waitingEcConfirmation', 'ecReady', 'recentDownloads', 'docCompletionData'));
     }
 
     private function reviewer($user)
@@ -56,29 +116,52 @@ class DashboardController extends Controller
 
     private function ketua()
     {
-        $needAssign = Submission::whereIn('status', [SubmissionStatus::DOC_CHECK, SubmissionStatus::SUBMITTED])
-            ->whereDoesntHave('assignments')->with('student')->latest()->get();
-        $assigned = Submission::where('status', SubmissionStatus::ASSIGNED)->with('student', 'assignments.reviewer')->latest()->get();
+        $waitingSignature = Submission::where('status', SubmissionStatus::WAITING_SIGNATURE)
+            ->where('signatory_id', auth()->id())
+            ->with('student')->latest()->get();
+
+        $recentlySigned = Submission::where('signatory_id', auth()->id())
+            ->whereNotNull('signed_at')
+            ->with('student')->latest()->limit(10)->get();
+
+        $verifiedLogs = \App\Models\ActivityLog::whereHas('submission', function ($query) {
+                $query->where('signatory_id', auth()->id());
+            })
+            ->where('description', 'like', 'Verifikasi sertifikat diakses secara publik%')
+            ->with('submission')
+            ->latest()
+            ->limit(10)
+            ->get();
+
         $metrics = [
-            ['label' => 'Perlu Assign Reviewer', 'value' => $needAssign->count(), 'color' => 'amber'],
-            ['label' => 'Sudah Di-assign', 'value' => $assigned->count(), 'color' => 'blue'],
-            ['label' => 'Total Pengajuan Aktif', 'value' => Submission::whereNotIn('status', [SubmissionStatus::DRAFT, SubmissionStatus::APPROVED, SubmissionStatus::DISAPPROVED, SubmissionStatus::ARCHIVED])->count(), 'color' => 'violet'],
+            ['label' => 'Menunggu Tanda Tangan', 'value' => $waitingSignature->count(), 'color' => 'amber'],
+            ['label' => 'Total Pengajuan Aktif', 'value' => Submission::whereNotIn('status', [SubmissionStatus::REJECTED, SubmissionStatus::DONE])->count(), 'color' => 'violet'],
         ];
-        return view('dashboard.ketua', compact('needAssign', 'assigned', 'metrics'));
+        return view('dashboard.ketua', compact('waitingSignature', 'recentlySigned', 'metrics', 'verifiedLogs'));
     }
 
     private function sekretariat()
     {
-        $submitted = Submission::where('status', SubmissionStatus::SUBMITTED)->with('student')->latest()->get();
-        $pendingDecision = Submission::where('status', SubmissionStatus::PENDING_DECISION)
+        $submitted = Submission::whereIn('status', [
+            SubmissionStatus::NEW_PROPOSAL,
+            SubmissionStatus::REVISED
+        ])->with('student')->latest()->get();
+
+        $pendingDecision = Submission::where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'reviews.reviewer', 'assignments.reviewer')->latest()->get();
+
+        $needAssign = Submission::where('status', SubmissionStatus::PROCESS)
+            ->whereDoesntHave('assignments')->with('student')->latest()->get();
+
+        $assigned = Submission::where('status', SubmissionStatus::ON_REVIEW)
+            ->with('student', 'assignments.reviewer')->latest()->get();
+
         $metrics = [
             ['label' => 'Perlu Cek Dokumen', 'value' => $submitted->count(), 'color' => 'amber'],
+            ['label' => 'Perlu Assign Reviewer', 'value' => $needAssign->count(), 'color' => 'blue'],
             ['label' => 'Menunggu Keputusan', 'value' => $pendingDecision->count(), 'color' => 'violet'],
-            ['label' => 'Total Disetujui', 'value' => Submission::where('status', SubmissionStatus::APPROVED)->count(), 'color' => 'emerald'],
-            ['label' => 'Total Ditolak', 'value' => Submission::where('status', SubmissionStatus::DISAPPROVED)->count(), 'color' => 'red'],
         ];
-        return view('dashboard.sekretariat', compact('submitted', 'pendingDecision', 'metrics'));
+        return view('dashboard.sekretariat', compact('submitted', 'pendingDecision', 'needAssign', 'assigned', 'metrics'));
     }
 
     private function admin()

@@ -12,15 +12,32 @@ class Submission extends Model
 {
     protected $fillable = [
         'code', 'title', 'type', 'status', 'student_id',
-        'abstract', 'submitted_at', 'decided_at',
+        'abstract', 'submitted_at', 'decided_at', 'secretary_id',
+        'ec_number', 'signatory_id', 'confirmed_title', 'confirmed_researcher_name', 'signed_at', 'ec_certificate_path', 'verification_token'
     ];
 
     protected $casts = [
         'status' => SubmissionStatus::class,
         'submitted_at' => 'datetime',
         'decided_at' => 'datetime',
+        'signed_at' => 'datetime',
     ];
 
+    /**
+     * Hook Eloquent untuk mengisi otomatis kode pengajuan sebelum data masuk ke DB
+     */
+    protected static function booted()
+    {
+        static::creating(function ($submission) {
+            if (empty($submission->code)) {
+                $submission->code = static::generateCode();
+            }
+        });
+    }
+
+    /**
+     * Menggenerasikan kode registrasi unik berbasis tahun berjalan (SUB-2026-0001)
+     */
     public static function generateCode(): string
     {
         $year = date('Y');
@@ -32,6 +49,16 @@ class Submission extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(User::class, 'student_id');
+    }
+
+    public function secretary(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'secretary_id');
+    }
+
+    public function signatory(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'signatory_id');
     }
 
     public function documents(): HasMany
@@ -59,21 +86,28 @@ class Submission extends Model
         return $this->hasMany(StatusHistory::class)->orderByDesc('created_at');
     }
 
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class)->orderByDesc('created_at');
+    }
+
     public function latestDecision()
     {
         return $this->hasOne(Decision::class)->latestOfMany();
     }
 
+    /**
+     * PERBAIKAN: Memeriksa apakah seluruh dokumen WAJIB dari template DB sudah terpenuhi
+     */
     public function hasAllDocuments(): bool
     {
-        $required = collect(DocType::cases())->pluck('value');
-        
-        // Tambahkan fungsi map() untuk mengurai objek Enum menjadi teks murni
-        $uploaded = $this->documents()->pluck('doc_type')->map(function ($enum) {
-            return $enum->value ?? $enum;
-        });
+        $requiredTemplateIds = DocumentTemplate::visible()
+            ->where('is_required', true)
+            ->pluck('id');
 
-        return $required->diff($uploaded)->isEmpty();
+        $uploadedTemplateIds = $this->documents()->pluck('document_template_id');
+
+        return $requiredTemplateIds->diff($uploadedTemplateIds)->isEmpty();
     }
 
     public function getDocumentCount(): int
@@ -81,9 +115,12 @@ class Submission extends Model
         return $this->documents()->count();
     }
 
+    /**
+     * PERBAIKAN: Menghitung total berkas yang berstatus wajib dari template database
+     */
     public function getRequiredDocumentCount(): int
     {
-        return count(DocType::cases());
+        return DocumentTemplate::visible()->where('is_required', true)->count();
     }
 
     public function completedReviewsCount(): int
@@ -105,6 +142,6 @@ class Submission extends Model
 
     public function isEcPublished(): bool
     {
-        return $this->status === SubmissionStatus::PUBLISHED;
+        return $this->status === SubmissionStatus::DONE;
     }
 }

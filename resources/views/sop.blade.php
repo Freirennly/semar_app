@@ -323,7 +323,7 @@
             ['id'=>3,'q'=>'Bagaimana revisi dilakukan?',
              'a'=>'Jika hasil telaah memerlukan perbaikan, sistem akan memberikan notifikasi. Anda dapat melihat catatan reviewer langsung di dashboard, mengunggah kembali dokumen yang telah direvisi, dan mengirimkannya kembali ke komite untuk dievaluasi ulang.'],
             ['id'=>4,'q'=>'Bagaimana melihat status pengajuan?',
-             'a'=>'Status pengajuan bersifat real-time dan dapat dipantau di halaman Dashboard akun Anda. Status mencakup: Draft, Submitted, Under Review, Revision Required, hingga Approved.'],
+             'a'=>'Status pengajuan bersifat real-time dan dapat dipantau di halaman Dashboard akun Anda. Status mencakup: Proposal Baru, Diproses, Sedang Direview, Perlu Revisi, hingga Selesai.'],
         ];
         @endphp
 

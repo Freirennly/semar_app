@@ -1,249 +1,249 @@
 <x-layouts.app :title="'Dashboard Sekretariat'">
-<div class="mb-8 flex items-start justify-between">
-    <div>
-        <div class="flex items-center gap-2 mb-1.5">
-            <div class="w-4 h-[2px]" style="background:#463EE3;"></div>
-            <p class="text-[11px] font-bold tracking-widest uppercase" style="color:#463EE3">Sekretariat KEP</p>
-        </div>
-        <h1 class="text-2xl font-bold tracking-tight" style="color:#0F0E2E">Dashboard Sekretariat</h1>
-        <p class="text-sm font-light mt-1" style="color:#5A587A">Kelola validasi dokumen dan keputusan akhir pengajuan.</p>
+    {{-- Header Section --}}
+    <div class="mb-6">
+        <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Dashboard Sekretariat</h1>
+        <p class="text-sm text-text-secondary mt-1.5">Kelola verifikasi dokumen persyaratan pengajuan dan rekomendasi akhir Komite Etik Penelitian.</p>
     </div>
-    <div class="text-right hidden sm:block">
-        <p class="text-xs font-medium" style="color:#8E8CAD">{{ now()->translatedFormat('l, d F Y') }}</p>
-        <p class="text-xs mt-0.5" style="color:#b0aec8">SEMAR Academic Platform</p>
-    </div>
-</div>
 
-<!--METRIC CARDS-->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    @foreach($metrics as $m)
-        @php
-        $colorMap = [
-            'primary' => [
-                'iconBg'  => '#E6E6FA',
-                'iconStr' => '#463EE3',
-                'dot'     => '#463EE3',
-                'label'   => '#463EE3',
-                'border'  => 'rgba(70,62,227,0.18)',
-                'shadow'  => 'rgba(70,62,227,0.10)',
-            ],
-            'sky' => [
-                'iconBg'  => 'rgba(135,206,235,0.22)',
-                'iconStr' => '#1a7fa3',
-                'dot'     => '#87CEEB',
-                'label'   => '#1a7fa3',
-                'border'  => 'rgba(135,206,235,0.4)',
-                'shadow'  => 'rgba(135,206,235,0.15)',
-            ],
-            'success' => [
-                'iconBg'  => 'rgba(34,197,94,0.12)',
-                'iconStr' => '#15803d',
-                'dot'     => '#22C55E',
-                'label'   => '#15803d',
-                'border'  => 'rgba(34,197,94,0.25)',
-                'shadow'  => 'rgba(34,197,94,0.10)',
-            ],
-            'warning' => [
-                'iconBg'  => 'rgba(245,158,11,0.12)',
-                'iconStr' => '#b45309',
-                'dot'     => '#F59E0B',
-                'label'   => '#b45309',
-                'border'  => 'rgba(245,158,11,0.28)',
-                'shadow'  => 'rgba(245,158,11,0.10)',
-            ],
-            'danger' => [
-                'iconBg'  => 'rgba(239,68,68,0.10)',
-                'iconStr' => '#b91c1c',
-                'dot'     => '#EF4444',
-                'label'   => '#b91c1c',
-                'border'  => 'rgba(239,68,68,0.22)',
-                'shadow'  => 'rgba(239,68,68,0.10)',
-            ],
-        ];
-        $c = $colorMap[$m['color']] ?? $colorMap['primary'];
-        @endphp
-        <div class="bg-white rounded-2xl border p-5 relative overflow-hidden cursor-default transition-all duration-200"
-             style="border-color:{{ $c['border'] }};
-                    box-shadow: 0 2px 8px {{ $c['shadow'] }};"
-             onmouseover="this.style.boxShadow='0 8px 28px {{ $c['shadow'] }}'; this.style.transform='translateY(-2px)'"
-             onmouseout="this.style.boxShadow='0 2px 8px {{ $c['shadow'] }}'; this.style.transform='translateY(0)'">
-
-            {{-- Left accent bar --}}
-            <div class="absolute left-0 top-3 bottom-3 w-[3px] rounded-full"
-                 style="background:{{ $c['dot'] }};"></div>
-
-            <div class="flex items-start justify-between mb-4">
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center"
-                     style="background:{{ $c['iconBg'] }};">
-                    @if($m['color'] === 'primary')
-                    <svg class="w-5 h-5" fill="none" stroke="{{ $c['iconStr'] }}" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    @elseif($m['color'] === 'warning')
-                    <svg class="w-5 h-5" fill="none" stroke="{{ $c['iconStr'] }}" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    @elseif($m['color'] === 'success')
-                    <svg class="w-5 h-5" fill="none" stroke="{{ $c['iconStr'] }}" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    @elseif($m['color'] === 'danger')
-                    <svg class="w-5 h-5" fill="none" stroke="{{ $c['iconStr'] }}" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                    </svg>
-                    @else
-                    <svg class="w-5 h-5" fill="none" stroke="{{ $c['iconStr'] }}" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                    </svg>
-                    @endif
-                </div>
-            </div>
-
-            <p class="text-3xl font-bold tracking-tight mb-1" style="color:#0F0E2E">{{ $m['value'] }}</p>
-            <p class="text-xs font-bold" style="color:{{ $c['label'] }}">{{ $m['label'] }}</p>
+    {{-- Ringkasan Tugas (Flat cards) --}}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white border border-border p-5 rounded-xl">
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Perlu Cek Dokumen</p>
+            <p class="text-[28px] font-bold text-warning mt-2 leading-none">{{ $submitted->count() }}</p>
         </div>
-    @endforeach
-</div>
+        <div class="bg-white border border-border p-5 rounded-xl">
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Perlu Assign Reviewer</p>
+            <p class="text-[28px] font-bold text-primary mt-2 leading-none">{{ $needAssign->count() }}</p>
+        </div>
+        <div class="bg-white border border-border p-5 rounded-xl">
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Menunggu Keputusan Akhir</p>
+            <p class="text-[28px] font-bold text-violet-600 mt-2 leading-none">{{ $pendingDecision->count() }}</p>
+        </div>
+    </div>
 
-{{-- ═══════════════════════════════════════════════════
-     MAIN PANELS
-════════════════════════════════════════════════════ --}}
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    @php
+        // Fetch recent validation history directly from database to avoid modifying controller
+        $recentValidations = \App\Models\Submission::whereNotIn('status', [
+            \App\Enums\SubmissionStatus::NEW_PROPOSAL,
+            \App\Enums\SubmissionStatus::REVISED
+        ])
+        ->with('student')
+        ->latest('updated_at')
+        ->limit(6)
+        ->get();
+    @endphp
 
-    {{-- ── Perlu Cek Dokumen ──────────────────────── --}}
-    <div class="bg-white rounded-2xl border overflow-hidden"
-         style="border-color:rgba(70,62,227,0.14);
-                box-shadow: 0 2px 16px rgba(70,62,227,0.07);">
-
-        <div class="flex items-center justify-between px-5 py-4"
-             style="border-bottom:1.5px solid rgba(70,62,227,0.08);
-                    background:rgba(70,62,227,0.025);">
-            <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center"
-                     style="background:#E6E6FA; box-shadow:0 1px 4px rgba(70,62,227,0.15);">
-                    <svg class="w-4 h-4" fill="none" stroke="#463EE3" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
+    {{-- Main Grid (70/30 Split) --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- Left: Tasks (70% or lg:col-span-2) --}}
+        <div class="lg:col-span-2 space-y-6">
+            {{-- Perlu Cek Dokumen --}}
+            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+                <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+                    <h2 class="text-[20px] font-semibold text-text">Perlu Cek Dokumen</h2>
+                    <a href="{{ route('doccheck.index') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
-                <h3 class="text-sm font-bold" style="color:#0F0E2E">Perlu Cek Dokumen</h3>
-                @if($submitted->count())
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style="background:#463EE3; color:white;">{{ $submitted->count() }}</span>
+                @if($submitted->isEmpty())
+                    <div class="text-center py-12 px-6">
+                        <p class="text-xs text-text-muted italic">Tidak ada dokumen baru yang perlu divalidasi saat ini.</p>
+                    </div>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 font-semibold">Kode</th>
+                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
+                                    <th class="px-6 py-4 font-semibold">Pengusul</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                @foreach($submitted as $sub)
+                                    <tr class="hover:bg-soft-surface/25 transition-colors">
+                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        </td>
+                                        <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <a href="{{ route('doccheck.show', $sub) }}" class="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">
+                                                Cek Dokumen
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
-            <a href="{{ route('doccheck.index') }}"
-               class="text-xs font-semibold flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-all duration-150"
-               style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white;"
-               onmouseover="this.style.background='#E6E6FA'; this.style.borderColor='rgba(70,62,227,0.4)'"
-               onmouseout="this.style.background='white'; this.style.borderColor='rgba(70,62,227,0.22)'">
-                Semua <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </a>
-        </div>
 
-        @forelse($submitted as $sub)
-        <div class="flex items-center gap-3.5 px-5 py-3.5 border-b last:border-b-0 transition-colors duration-150"
-             style="border-color:rgba(70,62,227,0.05);"
-             onmouseover="this.style.background='rgba(70,62,227,0.025)'"
-             onmouseout="this.style.background='transparent'">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0"
-                 style="background:#F5F5F5; color:#5A587A; border:1px solid rgba(0,0,0,0.07);">
-                {{ strtoupper(substr($sub->student->name ?? 'U', 0, 1)) }}
-            </div>
-            <div class="min-w-0 flex-1">
-                <p class="text-sm font-semibold truncate" style="color:#0F0E2E">{{ $sub->title }}</p>
-                <p class="text-xs font-light mt-0.5" style="color:#8E8CAD">
-                    {{ $sub->student->name ?? '-' }}
-                    <span style="color:#d0cfe8; margin:0 3px">·</span>
-                    {{ $sub->created_at->format('d M Y') }}
-                </p>
-            </div>
-            <a href="{{ route('doccheck.show', $sub) }}"
-               class="text-xs font-bold px-3.5 py-1.5 rounded-lg flex-shrink-0 border transition-all duration-150"
-               style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white; box-shadow:0 1px 4px rgba(70,62,227,0.08);"
-               onmouseover="this.style.background='#463EE3'; this.style.color='white'; this.style.borderColor='#463EE3'; this.style.boxShadow='0 3px 10px rgba(70,62,227,0.25)'"
-               onmouseout="this.style.background='white'; this.style.color='#463EE3'; this.style.borderColor='rgba(70,62,227,0.22)'; this.style.boxShadow='0 1px 4px rgba(70,62,227,0.08)'">
-                Cek →
-            </a>
-        </div>
-        @empty
-        <div class="flex flex-col items-center justify-center py-14 px-6 text-center">
-            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                 style="background:#F5F5F5; border:1.5px dashed rgba(70,62,227,0.18);">
-                <svg class="w-6 h-6" fill="none" stroke="#c4c2e0" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-            </div>
-            <p class="text-sm font-semibold" style="color:#8E8CAD">Tidak ada pengajuan baru</p>
-            <p class="text-xs font-light mt-1" style="color:#b0aec8">Semua dokumen sudah dicek</p>
-        </div>
-        @endforelse
-    </div>
-
-    {{-- ── Menunggu Keputusan ──────────────────────── --}}
-    <div class="bg-white rounded-2xl border overflow-hidden"
-         style="border-color:rgba(245,158,11,0.22);
-                box-shadow: 0 2px 16px rgba(245,158,11,0.07);">
-
-        <div class="flex items-center justify-between px-5 py-4"
-             style="border-bottom:1.5px solid rgba(245,158,11,0.1);
-                    background:rgba(245,158,11,0.03);">
-            <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl flex items-center justify-center"
-                     style="background:rgba(245,158,11,0.14); box-shadow:0 1px 4px rgba(245,158,11,0.2);">
-                    <svg class="w-4 h-4" fill="none" stroke="#b45309" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
+            {{-- Perlu Assign Reviewer --}}
+            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+                <div class="px-6 py-4 border-b border-border flex items-center justify-between bg-white">
+                    <h2 class="text-[20px] font-semibold text-text">Perlu Assign Reviewer</h2>
+                    <a href="{{ route('assignments.index') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
-                <h3 class="text-sm font-bold" style="color:#0F0E2E">Menunggu Keputusan</h3>
-                @if($pendingDecision->count())
-                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style="background:#F59E0B; color:white;">{{ $pendingDecision->count() }}</span>
+                @if($needAssign->isEmpty())
+                    <div class="text-center py-12 px-6">
+                        <p class="text-xs text-text-muted italic">Tidak ada pengajuan baru yang perlu di-assign reviewer.</p>
+                    </div>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 font-semibold">Kode</th>
+                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
+                                    <th class="px-6 py-4 font-semibold font-medium">Pengaju</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                @foreach($needAssign as $sub)
+                                    <tr class="hover:bg-soft-surface/25 transition-colors">
+                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        </td>
+                                        <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
+                                        <td class="px-6 py-4 text-right">
+                                            <a href="{{ route('assignments.index') }}?focus={{ $sub->id }}" class="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">
+                                                Assign
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
-            <a href="{{ route('decisions.index') }}"
-               class="text-xs font-semibold flex items-center gap-1 px-3 py-1.5 rounded-lg border transition-all duration-150"
-               style="color:#b45309; border-color:rgba(245,158,11,0.3); background:white;"
-               onmouseover="this.style.background='rgba(245,158,11,0.1)'; this.style.borderColor='rgba(245,158,11,0.5)'"
-               onmouseout="this.style.background='white'; this.style.borderColor='rgba(245,158,11,0.3)'">
-                Semua <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-            </a>
+
+            {{-- Proposal Dalam Review --}}
+            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+                <div class="px-6 py-4 border-b border-border bg-white">
+                    <h2 class="text-[20px] font-semibold text-text">Proposal Dalam Review</h2>
+                </div>
+                @if($assigned->isEmpty())
+                    <div class="text-center py-12 px-6">
+                        <p class="text-xs text-text-muted italic">Tidak ada proposal yang sedang aktif direview.</p>
+                    </div>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 font-semibold">Kode</th>
+                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
+                                    <th class="px-6 py-4 font-semibold">Reviewer Ditugaskan</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Progress</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                @foreach($assigned as $sub)
+                                    <tr class="hover:bg-soft-surface/25 transition-colors">
+                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[180px]" title="{{ $sub->title }}">
+                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-text-secondary">
+                                            <div class="space-y-1">
+                                                @foreach($sub->assignments as $asg)
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span class="truncate max-w-[110px]" title="{{ $asg->reviewer->name }}">{{ $asg->reviewer->name }}</span>
+                                                        <span class="font-bold shrink-0 {{ $asg->status === 'COMPLETED' ? 'text-success' : 'text-warning' }}">
+                                                            {{ $asg->status === 'COMPLETED' ? 'Selesai' : 'Belum' }}
+                                                        </span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                                            @php
+                                                $totalAsg = $sub->assignments->count();
+                                                $doneAsg = $sub->assignments->where('status', 'COMPLETED')->count();
+                                            @endphp
+                                            <span class="text-xs font-bold text-text">{{ $doneAsg }} / {{ $totalAsg }} Selesai</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Menunggu Keputusan --}}
+            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+                <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+                    <h2 class="text-[20px] font-semibold text-text">Menunggu Keputusan Akhir</h2>
+                    <a href="{{ route('decisions.index') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
+                </div>
+                @if($pendingDecision->isEmpty())
+                    <div class="text-center py-12 px-6">
+                        <p class="text-xs text-text-muted italic">Tidak ada pengajuan yang menunggu keputusan akhir.</p>
+                    </div>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 font-semibold">Kode</th>
+                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
+                                    <th class="px-6 py-4 font-semibold">Penilaian</th>
+                                    <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                @foreach($pendingDecision as $sub)
+                                    <tr class="hover:bg-soft-surface/25 transition-colors">
+                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        </td>
+                                        <td class="px-6 py-4 text-xs text-text-secondary">
+                                            <span class="font-bold text-primary">{{ $sub->reviews->count() }}</span> Masuk
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <a href="{{ route('decisions.show', $sub) }}" class="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">
+                                                Putuskan
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
         </div>
 
-        @forelse($pendingDecision as $sub)
-        <div class="flex items-center gap-3.5 px-5 py-3.5 border-b last:border-b-0 transition-colors duration-150"
-             style="border-color:rgba(245,158,11,0.07);"
-             onmouseover="this.style.background='rgba(245,158,11,0.025)'"
-             onmouseout="this.style.background='transparent'">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0"
-                 style="background:rgba(245,158,11,0.1); color:#b45309; border:1px solid rgba(245,158,11,0.22);">
-                {{ $sub->reviews->count() }}
+        {{-- Right: Recent Validation History (30% or lg:col-span-1) --}}
+        <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-border">
+                <h2 class="text-[20px] font-semibold text-text">Riwayat Validasi</h2>
             </div>
-            <div class="min-w-0 flex-1">
-                <p class="text-sm font-semibold truncate" style="color:#0F0E2E">{{ $sub->title }}</p>
-                <p class="text-xs font-light mt-0.5" style="color:#8E8CAD">{{ $sub->reviews->count() }} review masuk</p>
-            </div>
-            <a href="{{ route('decisions.show', $sub) }}"
-               class="text-xs font-bold px-3.5 py-1.5 rounded-lg flex-shrink-0 transition-all duration-150"
-               style="color:white; background:#463EE3; box-shadow:0 2px 8px rgba(70,62,227,0.28);"
-               onmouseover="this.style.background='#332DB8'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 5px 16px rgba(70,62,227,0.35)'"
-               onmouseout="this.style.background='#463EE3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(70,62,227,0.28)'">
-                Putuskan →
-            </a>
+            
+            @if($recentValidations->isEmpty())
+                <div class="text-center py-12 px-6">
+                    <p class="text-xs text-text-muted italic">Belum ada riwayat validasi.</p>
+                </div>
+            @else
+                <div class="divide-y divide-border overflow-y-auto max-h-[500px]">
+                    @foreach($recentValidations as $sub)
+                        <div class="p-4 hover:bg-soft-surface/20 transition-colors">
+                            <p class="text-xs font-semibold text-text line-clamp-2">{{ \Illuminate\Support\Str::title($sub->title) }}</p>
+                            <p class="text-[10px] text-text-secondary mt-1">Pengusul: {{ optional($sub->student)->name ?? '-' }}</p>
+                            <div class="flex items-center justify-between mt-3">
+                                <span class="text-[10px] text-text-muted font-mono">{{ $sub->code }}</span>
+                                <x-status-badge :status="$sub->status" />
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
-        @empty
-        <div class="flex flex-col items-center justify-center py-14 px-6 text-center">
-            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                 style="background:#F5F5F5; border:1.5px dashed rgba(245,158,11,0.28);">
-                <svg class="w-6 h-6" fill="none" stroke="#f5d08b" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <p class="text-sm font-semibold" style="color:#8E8CAD">Tidak ada yang menunggu keputusan</p>
-            <p class="text-xs font-light mt-1" style="color:#b0aec8">Semua pengajuan sudah diproses</p>
-        </div>
-        @endforelse
     </div>
-
-</div>
-
 </x-layouts.app>

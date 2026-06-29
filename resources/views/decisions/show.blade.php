@@ -67,9 +67,9 @@
         @forelse($submission->reviews as $index => $rev)
         @php
             $recColor = match($rev->recommendation?->value ?? '') {
-                'APPROVED'      => ['bg'=>'rgba(34,197,94,0.1)',  'text'=>'#15803d', 'border'=>'rgba(34,197,94,0.2)'],
-                'RESUBMISSION'  => ['bg'=>'rgba(245,158,11,0.1)', 'text'=>'#b45309', 'border'=>'rgba(245,158,11,0.22)'],
-                'DISAPPROVED'   => ['bg'=>'rgba(239,68,68,0.1)',  'text'=>'#b91c1c', 'border'=>'rgba(239,68,68,0.2)'],
+                'APPROVE'       => ['bg'=>'rgba(34,197,94,0.1)',  'text'=>'#15803d', 'border'=>'rgba(34,197,94,0.2)'],
+                'REVISION'      => ['bg'=>'rgba(245,158,11,0.1)', 'text'=>'#b45309', 'border'=>'rgba(245,158,11,0.22)'],
+                'REJECT'        => ['bg'=>'rgba(239,68,68,0.1)',  'text'=>'#b91c1c', 'border'=>'rgba(239,68,68,0.2)'],
                 default         => ['bg'=>'#F5F5F5',              'text'=>'#5A587A', 'border'=>'rgba(0,0,0,0.08)'],
             };
         @endphp
@@ -138,10 +138,10 @@
         @php
             $dec = $submission->latestDecision;
             $decColor = match($dec->decision->value ?? '') {
-                'APPROVED'     => ['bg'=>'rgba(34,197,94,0.1)',  'text'=>'#15803d', 'border'=>'rgba(34,197,94,0.25)',  'panelBorder'=>'rgba(34,197,94,0.2)',  'panelShadow'=>'rgba(34,197,94,0.08)'],
-                'RESUBMISSION' => ['bg'=>'rgba(245,158,11,0.1)', 'text'=>'#b45309', 'border'=>'rgba(245,158,11,0.28)', 'panelBorder'=>'rgba(245,158,11,0.22)', 'panelShadow'=>'rgba(245,158,11,0.08)'],
-                'DISAPPROVED'  => ['bg'=>'rgba(239,68,68,0.1)',  'text'=>'#b91c1c', 'border'=>'rgba(239,68,68,0.22)',  'panelBorder'=>'rgba(239,68,68,0.2)',  'panelShadow'=>'rgba(239,68,68,0.08)'],
-                default        => ['bg'=>'#F5F5F5',              'text'=>'#5A587A', 'border'=>'rgba(0,0,0,0.08)',      'panelBorder'=>'rgba(0,0,0,0.1)',      'panelShadow'=>'rgba(0,0,0,0.05)'],
+                'APPROVED'               => ['bg'=>'rgba(34,197,94,0.1)',  'text'=>'#15803d', 'border'=>'rgba(34,197,94,0.25)',  'panelBorder'=>'rgba(34,197,94,0.2)',  'panelShadow'=>'rgba(34,197,94,0.08)'],
+                'APPROVED_WITH_REVISION' => ['bg'=>'rgba(245,158,11,0.1)', 'text'=>'#b45309', 'border'=>'rgba(245,158,11,0.28)', 'panelBorder'=>'rgba(245,158,11,0.22)', 'panelShadow'=>'rgba(245,158,11,0.08)'],
+                'REJECTED'               => ['bg'=>'rgba(239,68,68,0.1)',  'text'=>'#b91c1c', 'border'=>'rgba(239,68,68,0.22)',  'panelBorder'=>'rgba(239,68,68,0.2)',  'panelShadow'=>'rgba(239,68,68,0.08)'],
+                default                  => ['bg'=>'#F5F5F5',              'text'=>'#5A587A', 'border'=>'rgba(0,0,0,0.08)',      'panelBorder'=>'rgba(0,0,0,0.1)',      'panelShadow'=>'rgba(0,0,0,0.05)'],
             };
         @endphp
         <div class="bg-white rounded-2xl border overflow-hidden"
@@ -241,12 +241,12 @@
                                 </div>
                             </label>
 
-                            {{-- Resubmission --}}
+                            {{-- Approved with Revision --}}
                             <label class="decision-radio-label flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all duration-150"
                                    style="border-color:rgba(70,62,227,0.12); background:white;"
                                    onmouseover="this.style.background='rgba(245,158,11,0.04)'; this.style.borderColor='rgba(245,158,11,0.3)'"
                                    onmouseout="if(!this.querySelector('input').checked){this.style.background='white'; this.style.borderColor='rgba(70,62,227,0.12)'}">
-                                <input type="radio" name="decision" value="RESUBMISSION"
+                                <input type="radio" name="decision" value="APPROVED_WITH_REVISION"
                                        class="w-4 h-4 accent-[#F59E0B] cursor-pointer"
                                        onchange="document.querySelectorAll('.decision-radio-label').forEach(el=>{ el.style.background='white'; el.style.borderColor='rgba(70,62,227,0.12)' }); this.closest('label').style.background='rgba(245,158,11,0.06)'; this.closest('label').style.borderColor='rgba(245,158,11,0.35)'">
                                 <div class="flex items-center gap-2.5 flex-1">
@@ -257,18 +257,18 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-bold" style="color:#0F0E2E">Perlu Revisi</p>
-                                        <p class="text-[10px] font-light" style="color:#8E8CAD">Resubmission</p>
+                                        <p class="text-sm font-bold" style="color:#0F0E2E">Disetujui dengan Revisi</p>
+                                        <p class="text-[10px] font-light" style="color:#8E8CAD">Approved with Revision</p>
                                     </div>
                                 </div>
                             </label>
 
-                            {{-- Disapproved --}}
+                            {{-- Rejected --}}
                             <label class="decision-radio-label flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all duration-150"
                                    style="border-color:rgba(70,62,227,0.12); background:white;"
                                    onmouseover="this.style.background='rgba(239,68,68,0.04)'; this.style.borderColor='rgba(239,68,68,0.3)'"
                                    onmouseout="if(!this.querySelector('input').checked){this.style.background='white'; this.style.borderColor='rgba(70,62,227,0.12)'}">
-                                <input type="radio" name="decision" value="DISAPPROVED"
+                                <input type="radio" name="decision" value="REJECTED"
                                        class="w-4 h-4 accent-[#EF4444] cursor-pointer"
                                        onchange="document.querySelectorAll('.decision-radio-label').forEach(el=>{ el.style.background='white'; el.style.borderColor='rgba(70,62,227,0.12)' }); this.closest('label').style.background='rgba(239,68,68,0.06)'; this.closest('label').style.borderColor='rgba(239,68,68,0.35)'">
                                 <div class="flex items-center gap-2.5 flex-1">
@@ -280,7 +280,7 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold" style="color:#0F0E2E">Ditolak</p>
-                                        <p class="text-[10px] font-light" style="color:#8E8CAD">Disapproved</p>
+                                        <p class="text-[10px] font-light" style="color:#8E8CAD">Rejected</p>
                                     </div>
                                 </div>
                             </label>

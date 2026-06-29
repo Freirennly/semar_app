@@ -13,9 +13,13 @@ class DecisionController extends Controller
 {
     public function __construct(private WorkflowService $workflow) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $submissions = Submission::where('status', SubmissionStatus::PENDING_DECISION)
+        if (! $request->user()->hasRole('sekretariat')) {
+            abort(403, 'Hanya Sekretariat yang dapat mengelola keputusan.');
+        }
+
+        $submissions = Submission::where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'reviews.reviewer', 'assignments.reviewer')
             ->latest()
             ->get();
@@ -23,18 +27,26 @@ class DecisionController extends Controller
         return view('decisions.index', compact('submissions'));
     }
 
-    public function show(Submission $submission)
+    public function show(Request $request, Submission $submission)
     {
+        if (! $request->user()->hasRole('sekretariat')) {
+            abort(403, 'Hanya Sekretariat yang dapat mengelola keputusan.');
+        }
+
         $submission->load(['student', 'documents', 'reviews.reviewer', 'assignments.reviewer', 'statusHistories.changer', 'decisions.decider']);
         return view('decisions.show', compact('submission'));
     }
 
     public function store(Request $request, Submission $submission)
     {
+        if (! $request->user()->hasRole('sekretariat')) {
+            abort(403, 'Hanya Sekretariat yang dapat mengelola keputusan.');
+        }
+
         $user = $request->user();
 
         $data = $request->validate([
-            'decision' => 'required|in:APPROVED,RESUBMISSION,DISAPPROVED',
+            'decision' => 'required|in:APPROVED,APPROVED_WITH_REVISION,REJECTED',
             'notes' => 'nullable|string|max:5000',
         ]);
 
@@ -48,8 +60,8 @@ class DecisionController extends Controller
 
         $newStatus = match ($data['decision']) {
             'APPROVED' => SubmissionStatus::APPROVED,
-            'RESUBMISSION' => SubmissionStatus::RESUBMISSION,
-            'DISAPPROVED' => SubmissionStatus::DISAPPROVED,
+            'APPROVED_WITH_REVISION' => SubmissionStatus::APPROVED_WITH_REVISION,
+            'REJECTED' => SubmissionStatus::REJECTED,
         };
 
         $this->workflow->transition($submission, $newStatus, $user, $data['notes']);

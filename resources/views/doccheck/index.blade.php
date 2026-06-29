@@ -80,9 +80,9 @@
                     @foreach($submissions as $sub)
                     @php
                         $docCount  = $sub->documents->count();
-                        $docTotal  = 3;
+                        $docTotal  = \App\Models\DocumentTemplate::visible()->where('is_required', true)->count();
                         $docFull   = $docCount >= $docTotal;
-                        $docPct    = min(100, round($docCount / $docTotal * 100));
+                        $docPct    = $docTotal > 0 ? min(100, round($docCount / $docTotal * 100)) : 100;
                     @endphp
                     <tr class="group transition-colors duration-150"
                         style="border-bottom:1px solid rgba(70,62,227,0.05);"
