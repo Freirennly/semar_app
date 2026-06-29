@@ -72,7 +72,7 @@ class SubmissionController extends Controller
             'title'         => 'required|string|max:255',
             'type'          => 'required|string',
             'abstract'      => 'nullable|string',
-            'files.*'       => 'nullable|file|mimes:pdf|max:10240', // Validasi file di dalam array max 10MB
+            'files.*'       => 'nullable|file|mimes:pdf|max:2048', // Batas validasi file Laravel
             'hyperlinks.*'  => 'nullable|url',
         ]);
 
@@ -179,18 +179,55 @@ class SubmissionController extends Controller
     }
 
     /**
-     * Mengunduh file template master secara aman lewat sistem controller
+     * PERBAIKAN: Mengunduh file template master secara aman lewat sistem manual ID parameter kueri
      */
-    public function downloadTemplate(DocumentTemplate $documentTemplate)
+    public function downloadTemplate($id)
     {
-        if (!Storage::disk('public')->exists($documentTemplate->file_path)) {
-            return back()->with('error', 'Mohon maaf, master berkas template tidak ditemukan di server.');
+        $documentTemplate = DocumentTemplate::find($id);
+
+        if (!$documentTemplate) {
+            return back()->with('error', 'Data master template tidak ditemukan di dalam sistem.');
+        }
+
+        if (!$documentTemplate->file_path || !Storage::disk('public')->exists($documentTemplate->file_path)) {
+            return back()->with('error', 'Mohon maaf, fisik master berkas template tidak ditemukan di server penyimpanan lokal.');
         }
 
         $extension = pathinfo($documentTemplate->file_path, PATHINFO_EXTENSION);
         $safeName = str_replace(' ', '_', $documentTemplate->name) . '.' . $extension;
 
         return Storage::disk('public')->download($documentTemplate->file_path, $safeName);
+    }
+
+    /**
+     * PERBAIKAN INTEGRASI: Membuka berkas dokumen PDF secara inline/link di tab baru browser tanpa memicu error 403
+     */
+    public function viewDocument(SubmissionDocument $document)
+    {
+        $user = auth()->user();
+        $submission = $document->submission;
+
+        // Otorisasi Keamanan Dokumen: Mahasiswa hanya boleh melihat berkas milik pengajuannya sendiri
+        if ($user->hasRole('student') && $submission->student_id !== $user->id) {
+            abort(403, 'Anda tidak memiliki hak akses untuk melihat dokumen ini.');
+        }
+
+        // Jika dokumen disimpan sebagai hyperlink Google Drive, alihkan langsung ke URL terkait
+        if ($document->type === 'link') {
+            return redirect()->away($document->file_path);
+        }
+
+        // Validasi fisik file jika tipe dokumen adalah upload file biasa
+        if (!$document->file_path || !Storage::disk('public')->exists($document->file_path)) {
+            return back()->with('error', 'Fisik file PDF dokumen pendukung tidak ditemukan di server penyimpanan lokal.');
+        }
+
+        $file = Storage::disk('public')->get($document->file_path);
+
+        return response($file, 200, [
+            'Content-Type' => $document->mime ?? 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $document->original_name . '"'
+        ]);
     }
 
     public function edit(Submission $submission)
@@ -208,7 +245,7 @@ class SubmissionController extends Controller
             'title' => 'required|string|max:500',
             'type' => 'required|string|max:100',
             'abstract' => 'nullable|string|max:5000',
-            'files.*' => 'nullable|file|mimes:pdf|max:10240',
+            'files.*' => 'nullable|file|mimes:pdf|max:2048',
             'hyperlinks.*' => 'nullable|url',
         ]);
 
@@ -330,7 +367,7 @@ class SubmissionController extends Controller
 
         $request->validate([
             'document_template_id' => 'required|in:' . $allowedIdsString,
-            'file' => 'nullable|file|mimes:pdf|max:10240',
+            'file' => 'nullable|file|mimes:pdf|max:2048',
             'hyperlink' => 'nullable|url',
         ]);
 
@@ -441,11 +478,22 @@ class SubmissionController extends Controller
             return back()->with('error', 'Dokumen Ethical Clearance belum lengkap untuk ditandatangani.');
         }
 
+        // Pemicu pembuatan file fisik PDF dan QR-Code beralih ke CertificateGenerator secara dinamis
+        $certificateService = new \App\Services\CertificateGenerator();
+        $generatedPath = $certificateService->generate($submission);
+
+        // Perbarui rekam path sertifikat privat ke database submissions
+        $submission->update(['ec_certificate_path' => $generatedPath]);
+
         $this->workflow->transition($submission, SubmissionStatus::DONE, $user, 'Sertifikat Laik Etik telah ditandatangani oleh Ketua KEP.');
 
         return back()->with('success', 'Sertifikat Laik Etik berhasil ditandatangani.');
     }
 
+    /**
+     * PERBAIKAN: Menyelaraskan kueri unduhan sertifikat di menu Ethical Clearance 
+     * agar langsung mengambil file dari generator tanpa mencari baris data kosong di tabel anak documents
+     */
     public function downloadEc(Request $request, Submission $submission)
     {
         $user = $request->user();
@@ -458,13 +506,14 @@ class SubmissionController extends Controller
             return back()->with('error', 'Sertifikat Laik Etik belum diterbitkan.');
         }
 
-        $ecDocument = $submission->documents()->where('doc_type', 'EC_CERTIFICATE')->first();
-        
-        if (!$ecDocument || !Storage::disk('public')->exists($ecDocument->file_path)) {
-            return back()->with('error', 'Mohon maaf, file sertifikat tidak ditemukan di dalam sistem.');
+        $safeEcNumber = preg_replace('/[^A-Za-z0-9_\-]/', '_', $submission->ec_number);
+        $fileName     = 'private/ec_certificates/EC-' . $safeEcNumber . '.pdf';
+
+        if (empty($fileName) || !Storage::exists($fileName)) {
+            return back()->with('error', 'Mohon maaf, file fisik sertifikat PDF tidak ditemukan di dalam sistem.');
         }
 
-        return Storage::disk('public')->download($ecDocument->file_path, 'Ethical_Clearance_' . $submission->code . '.pdf');
+        return Storage::download($fileName, 'Ethical_Clearance_' . $safeEcNumber . '.pdf');
     }
 
     public function downloadCertificate(Request $request, Submission $submission)
@@ -485,7 +534,7 @@ class SubmissionController extends Controller
         }
 
         if (empty($submission->ec_certificate_path) || ! Storage::exists($submission->ec_certificate_path)) {
-            abort(404);
+            return back()->with('error', 'Mohon maaf, berkas fisik sertifikat belum terbit di sistem.');
         }
 
         // Log the download event
