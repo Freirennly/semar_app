@@ -23,10 +23,6 @@
                         <a href="{{ route('login') }}" class="btn-primary py-3 px-6 text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all duration-300">
                             Ajukan Protokol
                         </a>
-                        <a href="#tentang" class="btn-ghost py-3 px-6 text-base group">
-                            Pelajari Sistem 
-                            <span class="inline-block transition-transform duration-300 group-hover:translate-x-1 ml-1">&rarr;</span>
-                        </a>
                     </div>
                 </div>
 
@@ -305,6 +301,5 @@
                 </div>
             </div>
         </div>
-    </section>
     </section>
 </x-layouts.landing>
