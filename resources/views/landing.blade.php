@@ -301,26 +301,5 @@
             </div>
         </div>
     </section>
-
-    <!-- SECTION 4: Pre Footer / CTA -->
-    <section id="contact" class="py-24 bg-primary relative overflow-hidden">
-        <!-- Soft background pattern/shapes -->
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-        <div class="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
-        
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">SEMAR</h2>
-            <p class="text-primary-light text-white/80 text-lg md:text-xl mb-10 leading-relaxed max-w-2xl mx-auto">
-                Komite Etik Penelitian yang independen dan profesional untuk menjamin perlindungan subjek serta kualitas integritas ilmiah.
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="{{ route('login') }}" class="bg-white text-primary font-semibold py-3 px-8 rounded-lg shadow-lg hover:bg-soft-surface transition-colors duration-300">
-                    Login SSO
-                </a>
-                <a href="mailto:etik@semar.ac.id" class="border border-white/30 text-white font-semibold py-3 px-8 rounded-lg hover:bg-white/10 transition-colors duration-300">
-                    Hubungi Kami
-                </a>
-            </div>
-        </div>
     </section>
 </x-layouts.landing>
