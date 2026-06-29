@@ -378,7 +378,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 
                 {{-- PDF --}}
-                <a href="#"
+                <a href="https://drive.google.com/file/d/1XhmnYUmTOE0QKaf_LB---B5Y3Z9BMBLR/view?usp=drive_link"
                    class="flex items-center gap-4 p-5 rounded-2xl border group transition-all duration-200"
                    style="border-color:rgba(70,62,227,0.08);"
                    onmouseover="this.style.borderColor='rgba(70,62,227,0.3)'; this.style.background='rgba(70,62,227,0.03)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(70,62,227,0.08)'"
@@ -399,7 +399,7 @@
                 </a>
 
                 {{-- Template --}}
-                <a href="#"
+                <a href="https://drive.google.com/file/d/137_W1se6SvV6DVS_hTMCiP1reVaF0RHr/view?usp=drive_link"
                    class="flex items-center gap-4 p-5 rounded-2xl border group transition-all duration-200"
                    style="border-color:rgba(70,62,227,0.08);"
                    onmouseover="this.style.borderColor='rgba(70,62,227,0.3)'; this.style.background='rgba(70,62,227,0.03)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(70,62,227,0.08)'"
@@ -420,7 +420,7 @@
                 </a>
 
                 {{-- Panduan --}}
-                <a href="#"
+                <a href="https://drive.google.com/file/d/1oibjkEkmZ7E1y5pXF_2uP9uA65HP0okG/view?usp=sharing"
                    class="flex items-center gap-4 p-5 rounded-2xl border group transition-all duration-200"
                    style="border-color:rgba(70,62,227,0.08);"
                    onmouseover="this.style.borderColor='rgba(70,62,227,0.3)'; this.style.background='rgba(70,62,227,0.03)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 24px rgba(70,62,227,0.08)'"

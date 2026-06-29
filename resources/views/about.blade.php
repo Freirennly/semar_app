@@ -511,43 +511,6 @@
 </section>
 
 {{-- ═══════════════════════════════════════════════════════
-     CTA SECTION
-════════════════════════════════════════════════════════ --}}
-<section class="py-24 relative overflow-hidden" style="background:#463EE3;">
-    <div class="absolute inset-0 opacity-10 pointer-events-none"
-         style="background-image: radial-gradient(white 1px, transparent 1px); background-size: 28px 28px;"></div>
-    <div class="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none"
-         style="background:rgba(255,255,255,0.07); transform:translate(33%,-33%);"></div>
-    <div class="absolute bottom-0 left-0 w-96 h-96 rounded-full pointer-events-none"
-         style="background:rgba(135,206,235,0.12); transform:translate(-33%,33%);"></div>
-
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-        <h2 class="text-3xl md:text-5xl font-bold text-white mb-5 leading-tight tracking-tight">
-            Mulai Riset Anda<br>dengan SEMAR
-        </h2>
-        <p class="text-lg text-white/75 font-light mb-10 leading-relaxed max-w-xl mx-auto">
-            Platform modern untuk mempercepat proses persetujuan etik, menjamin transparansi, dan meningkatkan kualitas penelitian institusi.
-        </p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="{{ route('login') }}"
-               class="font-bold py-3 px-8 rounded-xl transition-all duration-200"
-               style="background:white; color:#463EE3; box-shadow:0 4px 20px rgba(0,0,0,0.2);"
-               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 28px rgba(0,0,0,0.25)'"
-               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.2)'">
-                Masuk dengan SSO
-            </a>
-            <a href="mailto:support@semar.ac.id"
-               class="font-medium py-3 px-8 rounded-xl border transition-all duration-200"
-               style="border-color:rgba(255,255,255,0.3); color:white;"
-               onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(-2px)'"
-               onmouseout="this.style.background='transparent'; this.style.transform='translateY(0)'">
-                Hubungi Dukungan
-            </a>
-        </div>
-    </div>
-</section>
-
-{{-- ═══════════════════════════════════════════════════════
      INLINE STYLES & ANIMATIONS
      (Tambahkan ini ke app.css / layout jika memungkinkan)
 ════════════════════════════════════════════════════════ --}}
