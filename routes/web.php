@@ -75,6 +75,8 @@ Route::middleware('auth')->group(function () {
         Route::post('submissions/{submission}/submit', [SubmissionController::class, 'submit'])->name('submissions.submit');
         Route::post('submissions/{submission}/upload-document', [SubmissionController::class, 'uploadDocument'])->name('submissions.upload-document');
         Route::delete('submissions/{submission}/documents/{document}', [SubmissionController::class, 'deleteDocument'])->name('submissions.delete-document');
+        Route::post('submissions/{submission}/cancel', [SubmissionController::class, 'cancel'])->name('submissions.cancel');
+        Route::delete('submissions/{submission}', [SubmissionController::class, 'destroy'])->name('submissions.destroy');
         
         // Rute Ethical Clearance (EC) Konfirmasi & Download
         Route::post('submissions/{submission}/confirm', [SubmissionController::class, 'confirmEcData'])->name('submissions.confirm');
@@ -116,7 +118,7 @@ Route::middleware('auth')->group(function () {
         Route::get('doccheck/{submission}', [DocCheckController::class, 'show'])->name('doccheck.show');
         Route::post('doccheck/{submission}/approve', [DocCheckController::class, 'approve'])->name('doccheck.approve');
         Route::post('doccheck/{submission}/return', [DocCheckController::class, 'returnToDraft'])->name('doccheck.return');
-
+        Route::post('doccheck/{submission}/auto-approve', [DocCheckController::class, 'autoApprove'])->name('doccheck.auto-approve');
         // Modul Penentuan Sidang Keputusan Etik
         Route::get('decisions', [DecisionController::class, 'index'])->name('decisions.index');
         Route::get('decisions/{submission}', [DecisionController::class, 'show'])->name('decisions.show');

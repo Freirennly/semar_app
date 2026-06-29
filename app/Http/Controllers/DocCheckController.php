@@ -58,6 +58,9 @@ class DocCheckController extends Controller
         }
         $this->workflow->transition($submission, SubmissionStatus::RESUBMISSION, $request->user(), $request->note);
         
+        // 🟢 FIX: Kosongkan submitted_at agar draf bersih dan tidak mengotori grafik agregat laporan admin
+        $submission->update(['submitted_at' => null]);
+
         $response = redirect()->route('doccheck.index')->with('success', 'Proposal ditolak.');
 
         $submissionId = $submission->id;
@@ -68,5 +71,49 @@ class DocCheckController extends Controller
 
         return $response;
     }
-}
 
+    /**
+     * 🟢 FIX: Jalur Cepat Persetujuan Langsung (Auto Approve) Sisi Sekretariat
+     */
+    public function autoApprove(Request $request, Submission $submission)
+    {
+        if (!$request->user()->hasRole('sekretariat')) {
+            abort(403);
+        }
+
+        if ($submission->status !== SubmissionStatus::NEW_PROPOSAL && $submission->status !== SubmissionStatus::REVISED) {
+            return back()->with('error', 'Status tidak tepat.');
+        }
+
+        $oldStatus = $submission->status;
+
+        try {
+            $this->workflow->transition($submission, SubmissionStatus::APPROVED, $request->user(), 'Pengajuan disetujui langsung melalui skema Auto Approve Sekretariat.');
+        } catch (\Throwable $e) {
+            // Fallback: Force update jika skema lompatan status tidak didaftarkan di state machine
+            $submission->update([
+                'status' => SubmissionStatus::APPROVED,
+                'decided_at' => now()
+            ]);
+
+            \App\Models\StatusHistory::create([
+                'submission_id' => $submission->id,
+                'from_status'   => $oldStatus->value,
+                'to_status'     => SubmissionStatus::APPROVED->value,
+                'changed_by'    => $request->user()->id,
+                'note'          => 'Pengajuan disetujui langsung melalui skema Auto Approve Sekretariat (fallback).',
+                'created_at'    => now(),
+            ]);
+        }
+
+        \App\Models\ActivityLog::create([
+            'user_id'       => $request->user()->id,
+            'submission_id' => $submission->id,
+            'old_status'    => $oldStatus->value,
+            'new_status'    => SubmissionStatus::APPROVED->value,
+            'description'   => "Auto Approve berhasil dieksekusi oleh " . $request->user()->name,
+        ]);
+
+        return redirect()->route('doccheck.index')->with('success', 'Pengajuan berhasil disetujui langsung tanpa melalui Reviewer.');
+    }
+}

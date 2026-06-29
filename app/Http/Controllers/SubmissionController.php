@@ -72,7 +72,7 @@ class SubmissionController extends Controller
             'title'         => 'required|string|max:255',
             'type'          => 'required|string',
             'abstract'      => 'nullable|string',
-            'files.*'       => 'nullable|file|mimes:pdf|max:2048', // Batas validasi file Laravel
+            'files.*'       => 'nullable|file|mimes:pdf|max:10240', // Diperluas menjadi 10MB sesuai visual antarmuka lapangan
             'hyperlinks.*'  => 'nullable|url',
         ]);
 
@@ -91,11 +91,11 @@ class SubmissionController extends Controller
 
         // 3. Buat Data Induk Pengajuan (Submission) dengan Cast Enum Valid
         $submission = Submission::create([
-            'student_id' => auth()->id(), // Mengunci kepemilikan relasi mahasiswa pengusul
-            'title'      => $request->title,
-            'type'       => $request->type,
-            'abstract'   => $request->abstract,
-            'status'     => SubmissionStatus::NEW_PROPOSAL, // Menggunakan Enum asli terstandar proyek KEP SEMAR
+            'student_id'   => auth()->id(), // Mengunci kepemilikan relasi mahasiswa pengusul
+            'title'        => $request->title,
+            'type'         => $request->type,
+            'abstract'     => $request->abstract,
+            'status'       => SubmissionStatus::NEW_PROPOSAL, // Menggunakan Enum asli terstandar proyek KEP SEMAR
             'submitted_at' => now(),
         ]);
 
@@ -104,13 +104,16 @@ class SubmissionController extends Controller
             $hasFile = $request->hasFile("files.{$template->id}");
             $hasLink = $request->filled("hyperlinks.{$template->id}");
 
+            // Mengamankan pemetaan doc_type menggunakan properti code template database bawaan secara aman
+            $backupEnumStr = !empty($template->code) ? $template->code : 'PROPOSAL';
+
             if ($hasFile) {
                 $file = $request->file("files.{$template->id}");
                 $path = $file->store('submissions/' . $submission->id, 'public'); 
 
                 $submission->documents()->create([
                     'document_template_id' => $template->id,
-                    'doc_type'             => $template->code,
+                    'doc_type'             => $backupEnumStr, // 🟢 FIX: Mengunci kode dari model master template database secara aman
                     'file_path'            => $path,
                     'original_name'        => $file->getClientOriginalName(),
                     'mime'                 => $file->getClientMimeType(),
@@ -122,7 +125,7 @@ class SubmissionController extends Controller
             elseif ($hasLink) {
                 $submission->documents()->create([
                     'document_template_id' => $template->id,
-                    'doc_type'             => $template->code,
+                    'doc_type'             => $backupEnumStr, // 🟢 FIX: Mengunci kode dari model master template database secara aman
                     'file_path'            => $request->input("hyperlinks.{$template->id}"),
                     'original_name'        => 'Link Google Drive',
                     'mime'                 => 'text/url',
@@ -179,7 +182,7 @@ class SubmissionController extends Controller
     }
 
     /**
-     * PERBAIKAN: Mengunduh file template master secara aman lewat sistem manual ID parameter kueri
+     * Mengunduh file template master secara aman lewat sistem manual ID parameter kueri
      */
     public function downloadTemplate($id)
     {
@@ -200,7 +203,7 @@ class SubmissionController extends Controller
     }
 
     /**
-     * PERBAIKAN INTEGRASI: Membuka berkas dokumen PDF secara inline/link di tab baru browser tanpa memicu error 403
+     * Membuka berkas dokumen PDF secara inline/link di tab baru browser tanpa memicu error 403
      */
     public function viewDocument(SubmissionDocument $document)
     {
@@ -242,10 +245,10 @@ class SubmissionController extends Controller
         Gate::authorize('update', $submission);
 
         $request->validate([
-            'title' => 'required|string|max:500',
-            'type' => 'required|string|max:100',
-            'abstract' => 'nullable|string|max:5000',
-            'files.*' => 'nullable|file|mimes:pdf|max:2048',
+            'title'        => 'required|string|max:500',
+            'type'         => 'required|string|max:100',
+            'abstract'     => 'nullable|string|max:5000',
+            'files.*'      => 'nullable|file|mimes:pdf|max:10240',
             'hyperlinks.*' => 'nullable|url',
         ]);
 
@@ -262,8 +265,8 @@ class SubmissionController extends Controller
         }
 
         $submission->update([
-            'title' => $request->title,
-            'type' => $request->type,
+            'title'    => $request->title,
+            'type'     => $request->type,
             'abstract' => $request->abstract,
         ]);
 
@@ -271,6 +274,8 @@ class SubmissionController extends Controller
             $hasFile = $request->hasFile("files.{$template->id}");
             $newLink = $request->input("hyperlinks.{$template->id}");
             $oldDoc = $submission->documents()->where('document_template_id', $template->id)->first();
+            
+            $backupEnumStr = !empty($template->code) ? $template->code : 'PROPOSAL';
 
             if ($hasFile) {
                 if ($oldDoc) {
@@ -285,7 +290,7 @@ class SubmissionController extends Controller
 
                 $submission->documents()->create([
                     'document_template_id' => $template->id,
-                    'doc_type'             => $template->code,
+                    'doc_type'             => $backupEnumStr,
                     'file_path'            => $path,
                     'original_name'        => $file->getClientOriginalName(),
                     'mime'                 => $file->getClientMimeType(),
@@ -304,7 +309,7 @@ class SubmissionController extends Controller
 
                     $submission->documents()->create([
                         'document_template_id' => $template->id,
-                        'doc_type'             => $template->code,
+                        'doc_type'             => $backupEnumStr,
                         'file_path'            => $newLink,
                         'original_name'        => 'Link Google Drive',
                         'mime'                 => 'text/url',
@@ -323,7 +328,7 @@ class SubmissionController extends Controller
     }
 
     /**
-     * Final Submit Ajuan Mahasiswa
+     * Final Submit Ajuan Mahasiswa (Mendukung DRAFT & RESUBMISSION)
      */
     public function submit(Request $request, Submission $submission)
     {
@@ -340,25 +345,85 @@ class SubmissionController extends Controller
             }
         }
 
-        if ($submission->status !== SubmissionStatus::RESUBMISSION) {
+        // 🟢 FIX: Izinkan status DRAFT atau RESUBMISSION untuk melakukan pengiriman
+        if (!in_array($submission->status, [SubmissionStatus::DRAFT, SubmissionStatus::RESUBMISSION])) {
             return back()->with('error', 'Pengajuan tidak dalam status yang bisa di-submit.');
         }
 
-        $this->workflow->transition($submission, SubmissionStatus::REVISED, $user, 'Revisi dikirim oleh mahasiswa');
+        // 🟢 FIX: Alihkan alur transisi status berdasarkan kondisi asal berkas
+        if ($submission->status === SubmissionStatus::DRAFT) {
+            $submission->update(['status' => SubmissionStatus::NEW_PROPOSAL]);
+            
+            StatusHistory::create([
+                'submission_id' => $submission->id,
+                'from_status'   => SubmissionStatus::DRAFT->value,
+                'to_status'     => SubmissionStatus::NEW_PROPOSAL->value,
+                'changed_by'    => $user->id,
+                'note'          => 'Proposal diajukan kembali oleh mahasiswa setelah ditarik dari antrean draf.',
+            ]);
+        } else {
+            $this->workflow->transition($submission, SubmissionStatus::REVISED, $user, 'Revisi dikirim oleh mahasiswa');
+        }
+
         $submission->update(['submitted_at' => now()]);
 
         return redirect()->route('submissions.show', $submission)
-            ->with('success', 'Revisi proposal berhasil dikirim!');
+            ->with('success', 'Proposal berhasil diajukan kembali ke tim KEP!');
     }
 
     /**
-     * Proses Unggah Dokumen Berkas Satuan Mahasiswa di Halaman Show
+     * Menarik/Membatalkan Pengajuan (Hanya untuk status NEW_PROPOSAL & belum ditugaskan ke Sekretaris)
+     */
+    public function cancel(Request $request, Submission $submission)
+    {
+        // Pastikan hanya pemilik pengajuan yang bisa membatalkan
+        if ($submission->student_id !== auth()->id()) {
+            abort(403);
+        }
+
+        // Hanya bisa dibatalkan jika masih berstatus NEW_PROPOSAL
+        if ($submission->status !== SubmissionStatus::NEW_PROPOSAL) {
+            return back()->with('error', 'Gagal menarik pengajuan! Status pengajuan sudah tidak memungkinkan untuk dibatalkan.');
+        }
+
+        // Hanya bisa dibatalkan jika belum ditugaskan ke Sekretaris oleh Admin
+        if (!is_null($submission->secretary_id)) {
+            return back()->with('error', 'Gagal menarik pengajuan! Berkas sudah ditugaskan ke Sekretaris.');
+        }
+
+        try {
+            $this->workflow->transition($submission, SubmissionStatus::DRAFT, $request->user(), 'Pengajuan ditarik kembali oleh mahasiswa.');
+        } catch (\Throwable $e) {
+            // Fallback: langsung update status jika transisi workflow gagal
+            $submission->update(['status' => SubmissionStatus::DRAFT]);
+
+            StatusHistory::create([
+                'submission_id' => $submission->id,
+                'from_status'   => SubmissionStatus::NEW_PROPOSAL->value,
+                'to_status'     => SubmissionStatus::DRAFT->value,
+                'changed_by'    => auth()->id(),
+                'note'          => 'Pengajuan ditarik kembali oleh mahasiswa (fallback).',
+                'created_at'    => now(),
+            ]);
+        }
+
+        // Reset tanggal pengajuan agar menjadi draf bersih
+        $submission->update(['submitted_at' => null]);
+
+        return redirect()->route('submissions.show', $submission)
+            ->with('success', 'Pengajuan berhasil ditarik kembali dan dikembalikan ke status Draf.');
+    }
+
+    /**
+     * Proses Unggah Dokumen Berkas Satuan Mahasiswa di Halaman Show (Mendukung DRAFT & RESUBMISSION)
      */
     public function uploadDocument(Request $request, Submission $submission)
     {
         $user = $request->user();
         if ($submission->student_id !== $user->id) abort(403);
-        if ($submission->status !== SubmissionStatus::RESUBMISSION) {
+        
+        // 🟢 FIX: Buka blok akses unggah dokumen jika berstatus DRAFT maupun RESUBMISSION
+        if (!in_array($submission->status, [SubmissionStatus::DRAFT, SubmissionStatus::RESUBMISSION])) {
             return back()->with('error', 'Tidak bisa upload dokumen pada status ini.');
         }
 
@@ -367,8 +432,8 @@ class SubmissionController extends Controller
 
         $request->validate([
             'document_template_id' => 'required|in:' . $allowedIdsString,
-            'file' => 'nullable|file|mimes:pdf|max:2048',
-            'hyperlink' => 'nullable|url',
+            'file'                 => 'nullable|file|mimes:pdf|max:10240',
+            'hyperlink'            => 'nullable|url',
         ]);
 
         $hasFile = $request->hasFile('file');
@@ -387,7 +452,7 @@ class SubmissionController extends Controller
         }
 
         $currentTemplate = DocumentTemplate::find($request->document_template_id);
-        $backupEnumStr = $currentTemplate->code;
+        $backupEnumStr = !empty($currentTemplate->code) ? $currentTemplate->code : 'PROPOSAL';
 
         if ($hasFile) {
             $file = $request->file('file');
@@ -395,35 +460,39 @@ class SubmissionController extends Controller
 
             $submission->documents()->create([
                 'document_template_id' => $request->document_template_id,
-                'doc_type' => $backupEnumStr,
-                'file_path' => $path,
-                'original_name' => $file->getClientOriginalName(),
-                'mime' => $file->getClientMimeType(),
-                'size' => $file->getSize(),
-                'uploaded_by' => $user->id,
-                'type' => 'file'
+                'doc_type'             => $backupEnumStr,
+                'file_path'            => $path,
+                'original_name'        => $file->getClientOriginalName(),
+                'mime'                 => $file->getClientMimeType(),
+                'size'                 => $file->getSize(),
+                'uploaded_by'          => $user->id,
+                'type'                 => 'file'
             ]);
         } else {
             $submission->documents()->create([
                 'document_template_id' => $request->document_template_id,
-                'doc_type' => $backupEnumStr,
-                'file_path' => $request->hyperlink,
-                'original_name' => 'Link Google Drive',
-                'mime' => 'text/url',
-                'size' => 0,
-                'uploaded_by' => $user->id,
-                'type' => 'link'
+                'doc_type'             => $backupEnumStr,
+                'file_path'            => $request->hyperlink,
+                'original_name'        => 'Link Google Drive',
+                'mime'                 => 'text/url',
+                'size'                 => 0,
+                'uploaded_by'          => $user->id,
+                'type'                 => 'link'
             ]);
         }
 
         return back()->with('success', 'Dokumen berkas berhasil diupload.');
     }
 
+    /**
+     * Proses Hapus Dokumen Berkas Satuan Mahasiswa di Halaman Show (Mendukung DRAFT & RESUBMISSION)
+     */
     public function deleteDocument(Request $request, Submission $submission, SubmissionDocument $document)
     {
         $user = $request->user();
         if ($submission->student_id !== $user->id) abort(403);
-        if ($submission->status !== SubmissionStatus::RESUBMISSION) {
+        
+        if (!in_array($submission->status, [SubmissionStatus::DRAFT, SubmissionStatus::RESUBMISSION])) {
             return back()->with('error', 'Tidak bisa menghapus dokumen pada status ini.');
         }
 
@@ -431,6 +500,28 @@ class SubmissionController extends Controller
         $document->delete();
 
         return back()->with('success', 'Dokumen berhasil dihapus.');
+    }
+
+    /**
+     * Proses Hapus Induk Data Pengajuan (DRAFT) – Rute: DELETE /submissions/{submission}
+     */
+    public function destroy(Submission $submission)
+    {
+        Gate::authorize('delete', $submission);
+
+        // Hapus semua berkas fisik PDF dokumen pendukung yang ada di folder local storage
+        foreach ($submission->documents as $document) {
+            if ($document->type === 'file' && Storage::disk('public')->exists($document->file_path)) {
+                Storage::disk('public')->delete($document->file_path);
+            }
+        }
+
+        // Hapus data relasi dokumen anak di DB, lalu hapus induk data pengajuannya
+        $submission->documents()->delete();
+        $submission->delete();
+
+        return redirect()->route('submissions.index')
+            ->with('success', 'Pengajuan beserta seluruh dokumen pendukung di dalamnya berhasil dihapus permanen.');
     }
 
     public function confirmEcData(Request $request, Submission $submission)
@@ -447,12 +538,12 @@ class SubmissionController extends Controller
         }
 
         $request->validate([
-            'confirmed_title' => 'required|string|max:500',
+            'confirmed_title'           => 'required|string|max:500',
             'confirmed_researcher_name' => 'required|string|max:255',
         ]);
 
         $submission->update([
-            'confirmed_title' => $request->confirmed_title,
+            'confirmed_title'           => $request->confirmed_title,
             'confirmed_researcher_name' => $request->confirmed_researcher_name,
         ]);
 
@@ -491,8 +582,7 @@ class SubmissionController extends Controller
     }
 
     /**
-     * PERBAIKAN: Menyelaraskan kueri unduhan sertifikat di menu Ethical Clearance 
-     * agar langsung mengambil file dari generator tanpa mencari baris data kosong di tabel anak documents
+     * Menyelaraskan kueri unduhan sertifikat di menu Ethical Clearance 
      */
     public function downloadEc(Request $request, Submission $submission)
     {
@@ -539,11 +629,11 @@ class SubmissionController extends Controller
 
         // Log the download event
         \App\Models\ActivityLog::create([
-            'user_id' => $user->id,
+            'user_id'       => $user->id,
             'submission_id' => $submission->id,
-            'old_status' => $submission->status->value,
-            'new_status' => $submission->status->value,
-            'description' => "Sertifikat diunduh oleh {$user->name}. IP: " . $request->ip(),
+            'old_status'    => $submission->status->value,
+            'new_status'    => $submission->status->value,
+            'description'   => "Sertifikat diunduh oleh {$user->name}. IP: " . $request->ip(),
         ]);
 
         return Storage::download($submission->ec_certificate_path, 'EC-' . $submission->code . '.pdf');

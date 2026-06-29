@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum SubmissionStatus: string
 {
+    case DRAFT = 'DRAFT';
     case NEW_PROPOSAL = 'NEW_PROPOSAL';
     case PROCESS = 'PROCESS';
     case ON_REVIEW = 'ON_REVIEW';
@@ -18,6 +19,7 @@ enum SubmissionStatus: string
     public function label(): string
     {
         return match ($this) {
+            self::DRAFT => 'Draf',
             self::NEW_PROPOSAL => 'Proposal Baru',
             self::PROCESS => 'Diproses Sekretariat',
             self::ON_REVIEW => 'Sedang Direview',
@@ -34,6 +36,7 @@ enum SubmissionStatus: string
     public function badgeClass(): string
     {
         return match ($this) {
+            self::DRAFT => 'bg-gray-50 text-gray-600',
             self::NEW_PROPOSAL => 'bg-blue-50 text-blue-700',
             self::PROCESS => 'bg-cyan-50 text-cyan-700',
             self::ON_REVIEW => 'bg-violet-50 text-violet-700',
@@ -50,6 +53,7 @@ enum SubmissionStatus: string
     public function borderColor(): string
     {
         return match ($this) {
+            self::DRAFT => 'border-l-gray-400',
             self::NEW_PROPOSAL => 'border-l-blue-500',
             self::PROCESS => 'border-l-cyan-500',
             self::ON_REVIEW => 'border-l-violet-500',
