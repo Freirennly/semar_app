@@ -109,20 +109,22 @@
     @endrole
 </nav>
 
-{{-- User footer --}}
-<div class="p-4 border-t border-border bg-surface sticky bottom-0 mt-auto space-y-2">
-    <a href="{{ route('landing') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:bg-soft-surface hover:text-primary transition-colors">
-        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+{{-- Sidebar Footer: 2-Line Actions --}}
+<div class="p-4 border-t border-border bg-surface mt-auto">
+    {{-- Line 1: Kembali ke Beranda (13px, Regular) --}}
+    <a href="{{ route('landing') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-normal text-text-secondary hover:bg-soft-surface hover:text-primary transition-colors">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
         Kembali ke Beranda
     </a>
-    
-    <form method="POST" action="{{ route('logout') }}" class="block w-full">
+
+    {{-- Line 2: Keluar (14px, SemiBold) — 16px spacing from Line 1 --}}
+    <form method="POST" action="{{ route('logout') }}" class="block w-full mt-4">
         @csrf
-        <button type="submit" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:bg-danger-bg hover:text-danger w-full transition-colors" aria-label="Keluar dari Sistem">
+        <button type="submit" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] font-semibold text-text-secondary hover:bg-danger-bg hover:text-danger w-full transition-colors" aria-label="Keluar dari Sistem">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
             </svg>
-            Logout
+            Keluar
         </button>
     </form>
 </div>

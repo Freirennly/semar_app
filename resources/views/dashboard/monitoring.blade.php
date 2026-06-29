@@ -1,8 +1,8 @@
 <x-layouts.app :title="'Pemantauan & Riwayat KEP'">
     {{-- Header Section --}}
-    <div class="mb-6">
-        <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Pemantauan & Riwayat</h1>
-        <p class="text-sm text-text-secondary mt-1.5">Audit menyeluruh riwayat keputusan etik pengajuan dan pemantauan performa penugasan reviewer.</p>
+    <div class="mb-12">
+        <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Pemantauan & Riwayat</h1>
+        <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Audit menyeluruh riwayat keputusan etik pengajuan dan pemantauan performa penugasan reviewer.</p>
     </div>
 
     @php
@@ -25,13 +25,13 @@
         });
     @endphp
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Kiri: Tabel Riwayat Log Verifikasi & Penerbitan Komprehensif (70%) --}}
-        <div class="lg:col-span-2 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        {{-- Kiri: Tabel Riwayat Log Verifikasi & Penerbitan Komprehensif (70% or lg:col-span-7) --}}
+        <div class="lg:col-span-7 space-y-6">
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <h2 class="text-[20px] font-semibold text-text">Log Riwayat Sertifikasi Selesai</h2>
-                    <span class="text-xs font-medium text-text-secondary bg-bg px-2.5 py-1 rounded-full border border-border">
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Log Riwayat Sertifikasi Selesai</h2>
+                    <span class="text-[12px] font-normal text-text-secondary bg-bg px-2.5 py-1 rounded-full border border-border">
                         Total Records: {{ $allVerifiedLogs->total() }}
                     </span>
                 </div>
@@ -44,11 +44,11 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode & Peneliti</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan Penelitian</th>
-                                    <th class="px-6 py-4 font-semibold">Aktivitas Sistem</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Tanggal</th>
+                                <tr class="text-left border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode & Peneliti</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan Penelitian</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Aktivitas Sistem</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Tanggal</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
@@ -58,8 +58,8 @@
                                             <span class="font-mono text-xs text-text-secondary block font-semibold">{{ $log->submission ? $log->submission->code : 'N/A' }}</span>
                                             <span class="text-xs text-text-muted mt-0.5 block">{{ $log->submission && $log->submission->student ? $log->submission->student->name : 'Unknown' }}</span>
                                         </td>
-                                        <td class="px-6 py-4 max-w-[240px] truncate font-medium text-text" title="{{ $log->submission ? $log->submission->title : '' }}">
-                                            {{ $log->submission ? \Illuminate\Support\Str::title($log->submission->title) : 'Unknown Submission' }}
+                                        <td class="px-6 py-4 max-w-[240px] truncate font-serif text-text" title="{{ $log->submission ? $log->submission->title : '' }}">
+                                            {{ $log->submission ? $log->submission->title : 'Unknown Submission' }}
                                         </td>
                                         <td class="px-6 py-4 text-xs text-text-secondary">
                                             <div class="flex items-center gap-1.5">
@@ -84,11 +84,11 @@
             </div>
         </div>
 
-        {{-- Kanan: Panel Monitoring Beban Kerja Reviewer Komite Etik (30%) --}}
-        <div class="space-y-6">
+        {{-- Kanan: Panel Monitoring Beban Kerja Reviewer Komite Etik (30% or lg:col-span-3) --}}
+        <div class="lg:col-span-3 space-y-6">
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border">
-                    <h2 class="text-[20px] font-semibold text-text">Beban Kerja Reviewer</h2>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Beban Kerja Reviewer</h2>
                     <p class="text-xs text-text-secondary mt-1">Pantau distribusi penugasan berkas substansi aktif.</p>
                 </div>
 

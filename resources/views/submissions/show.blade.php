@@ -1,26 +1,47 @@
 <x-layouts.app :title="$submission->title">
-    {{-- Header & Breadcrumb --}}
-    <div class="mb-6 animate-fade-in">
-        <nav class="text-[12px] text-text-secondary mb-2" aria-label="Breadcrumb">
+    {{-- Atas: Navigasi Breadcrumb & Tombol Kembali Premium --}}
+    <div class="mb-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in">
+        <nav class="text-[12px] text-text-secondary" aria-label="Breadcrumb">
             <a href="{{ route('submissions.index') }}" class="hover:text-primary transition-colors">Pengajuan</a> 
             <span class="mx-1">/</span> 
-            <span class="text-text">{{ $submission->code }}</span>
+            <span class="text-text font-medium">{{ $submission->code }}</span>
         </nav>
-        <div class="flex items-start md:items-center justify-between gap-4 flex-wrap">
-            <div class="space-y-2">
-                <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight">{{ $submission->title }}</h1>
-                <p class="text-[14px] text-text-secondary">
-                    <span class="font-semibold text-text">{{ $submission->code }}</span> · {{ $submission->type }} · {{ $submission->student->name }}
+        
+        {{-- Tombol Kembali --}}
+        <a href="{{ route('submissions.index') }}" class="inline-flex items-center gap-2 px-3.5 py-1.5 border border-border bg-white hover:bg-slate-50 text-text-secondary hover:text-text text-[13px] font-semibold rounded-xl transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Kembali ke Daftar
+        </a>
+    </div>
+
+    {{-- Kotak Judul Premium --}}
+    <div class="mb-12 p-6 bg-white border border-border rounded-2xl shadow-sm animate-fade-in">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-2 max-w-3xl">
+                <span class="px-2.5 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-text-secondary uppercase tracking-wider">
+                    {{ $submission->type }}
+                </span>
+                <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3] font-serif">
+                    {{ $submission->title }}
+                </h1>
+                <p class="text-[14px] text-text-secondary mt-2">
+                    Registrasi: <span class="font-mono font-semibold text-text">{{ $submission->code }}</span> 
+                    <span class="mx-1.5 text-border-strong">·</span> 
+                    Oleh: <span class="font-semibold text-text">{{ $submission->student->name }}</span>
                 </p>
             </div>
-            <x-status-badge :status="$submission->status" />
+            <div class="shrink-0">
+                <x-status-badge :status="$submission->status" />
+            </div>
         </div>
     </div>
 
-    {{-- Error Alerts --}}
+    {{-- Notifikasi Error Validasi --}}
     @if($errors->any())
         <div class="mb-6 bg-danger-bg border border-danger/20 text-danger rounded-xl px-5 py-3 text-[14px] shadow-sm">
-            <p class="font-bold mb-1">⚠️ Gagal Memproses File:</p>
+            <p class="font-bold mb-1">Gagal Memproses File:</p>
             <ul class="list-disc pl-5 space-y-0.5 text-[12px]">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -29,9 +50,9 @@
         </div>
     @endif
 
-    {{-- Tabs --}}
+    {{-- Tab Pilihan Konten --}}
     @php $tab = $tab ?? 'details'; @endphp
-    <div class="border-b border-border mb-6">
+    <div class="border-b border-border mb-12">
         <nav class="flex gap-4 -mb-px" aria-label="Tabs">
             @foreach(['details' => 'Details', 'documents' => 'Dokumen', 'history' => 'Status History'] as $key => $label)
                 <a href="{{ route('submissions.show', $submission) }}?tab={{ $key }}" class="px-4 py-3 text-[14px] font-medium border-b-2 transition-colors {{ $tab === $key ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text hover:border-border-strong' }}">{{ $label }}</a>
@@ -39,36 +60,38 @@
         </nav>
     </div>
 
+    {{-- KONTEN TAB 1: DETAILS --}}
     @if($tab === 'details')
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
-            <h2 class="text-xl md:text-[24px] font-semibold text-text border-b border-border pb-2">Informasi Pengajuan</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        <div class="lg:col-span-7 card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
+            <h2 class="text-[24px] font-semibold text-text leading-[1.4] border-b border-border pb-2 mb-4">Informasi Pengajuan</h2>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-[14px]">
                 <div>
                     <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">Kode</span>
-                    <span class="font-semibold text-text mt-1 block">{{ $submission->code }}</span>
+                    <span class="font-semibold text-text mt-1 block font-mono">{{ $submission->code }}</span>
                 </div>
                 <div>
-                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">Jenis</span>
+                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">Jenis Kategori</span>
                     <span class="font-semibold text-text mt-1 block">{{ $submission->type }}</span>
                 </div>
                 <div>
-                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">Pengaju</span>
+                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">Nama Pengaju</span>
                     <span class="font-semibold text-text mt-1 block">{{ $submission->student->name }}</span>
                 </div>
                 <div>
-                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">NIM/NIP</span>
+                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">NIM / NIP</span>
                     <span class="font-semibold text-text mt-1 block">{{ $submission->student->nim_nip ?? '-' }}</span>
                 </div>
                 <div class="col-span-1 sm:col-span-2">
-                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide mb-2">Abstrak</span>
-                    <div class="font-academic text-text p-4 bg-slate-50 border border-border rounded-xl whitespace-pre-line">{{ $submission->abstract ?? 'Tidak ada abstrak.' }}</div>
+                    <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide mb-2">Abstrak Penelitian</span>
+                    <div class="font-academic text-text p-4 bg-slate-50 border border-border rounded-xl whitespace-pre-line leading-relaxed">{{ $submission->abstract ?? 'Tidak ada abstrak.' }}</div>
                 </div>
             </dl>
         </div>
         
-        <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm h-fit space-y-6">
-            <h2 class="text-xl md:text-[24px] font-semibold text-text border-b border-border pb-2">Checklist Dokumen</h2>
+        {{-- PANEL SIDEBAR AKSI MAHASISWA --}}
+        <div class="lg:col-span-3 card p-6 bg-white border border-border rounded-2xl shadow-sm h-fit space-y-6">
+            <h2 class="text-[24px] font-semibold text-text leading-[1.4] border-b border-border pb-2 mb-4">Checklist Dokumen</h2>
             
             @php
                 $requiredTemplateIds = $documentTemplates->where('is_required', true)->pluck('id')->toArray();
@@ -96,19 +119,40 @@
             </div>
 
             @role('student')
-            @if($submission->status === \App\Enums\SubmissionStatus::RESUBMISSION)
+            {{-- Tombol Kirim Dokumen & Pengajuan Kembali (Mendukung Status DRAFT dan RESUBMISSION) --}}
+            @if(in_array($submission->status, [\App\Enums\SubmissionStatus::DRAFT, \App\Enums\SubmissionStatus::RESUBMISSION]))
                 @if($hasAllDocs)
                     <form method="POST" action="{{ route('submissions.submit', $submission) }}" class="mt-6">
                         @csrf
-                        <button type="submit" class="w-full btn-primary">Kirim Revisi</button>
+                        <button type="submit" class="w-full btn-primary tracking-wide shadow-sm font-bold text-center">
+                            {{ $submission->status === \App\Enums\SubmissionStatus::DRAFT ? 'Kirim Pengajuan Baru' : 'Kirim Revisi' }}
+                        </button>
                     </form>
                 @else
                     <div class="mt-6 bg-warning-bg border border-warning/20 rounded-xl px-4 py-3 text-[14px] text-warning" role="alert">
-                        Upload semua dokumen wajib sebelum kirim revisi. Buka tab <strong>Dokumen</strong> untuk mengupload.
+                        Upload semua dokumen wajib sebelum mengirimkan berkas. Buka tab <strong>Dokumen</strong> untuk melengkapi.
+                    </div>
+                @endif
+
+                {{-- Kontrol Aksi Tambahan untuk Status DRAFT --}}
+                @if($submission->status === \App\Enums\SubmissionStatus::DRAFT)
+                    <div class="pt-4 border-t border-border mt-4 space-y-2">
+                        <a href="{{ route('submissions.edit', $submission) }}" class="w-full text-center btn-outline text-xs py-2.5 block rounded-xl font-bold border-border hover:bg-slate-50 transition-colors">
+                            Edit Informasi Penelitian
+                        </a>
+
+                        <form method="POST" action="{{ route('submissions.destroy', $submission) }}" onsubmit="return confirm('Apakah Anda yakin ingin menghapus permanen seluruh data pengajuan ini? Tindakan ini tidak bisa dibatalkan.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-full text-center border border-danger/20 bg-danger-bg text-danger hover:bg-danger/10 text-xs py-2.5 block rounded-xl font-bold transition-colors">
+                                Hapus Pengajuan Permanen
+                            </button>
+                        </form>
                     </div>
                 @endif
             @endif
 
+            {{-- Formulir Konfirmasi Sertifikat EC --}}
             @if($submission->status === \App\Enums\SubmissionStatus::APPROVED && !empty($submission->ec_number))
                 <div class="mt-6 border-t border-border pt-6 space-y-4">
                     <h3 class="text-sm font-bold text-text uppercase tracking-wider">Konfirmasi Ethical Clearance</h3>
@@ -130,23 +174,49 @@
                     </form>
                 </div>
             @endif
+
+            {{-- Fitur Batalkan Pengajuan (Recall ke Draf) --}}
+            @if($submission->status === \App\Enums\SubmissionStatus::NEW_PROPOSAL && is_null($submission->secretary_id))
+                <div class="mt-6 border-t border-border pt-6 space-y-3">
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-2">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/>
+                            </svg>
+                            <div>
+                                <h4 class="text-sm font-bold text-amber-800">Tarik Kembali Pengajuan?</h4>
+                                <p class="text-xs text-amber-700 mt-1">Pengajuan ini akan dikembalikan ke status Draf dan bisa diedit kembali. Aksi ini hanya tersedia selama berkas belum ditugaskan ke Sekretaris.</p>
+                            </div>
+                        </div>
+                        <form method="POST" action="{{ route('submissions.cancel', $submission) }}" onsubmit="return confirm('Apakah Anda yakin ingin menarik dan membatalkan pengajuan ini? Berkas akan dikembalikan ke status Draf.')">
+                            @csrf
+                            <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150 flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                                </svg>
+                                Tarik dan Batalkan Pengajuan
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endif
             @endrole
         </div>
     </div>
     @endif
 
-    {{-- KONTEN TAB 2: DOKUMEN --}}
+    {{-- KONTEN TAB 2: DOKUMEN PENDUKUNG --}}
     @if($tab === 'documents')
     <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
         <div>
-            <h2 class="text-xl md:text-[24px] font-semibold text-text">Dokumen Pendukung</h2>
+            <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Dokumen Pendukung</h2>
             <p class="text-[14px] text-text-secondary mt-1">Semua dokumen wajib harus diupload dalam format PDF (maks. 10MB).</p>
         </div>
         <div class="space-y-4">
             @foreach($documentTemplates as $template)
                 @php
                     $doc = $submission->documents->firstWhere('document_template_id', $template->id);
-                    $canUpload = auth()->user()->hasRole('student') && $submission->status === \App\Enums\SubmissionStatus::RESUBMISSION;
+                    $canUpload = auth()->user()->hasRole('student') && in_array($submission->status, [\App\Enums\SubmissionStatus::DRAFT, \App\Enums\SubmissionStatus::RESUBMISSION]);
                 @endphp
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl {{ $doc ? 'bg-surface' : 'bg-slate-50/50' }} gap-4">
                     <div class="flex items-start gap-4 min-w-0">
@@ -176,7 +246,7 @@
                     
                     <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
                         @if($doc)
-                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
+                            <a href="{{ route('submissions.view-document', $doc) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
                             @if($canUpload)
                                 <form method="POST" action="{{ route('submissions.delete-document', [$submission, $doc]) }}" class="inline">
                                     @csrf 
@@ -212,10 +282,10 @@
     </div>
     @endif
 
-    {{-- KONTEN TAB 3: RIWAYAT --}}
+    {{-- KONTEN TAB 3: RIWAYAT HISTORI STATUS --}}
     @if($tab === 'history')
     <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
-        <h2 class="text-xl md:text-[24px] font-semibold text-text border-b border-border pb-2">Riwayat Status</h2>
+        <h2 class="text-[24px] font-semibold text-text leading-[1.4] border-b border-border pb-2 mb-4">Riwayat Status</h2>
         @if($submission->statusHistories->isEmpty())
             <p class="text-[14px] text-text-secondary">Belum ada riwayat.</p>
         @else
@@ -231,7 +301,7 @@
                                 <div class="flex items-center gap-2 flex-wrap">
                                     @if($h->from_status)
                                         <x-status-badge :status="$h->from_status" />
-                                        <span class="text-text-muted">→</span>
+                                        <span class="text-text-muted">-&gt;</span>
                                     @endif
                                     <x-status-badge :status="$h->to_status" />
                                 </div>

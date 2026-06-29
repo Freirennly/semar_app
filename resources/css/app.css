@@ -7,7 +7,7 @@
 
 @theme {
     --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-    --font-serif: "Lora", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-serif: "Source Serif 4", "Lora", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
     /* ── SEMAR Color Palette ── */
     --color-primary: #463ee3;

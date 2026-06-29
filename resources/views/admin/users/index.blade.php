@@ -1,13 +1,13 @@
 <x-layouts.app :title="'Manajemen User'">
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-12 animate-fade-in">
         <div>
-            <h2 class="text-xl font-bold text-text">Manajemen User</h2>
-            <p class="text-sm text-text-secondary mt-1">Kelola pengguna dan peran dalam sistem SEMAR.</p>
+            <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Manajemen User</h1>
+            <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Kelola pengguna dan peran dalam sistem SEMAR.</p>
         </div>
     </div>
 
-    <div class="card p-6 mb-8 border-primary/10 shadow-sm">
-        <h3 class="text-base font-bold text-text mb-4">Tambah User Baru</h3>
+    <div class="card p-6 mb-12 border-primary/10 shadow-sm">
+        <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Tambah User Baru</h2>
         @if($errors->any())
             <div class="mb-4 bg-danger-bg border border-danger/20 text-danger rounded-lg px-4 py-3 text-sm" role="alert">
                 <ul class="list-disc list-inside">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
@@ -45,11 +45,11 @@
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
-                    <tr class="text-left text-text-muted text-[10px] uppercase tracking-widest border-b border-border bg-bg/30">
-                        <th class="px-6 py-4 font-bold">Nama</th>
-                        <th class="px-6 py-4 font-bold hidden sm:table-cell">Email</th>
-                        <th class="px-6 py-4 font-bold">Role</th>
-                        <th class="px-6 py-4 font-bold text-right">Aksi</th>
+                    <tr class="text-left border-b border-border bg-bg/30">
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Nama</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] hidden sm:table-cell">Email</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Role</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">

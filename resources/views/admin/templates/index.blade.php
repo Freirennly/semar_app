@@ -1,8 +1,8 @@
 <x-layouts.app :title="'Manajemen Template Dokumen'">
-    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="mb-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in">
         <div>
-            <h2 class="text-xl font-bold text-text">Manajemen Template Dokumen</h2>
-            <p class="text-sm text-text-secondary mt-1">Kelola data berkas, ketentuan wajib pengumpulan, dan visibilitas dokumen bagi mahasiswa.</p>
+            <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Manajemen Template Dokumen</h1>
+            <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Kelola data berkas, ketentuan wajib pengumpulan, dan visibilitas dokumen bagi mahasiswa.</p>
         </div>
         <button onclick="openModal('addModal')" class="btn-primary py-2 px-4 text-sm font-semibold flex items-center gap-2 rounded-xl shadow-sm self-start">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -17,12 +17,12 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-soft-surface text-xs font-bold text-text-muted uppercase tracking-wider border-b border-border">
-                        <th class="px-6 py-4">Nama Template</th>
-                        <th class="px-6 py-4">Ukuran File</th>
-                        <th class="px-6 py-4">Ketentuan Pengisian</th>
-                        <th class="px-6 py-4">Status Tampil</th>
-                        <th class="px-6 py-4 text-right">Aksi</th>
+                    <tr class="bg-soft-surface border-b border-border">
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Nama Template</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Ukuran File</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Ketentuan Pengisian</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Status Tampil</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border text-sm text-text">

@@ -1,16 +1,16 @@
 <x-layouts.app :title="'Dashboard'">
     {{-- Header Section --}}
-    <div class="mb-6">
-        <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Selamat Datang, {{ auth()->user()->name }}</h1>
-        <p class="text-sm text-text-secondary mt-1.5">Kelola pengajuan etik penelitian dan pantau progress usulan Anda secara real-time.</p>
+    <div class="mb-12">
+        <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Selamat Datang, {{ auth()->user()->name }}</h1>
+        <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Kelola pengajuan etik penelitian dan pantau progress usulan Anda secara real-time.</p>
     </div>
 
     {{-- Ringkasan Pengajuan (Personal Stats, flat cards) --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         @foreach($metrics as $m)
             @if($m['label'] !== 'Proposal Baru') {{-- Avoid duplicate detail metrics --}}
                 <div class="bg-white border border-border p-5 rounded-xl">
-                    <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">{{ $m['label'] }}</p>
+                    <p class="text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">{{ $m['label'] }}</p>
                     <p class="text-[28px] font-bold text-text mt-2 leading-none">{{ $m['value'] }}</p>
                 </div>
             @endif
@@ -43,7 +43,7 @@
             <div class="bg-white border border-border p-6 rounded-xl mb-6">
                 <div class="border-b border-border pb-3 mb-4 flex items-center justify-between">
                     <div>
-                        <h2 class="text-sm font-bold text-text uppercase tracking-wider">Kelengkapan Dokumen</h2>
+                        <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Kelengkapan Dokumen</h2>
                         <p class="text-xs text-text-secondary mt-0.5">Pengajuan: <span class="font-semibold text-text">{{ $docCompletionData['submission']->code }}</span></p>
                     </div>
                     <div class="flex items-center gap-2">
@@ -98,8 +98,8 @@
         <div class="bg-white border border-border p-6 rounded-xl mb-6">
             <div class="border-b border-border pb-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                    <h2 class="text-[20px] font-semibold text-text">Status Penelitian Aktif</h2>
-                    <p class="text-xs text-text-secondary mt-0.5">Judul: <span class="font-semibold text-text">{{ \Illuminate\Support\Str::title($latestSub->title) }}</span></p>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Status Penelitian Aktif</h2>
+                    <p class="text-xs text-text-secondary mt-0.5">Judul: <span class="font-serif font-semibold text-text">{{ $latestSub->title }}</span></p>
                 </div>
                 <div class="shrink-0 flex items-center gap-2">
                     <span class="text-xs text-text-secondary">Status saat ini:</span>
@@ -177,7 +177,7 @@
     @if(isset($waitingEcConfirmation) && $waitingEcConfirmation->isNotEmpty())
         <div class="mb-6 bg-white border border-border rounded-xl overflow-hidden animate-fade-in">
             <div class="px-6 py-4 border-b border-border bg-slate-50/70">
-                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-warning">Menunggu Konfirmasi Sertifikat (Waiting EC Confirmation)</h2>
+                <h2 class="text-lg font-medium text-warning uppercase tracking-[0.05em] leading-[1.4]">Menunggu Konfirmasi Sertifikat</h2>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -186,8 +186,8 @@
                             <tr class="hover:bg-soft-surface/25 transition-colors">
                                 <td class="px-6 py-4 font-mono text-xs text-text-secondary w-24">{{ $sub->code }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="font-semibold text-text">
-                                        {{ \Illuminate\Support\Str::title($sub->title) }}
+                                    <span class="font-serif text-text">
+                                        {{ $sub->title }}
                                     </span>
                                     <span class="text-xs text-text-secondary block mt-0.5">Nomor EC: {{ $sub->ec_number }}</span>
                                 </td>
@@ -208,7 +208,7 @@
     @if(isset($ecReady) && $ecReady->isNotEmpty())
         <div class="mb-6 bg-white border border-border rounded-xl overflow-hidden animate-fade-in">
             <div class="px-6 py-4 border-b border-border bg-slate-50/70">
-                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-success">Sertifikat Etik Terbit (Ethical Clearance Ready)</h2>
+                <h2 class="text-lg font-medium text-success uppercase tracking-[0.05em] leading-[1.4]">Sertifikat Etik Terbit</h2>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -217,8 +217,8 @@
                             <tr class="hover:bg-soft-surface/25 transition-colors">
                                 <td class="px-6 py-4 font-mono text-xs text-text-secondary w-24">{{ $sub->code }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="font-semibold text-text">
-                                        {{ \Illuminate\Support\Str::title($sub->title) }}
+                                    <span class="font-serif text-text">
+                                        {{ $sub->title }}
                                     </span>
                                     <span class="text-xs text-text-secondary block mt-0.5">Nomor EC: {{ $sub->ec_number }}</span>
                                 </td>
@@ -239,7 +239,7 @@
     @if(isset($recentDownloads) && $recentDownloads->isNotEmpty())
         <div class="mb-6 bg-white border border-border rounded-xl overflow-hidden animate-fade-in">
             <div class="px-6 py-4 border-b border-border bg-slate-50/70">
-                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-primary">Riwayat Unduhan Terakhir (Recent Downloads)</h2>
+                <h2 class="text-lg font-medium text-primary uppercase tracking-[0.05em] leading-[1.4]">Riwayat Unduhan Terakhir</h2>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -250,8 +250,8 @@
                                     {{ $log->submission ? $log->submission->code : 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="font-semibold text-text">
-                                        {{ $log->submission ? \Illuminate\Support\Str::title($log->submission->title) : 'Unknown Submission' }}
+                                    <span class="font-serif text-text">
+                                        {{ $log->submission ? $log->submission->title : 'Unknown Submission' }}
                                     </span>
                                     <span class="text-xs text-text-secondary block mt-0.5">{{ $log->description }}</span>
                                 </td>
@@ -269,8 +269,8 @@
     {{-- Riwayat Pengajuan --}}
     <div class="bg-white border border-border rounded-xl overflow-hidden">
         <div class="px-6 py-4 border-b border-border flex items-center justify-between">
-            <h2 class="text-[20px] font-semibold text-text">Riwayat Pengajuan</h2>
-            <a href="{{ route('submissions.create') }}" class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">+ Buat Pengajuan Baru</a>
+            <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Riwayat Pengajuan</h2>
+            <a href="{{ route('submissions.create') }}" class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-[12px] font-bold rounded-lg transition-colors">+ Buat Pengajuan Baru</a>
         </div>
         @if($submissions->isEmpty())
             <div class="text-center py-16 px-6">
@@ -284,13 +284,13 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                            <th class="px-6 py-4 font-semibold">Kode</th>
-                            <th class="px-6 py-4 font-semibold">Judul Penelitian</th>
-                            <th class="px-6 py-4 font-semibold hidden sm:table-cell">Jenis Usulan</th>
-                            <th class="px-6 py-4 font-semibold">Status</th>
-                            <th class="px-6 py-4 font-semibold hidden sm:table-cell">Tanggal Diajukan</th>
-                            <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                        <tr class="text-left border-b border-border bg-slate-50/70">
+                            <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode</th>
+                            <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Penelitian</th>
+                            <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] hidden sm:table-cell">Jenis Usulan</th>
+                            <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Status</th>
+                            <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] hidden sm:table-cell">Tanggal Diajukan</th>
+                            <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
@@ -298,8 +298,8 @@
                             <tr class="hover:bg-soft-surface/25 transition-colors">
                                 <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
                                 <td class="px-6 py-4">
-                                    <span class="font-semibold text-text">
-                                        {{ \Illuminate\Support\Str::title($sub->title) }}
+                                    <span class="font-serif text-text">
+                                        {{ $sub->title }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-text-secondary hidden sm:table-cell">{{ $sub->type }}</td>

@@ -1,8 +1,8 @@
 <x-layouts.app :title="'Dashboard Ketua'">
     {{-- Header Section --}}
-    <div class="mb-6">
-        <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Dashboard Ketua</h1>
-        <p class="text-sm text-text-secondary mt-1.5">Kelola penetapan penugasan reviewer dan pemantauan keputusan etik penelitian KEP.</p>
+    <div class="mb-12">
+        <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Dashboard Ketua</h1>
+        <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Kelola penetapan penugasan reviewer dan pemantauan keputusan etik penelitian KEP.</p>
     </div>
 
     @php
@@ -24,19 +24,19 @@
     @endphp
 
     {{-- Ringkasan Statistik Keputusan & Tugas (Flat cards) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Menunggu Tanda Tangan</p>
+            <p class="text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Menunggu Tanda Tangan</p>
             <p class="text-[28px] font-bold text-warning mt-2 leading-none">{{ $waitingSignature->count() }}</p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Total Pengajuan Aktif</p>
+            <p class="text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Total Pengajuan Aktif</p>
             <p class="text-[28px] font-bold text-primary mt-2 leading-none">
                 {{ \App\Models\Submission::whereNotIn('status', [\App\Enums\SubmissionStatus::REJECTED, \App\Enums\SubmissionStatus::DONE])->count() }}
             </p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Keputusan (Disetujui / Ditolak)</p>
+            <p class="text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Keputusan (Disetujui / Ditolak)</p>
             <p class="text-[28px] font-bold text-text mt-2 leading-none">
                 <span class="text-success">{{ $totalApproved }}</span>
                 <span class="text-text-muted mx-1">/</span>
@@ -46,13 +46,12 @@
     </div>
 
     {{-- Main Grid (70/30 Split) --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Left: Tasks (70% or lg:col-span-2) --}}
-        <div class="lg:col-span-2 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        <div class="lg:col-span-7 space-y-6">
             {{-- Waiting for Signature --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
-                    <h2 class="text-[20px] font-semibold text-text">Waiting for Signature</h2>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Menunggu Tanda Tangan</h2>
                     <a href="{{ route('chairman.monitoring') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
                 @if($waitingSignature->isEmpty())
@@ -63,19 +62,19 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold font-medium">Pengaju</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                                <tr class="text-left border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Pengaju</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach($waitingSignature as $sub)
                                     <tr class="hover:bg-soft-surface/25 transition-colors">
                                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
-                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        <td class="px-6 py-4 font-serif text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                            {{ $sub->title }}
                                         </td>
                                         <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
                                         <td class="px-6 py-4 text-right">
@@ -97,7 +96,7 @@
             {{-- Recently Signed Certificates --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
-                    <h2 class="text-[20px] font-semibold text-text">Recently Signed Certificates</h2>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Sertifikat Ditandatangani</h2>
                     <a href="{{ route('chairman.monitoring') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
                 @if(!isset($recentlySigned) || $recentlySigned->isEmpty())
@@ -108,19 +107,19 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold font-medium">Peneliti</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Unduh</th>
+                                <tr class="text-left border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Peneliti</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Unduh</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach($recentlySigned as $sub)
                                     <tr class="hover:bg-soft-surface/25 transition-colors">
                                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
-                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        <td class="px-6 py-4 font-serif text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                            {{ $sub->title }}
                                         </td>
                                         <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
                                         <td class="px-6 py-4 text-right">
@@ -143,7 +142,7 @@
             {{-- Certificates Verified --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
-                    <h2 class="text-[20px] font-semibold text-text">Certificates Verified</h2>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Riwayat Verifikasi</h2>
                     <a href="{{ route('chairman.monitoring') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
                 @if(!isset($verifiedLogs) || $verifiedLogs->isEmpty())
@@ -154,11 +153,11 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold">Detail Log Verifikasi</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Waktu</th>
+                                <tr class="text-left border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Detail Log Verifikasi</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Waktu</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
@@ -167,8 +166,8 @@
                                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">
                                             {{ $log->submission ? $log->submission->code : 'N/A' }}
                                         </td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $log->submission ? $log->submission->title : '' }}">
-                                            {{ $log->submission ? \Illuminate\Support\Str::title($log->submission->title) : 'Unknown Submission' }}
+                                        <td class="px-6 py-4 font-serif text-text truncate max-w-[200px]" title="{{ $log->submission ? $log->submission->title : '' }}">
+                                            {{ $log->submission ? $log->submission->title : 'Unknown Submission' }}
                                         </td>
                                         <td class="px-6 py-4 text-xs text-text-secondary">
                                             {{ $log->description }}
@@ -186,10 +185,10 @@
         </div>
 
         {{-- Right: Waiting Final Decision (30% or lg:col-span-1) --}}
-        <div class="space-y-6">
+        <div class="lg:col-span-3 space-y-6">
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border">
-                    <h2 class="text-[20px] font-semibold text-text">Menunggu Keputusan</h2>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Menunggu Keputusan</h2>
                 </div>
                 
                 @if($waitingDecision->isEmpty())
@@ -200,7 +199,7 @@
                     <div class="divide-y divide-border overflow-y-auto max-h-[350px]">
                         @foreach($waitingDecision as $sub)
                             <div class="p-4 hover:bg-soft-surface/20 transition-colors">
-                                <p class="text-xs font-semibold text-text line-clamp-2">{{ \Illuminate\Support\Str::title($sub->title) }}</p>
+                                <p class="text-xs font-serif text-text line-clamp-2">{{ $sub->title }}</p>
                                 <div class="flex items-center justify-between mt-3 text-[10px] text-text-secondary">
                                     <span class="font-mono">{{ $sub->code }}</span>
                                     <span class="font-bold text-primary">{{ $sub->reviews->count() }} Review Masuk</span>
@@ -213,7 +212,7 @@
 
             {{-- Statistik Keputusan Visual --}}
             <div class="bg-white p-6 border border-border rounded-xl">
-                <h2 class="text-[20px] font-semibold text-text mb-4">Statistik Keputusan</h2>
+                <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Statistik Keputusan</h2>
                 <div class="space-y-4">
                     @php
                         $totalAll = max($totalApproved + $totalRejected, 1);

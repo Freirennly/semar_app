@@ -1,18 +1,18 @@
 <x-layouts.app :title="'Setting Sistem'">
-    <div class="mb-6">
-        <h2 class="text-xl font-bold text-text">Setting Sistem</h2>
-        <p class="text-sm text-text-secondary mt-1">Konfigurasi parameter global dan preferensi aplikasi SEMAR.</p>
+    <div class="mb-12 animate-fade-in">
+        <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Setting Sistem</h1>
+        <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Konfigurasi parameter global dan preferensi aplikasi SEMAR.</p>
     </div>
 
 
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
         <!-- Configuration Form -->
-        <div class="col-span-1 lg:col-span-2 card p-6 shadow-sm border-primary/10">
+        <div class="col-span-1 lg:col-span-7 card p-6 shadow-sm border-primary/10">
             <form method="POST" action="{{ route('admin.settings.store') }}" class="space-y-6">
                 @csrf
                 
-                <h3 class="font-bold text-text text-sm uppercase tracking-wider mb-4 border-b border-border pb-2">Informasi Umum</h3>
+                <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4 border-b border-border pb-2">Informasi Umum</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
@@ -34,7 +34,7 @@
                     @error('contact_email')<p class="text-danger text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
-                <h3 class="font-bold text-text text-sm uppercase tracking-wider mb-4 border-b border-border pb-2 pt-4 mt-8">Keamanan & Pemeliharaan</h3>
+                <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4 border-b border-border pb-2 pt-4 mt-8">Keamanan & Pemeliharaan</h2>
                 
                 <div class="p-4 rounded-xl border border-warning/30 bg-warning-bg/50">
                     <div class="flex items-start gap-4">
@@ -60,7 +60,7 @@
         </div>
 
         <!-- Sidebar Info -->
-        <div class="col-span-1 space-y-6">
+        <div class="col-span-1 lg:col-span-3 space-y-6">
             <div class="card p-6 shadow-sm">
                 <div class="flex items-center gap-3 mb-4 text-primary">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
