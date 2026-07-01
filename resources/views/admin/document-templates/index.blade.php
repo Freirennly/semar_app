@@ -17,6 +17,25 @@
         </a>
     </div>
 
+    {{-- Info Card --}}
+    <div class="mb-6 bg-white border border-border rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h2 class="text-sm font-bold text-text mb-1">Template Dokumen Bawaan</h2>
+            <p class="text-xs text-text-secondary leading-relaxed max-w-3xl">Sistem menyediakan template dokumen standar yang digunakan pada proses pengajuan penelitian. Gunakan fitur ini apabila database baru digunakan atau template bawaan belum tersedia.</p>
+            <a href="https://drive.google.com/file/d/137_W1se6SvV6DVS_hTMCiP1reVaF0RHr/view?usp=sharing" target="_blank" class="text-xs font-bold text-primary hover:underline mt-2 inline-flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                Lihat Panduan
+            </a>
+        </div>
+        <form action="{{ route('admin.templates.restore-default') }}" method="POST" class="shrink-0">
+            @csrf
+            <button type="button" onclick="event.preventDefault(); window.confirmModal('Pulihkan Template Dokumen Bawaan? Sistem akan otomatis membuat template standar jika belum ada.', this.closest('form'));" class="bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 px-4 py-2.5 rounded-xl text-[12px] font-bold transition-colors inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Pulihkan Template Bawaan
+            </button>
+        </form>
+    </div>
+
     {{-- Flash Messages --}}
     @if(session('success'))
         <div class="mb-4 px-4 py-3 rounded-xl border text-sm font-medium"
@@ -183,7 +202,7 @@
 
                                         {{-- Archive --}}
                                         <form action="{{ route('admin.templates.archive', $item) }}" method="POST" class="inline"
-                                              onsubmit="return confirm('Arsipkan template ini? Template yang diarsipkan tidak akan tampil di form pengajuan.')">
+                                              onsubmit="event.preventDefault(); window.confirmModal('Arsipkan template ini? Template yang diarsipkan tidak akan tampil di form pengajuan.', this);">
                                             @csrf
                                             <button type="submit"
                                                     class="p-1.5 text-text-muted hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"

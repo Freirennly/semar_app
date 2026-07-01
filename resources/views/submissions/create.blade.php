@@ -82,40 +82,50 @@
                                 
                                 {{-- Hardcoded limitations info since configuration columns are not yet in DB --}}
                                 <div class="flex flex-wrap items-center gap-3 mt-2">
-                                    <span class="text-[11px] font-semibold text-text-muted bg-slate-50 px-2 py-1 rounded border border-slate-200">Format: PDF</span>
-                                    <span class="text-[11px] font-semibold text-text-muted bg-slate-50 px-2 py-1 rounded border border-slate-200">Maks: 10 MB</span>
+                                    <span class="text-[11px] font-semibold text-text-muted bg-slate-50 px-2 py-1 rounded border border-slate-200">Format: PDF, DOC, DOCX</span>
+                                    <span class="text-[11px] font-semibold text-text-muted bg-slate-50 px-2 py-1 rounded border border-slate-200">Maks: 5 MB</span>
                                 </div>
                             </div>
 
                             @if($template->file_path)
-                            <a href="{{ route('submissions.download-template', $template) }}" class="inline-flex items-center justify-center bg-white border border-border hover:border-primary hover:text-primary text-text text-xs font-bold px-3 py-1.5 rounded transition-colors whitespace-nowrap">
+                            <a href="{{ route('submissions.download-template', $template) }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center bg-white border border-border hover:border-primary hover:text-primary text-text text-xs font-bold px-3 py-1.5 rounded transition-colors whitespace-nowrap">
                                 Unduh Template
                             </a>
                             @endif
                         </div>
 
                         {{-- Area Upload --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {{-- Sisi Kiri: Upload File --}}
-                            <div class="space-y-1.5">
-                                <label class="text-xs font-bold text-text uppercase tracking-wider">Unggah File PDF</label>
-                                <input type="file" 
-                                       name="files[{{ $template->id }}]" 
-                                       accept=".pdf" 
-                                       class="w-full text-sm text-text border border-border rounded bg-white file:mr-3 file:py-2 file:px-3 file:border-0 file:border-r file:border-border file:text-xs file:font-bold file:bg-slate-50 file:text-text-secondary hover:file:bg-slate-100 cursor-pointer transition-colors"
-                                       {{ $template->is_required ? 'required' : '' }}>
-                            </div>
+                        <div class="mt-4 pt-4 border-t border-border">
+                            <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 md:items-end">
+                                {{-- Sisi Kiri: Upload File --}}
+                                <div class="space-y-1.5">
+                                    <label for="file_input_{{ $template->id }}" class="text-xs font-bold text-text uppercase tracking-wider select-none">Upload File</label>
+                                    <input type="file" 
+                                           id="file_input_{{ $template->id }}"
+                                           name="files[{{ $template->id }}]" 
+                                           accept=".pdf,.doc,.docx" 
+                                           class="w-full text-xs text-text border border-border rounded bg-white file:mr-2 file:py-1.5 file:px-2 file:border-0 file:border-r file:border-border file:text-[10px] file:font-bold file:bg-slate-100 file:text-text-secondary hover:file:bg-slate-200 cursor-pointer transition-colors focus:ring-1 focus:ring-primary focus:border-primary">
+                                </div>
 
-                            {{-- Sisi Kanan: Atau Hyperlink --}}
-                            <div class="space-y-1.5">
-                                <label for="link_{{ $template->id }}" class="text-xs font-bold text-text uppercase tracking-wider">Atau Tautan GDrive</label>
-                                <input type="url" 
-                                       name="hyperlinks[{{ $template->id }}]" 
-                                       id="link_{{ $template->id }}" 
-                                       value="{{ old('hyperlinks.'.$template->id) }}"
-                                       placeholder="https://drive.google.com/..." 
-                                       class="input-field py-2 text-sm bg-slate-50 focus:bg-white"
-                                       {{ $template->is_required ? 'required' : '' }}>
+                                {{-- Separator ATAU --}}
+                                <div class="hidden md:flex items-center justify-center pb-2 text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                                    ATAU
+                                </div>
+                                <div class="md:hidden flex items-center justify-center py-2 text-[10px] font-bold text-text-muted uppercase tracking-wider relative">
+                                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-border"></div></div>
+                                    <span class="bg-white px-2 relative">ATAU</span>
+                                </div>
+
+                                {{-- Sisi Kanan: Atau Hyperlink --}}
+                                <div class="space-y-1.5">
+                                    <label for="link_input_{{ $template->id }}" class="text-xs font-bold text-text uppercase tracking-wider select-none">Link Dokumen</label>
+                                    <input type="url" 
+                                           id="link_input_{{ $template->id }}"
+                                           name="hyperlinks[{{ $template->id }}]" 
+                                           value="{{ old('hyperlinks.'.$template->id) }}"
+                                           placeholder="https://..." 
+                                           class="w-full rounded border border-border px-3 py-1.5 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors bg-white">
+                                </div>
                             </div>
                         </div>
                     </div>

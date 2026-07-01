@@ -36,7 +36,7 @@
                 
                 <div class="mt-4 pt-3 border-t border-border flex items-center justify-between text-[12px] text-text-secondary">
                     <span class="font-mono text-[11px]">{{ $template->file_size }}</span>
-                    <a href="{{ asset('storage/' . $template->file_path) }}" download class="text-primary hover:text-primary-hover font-bold inline-flex items-center gap-1 transition-colors">
+                    <a href="{{ route('submissions.download-template', $template) }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary-hover font-bold inline-flex items-center gap-1 transition-colors">
                         Unduh Berkas
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     </a>
@@ -56,7 +56,6 @@
             </div>
             <h3 class="text-base md:text-[18px] font-medium text-text">Belum ada pengajuan</h3>
             <p class="text-[14px] text-text-secondary mt-1">Buat pengajuan pertama Anda untuk memulai.</p>
-            @role('student')<a href="{{ route('submissions.create') }}" class="inline-block mt-4 btn-primary">+ Buat Pengajuan</a>@endrole
         </div>
         @else
         <div class="overflow-x-auto">

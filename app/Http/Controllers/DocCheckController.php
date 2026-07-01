@@ -25,7 +25,10 @@ class DocCheckController extends Controller
         $submissions = Submission::where('secretary_id', auth()->id())->whereIn('status', [
             SubmissionStatus::PROCESS,
             SubmissionStatus::REVISED
-        ])->with('student', 'documents')->latest()->get();
+        ])->with('student', 'documents')->latest()->get()->filter(function($sub) {
+            if ($sub->status === SubmissionStatus::REVISED) return true;
+            return !$sub->activityLogs()->where('description', 'like', '%Dokumen dinyatakan lengkap%')->exists();
+        });
         return view('doccheck.index', compact('submissions'));
     }
 
@@ -40,6 +43,11 @@ class DocCheckController extends Controller
     public function approve(Request $request, Submission $submission)
     {
         $this->authorize('approveDocCheck', $submission);
+
+        $isVerified = $submission->activityLogs()->where('description', 'like', '%Dokumen dinyatakan lengkap%')->exists();
+        if ($submission->status === SubmissionStatus::PROCESS && $isVerified) {
+            return redirect()->route('doccheck.index')->with('warning', 'Dokumen sudah diverifikasi sebelumnya.');
+        }
 
         if ($submission->status !== SubmissionStatus::PROCESS) {
             $this->workflow->transition($submission, SubmissionStatus::PROCESS, $request->user(), 'Dokumen dinyatakan lengkap dan masuk tahap proses');

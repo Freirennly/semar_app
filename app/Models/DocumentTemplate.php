@@ -13,6 +13,12 @@ class DocumentTemplate extends Model
 {
     use HasFactory;
 
+    public const DEFAULT_TEMPLATES = [
+        ['code' => 'PROPOSAL_PENELITIAN', 'name' => 'Proposal Penelitian'],
+        ['code' => 'SURAT_PENGANTAR', 'name' => 'Surat Pengantar'],
+        ['code' => 'SURAT_IZIN_PENELITIAN', 'name' => 'Surat Izin Penelitian'],
+    ];
+
     protected $fillable = [
         'name',
         'code',
@@ -113,11 +119,15 @@ class DocumentTemplate extends Model
      */
     public function getFileSizeAttribute()
     {
-        if (Storage::disk('public')->exists($this->file_path)) {
-            $bytes = Storage::disk('public')->size($this->file_path);
-            if ($bytes >= 1048576) return number_format($bytes / 1048576, 2) . ' MB';
-            if ($bytes >= 1024) return number_format($bytes / 1024, 2) . ' KB';
-            return $bytes . ' bita';
+        if (!empty($this->file_path) && Storage::disk('public')->exists($this->file_path)) {
+            try {
+                $bytes = Storage::disk('public')->size($this->file_path);
+                if ($bytes >= 1048576) return number_format($bytes / 1048576, 2) . ' MB';
+                if ($bytes >= 1024) return number_format($bytes / 1024, 2) . ' KB';
+                return $bytes . ' bita';
+            } catch (\Exception $e) {
+                return '-';
+            }
         }
         return '-';
     }

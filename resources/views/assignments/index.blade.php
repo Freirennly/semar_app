@@ -41,7 +41,7 @@
                     <span class="text-text">{{ $a->reviewer->name }}</span>
                     @if($a->due_at)<span class="text-xs text-text-muted">· due {{ $a->due_at->timezone('Asia/Jakarta')->format('d M') }}</span>@endif
                     <form method="POST" action="{{ route('assignments.destroy', $a) }}" class="inline">@csrf @method('DELETE')
-                        <button type="submit" class="text-danger hover:text-danger/80 text-xs" onclick="return confirm('Hapus penugasan?')" aria-label="Hapus penugasan {{ $a->reviewer->name }}">×</button>
+                        <button type="button" class="text-danger hover:text-danger/80 text-xs" onclick="event.preventDefault(); window.confirmModal('Hapus penugasan?', this.closest('form'));" aria-label="Hapus penugasan {{ $a->reviewer->name }}">×</button>
                     </form>
                 </div>
                 @endforeach
@@ -63,9 +63,9 @@
                 <input type="date" name="due_at" min="{{ date('Y-m-d') }}" class="input-field" aria-label="Deadline review">
             </div>
             @php
-                $bothCompleted = ($totalAssignments === 2 && $completedAssignments === 2);
+                $isFullyAssigned = ($totalAssignments >= 2);
             @endphp
-            <button type="submit" @if($bothCompleted) disabled class="btn-primary shrink-0 w-full sm:w-auto opacity-50 cursor-not-allowed" @else class="btn-primary shrink-0 w-full sm:w-auto" @endif>Assign</button>
+            <button type="submit" @if($isFullyAssigned) disabled class="btn-primary shrink-0 w-full sm:w-auto opacity-50 cursor-not-allowed" @else class="btn-primary shrink-0 w-full sm:w-auto" @endif>Assign</button>
         </form>
     </div>
     @endforeach

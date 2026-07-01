@@ -31,7 +31,6 @@ class FullboardMeetingController extends Controller
     public function create(Submission $submission)
     {
         // Must be secretariat
-        $this->authorize('viewAny', \App\Models\Decision::class);
         if ($submission->secretary_id !== auth()->id()) {
             abort(403, 'Anda tidak berhak membuat jadwal Fullboard untuk proposal ini.');
         }
@@ -54,7 +53,6 @@ class FullboardMeetingController extends Controller
 
     public function store(Request $request, Submission $submission)
     {
-        $this->authorize('viewAny', \App\Models\Decision::class);
         if ($submission->secretary_id !== auth()->id()) {
             abort(403, 'Anda tidak berhak membuat jadwal Fullboard untuk proposal ini.');
         }

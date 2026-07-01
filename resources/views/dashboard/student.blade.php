@@ -13,10 +13,6 @@
                 {{ \Carbon\Carbon::now()->timezone('Asia/Jakarta')->translatedFormat('l, d F Y') }}
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('submissions.create') }}" class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold px-4 py-2 rounded-lg transition-all">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    Buat Pengajuan Baru
-                </a>
             </div>
         </div>
     </div>
