@@ -72,11 +72,7 @@ class SubmissionController extends Controller
             'title'         => 'required|string|max:255',
             'type'          => 'required|string',
             'abstract'      => 'nullable|string',
-<<<<<<< HEAD
-            'files.*'       => 'nullable|file|mimes:pdf|max:2048', 
-=======
             'files.*'       => 'nullable|file|mimes:pdf,doc,docx|max:5120',
->>>>>>> feature/fix-permission-issue
             'hyperlinks.*'  => 'nullable|url',
         ]);
 
