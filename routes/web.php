@@ -100,6 +100,11 @@ Route::middleware('auth')->group(function () {
     // Ketua: signing overview, and monitoring modules
     Route::middleware('role:ketua')->group(function () {
         Route::post('submissions/{submission}/sign', [SubmissionController::class, 'sign'])->name('submissions.sign');
+        
+        // Rute Baru: Halaman Pemantauan Kerja Reviewer & Riwayat Keputusan Ketua KEP
+        Route::get('chairman/monitoring', function() {
+            return view('dashboard.monitoring'); 
+        })->name('chairman.monitoring');
     });
 
     // Reviewer: reviews (dengan Throttle pada submit review)

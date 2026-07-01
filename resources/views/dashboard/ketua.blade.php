@@ -65,8 +65,9 @@
         <div class="lg:col-span-2 space-y-6">
             {{-- Waiting for Signature --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
-                <div class="px-6 py-4 border-b border-border bg-white">
+                <div class="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
                     <h2 class="text-[20px] font-semibold text-text">Waiting for Signature</h2>
+                    <a href="{{ route('chairman.monitoring') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
                 @if($waitingSignature->isEmpty())
                     <div class="text-center py-12 px-6">
@@ -109,8 +110,9 @@
 
             {{-- Recently Signed Certificates --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
-                <div class="px-6 py-4 border-b border-border bg-white">
+                <div class="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
                     <h2 class="text-[20px] font-semibold text-text">Recently Signed Certificates</h2>
+                    <a href="{{ route('chairman.monitoring') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
                 @if(!isset($recentlySigned) || $recentlySigned->isEmpty())
                     <div class="text-center py-12 px-6">
@@ -154,8 +156,9 @@
 
             {{-- Certificates Verified --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
-                <div class="px-6 py-4 border-b border-border bg-white">
+                <div class="px-6 py-4 border-b border-border bg-white flex items-center justify-between">
                     <h2 class="text-[20px] font-semibold text-text">Certificates Verified</h2>
+                    <a href="{{ route('chairman.monitoring') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
                 @if(!isset($verifiedLogs) || $verifiedLogs->isEmpty())
                     <div class="text-center py-12 px-6">

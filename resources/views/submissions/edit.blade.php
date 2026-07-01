@@ -106,7 +106,7 @@
                                     <span>
                                         Dokumen saat ini: 
                                         @if($doc->type === 'file')
-                                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="text-primary hover:underline font-semibold">{{ $doc->original_name }}</a>
+                                            <a href="{{ route('submissions.view-document', $doc->id) }}" target="_blank" class="text-primary hover:underline font-semibold">{{ $doc->original_name }}</a>
                                         @else
                                             <a href="{{ $doc->file_path }}" target="_blank" class="text-primary hover:underline font-semibold">Link Google Drive</a>
                                         @endif
