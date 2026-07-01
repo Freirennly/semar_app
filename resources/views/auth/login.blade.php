@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans bg-bg min-h-screen flex items-center justify-center p-6">
@@ -17,7 +18,10 @@
             <!-- Form Section -->
             <div class="p-10 md:p-14 flex flex-col justify-center relative">
                 <header class="absolute top-8 left-10 flex items-center gap-2">
-                    <span class="text-xl font-bold text-primary tracking-tight">SEMAR</span>
+                    <a href="{{ route('landing') }}" class="flex items-center gap-2">
+                        <img src="{{ asset('assets/logo.png') }}" alt="SEMAR Logo" class="h-8 w-auto">
+                        <span class="text-xl font-bold text-primary tracking-tight">SEMAR</span>
+                    </a>
                 </header>
 
                 <div class="mt-12 mb-8">

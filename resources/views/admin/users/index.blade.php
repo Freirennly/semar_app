@@ -70,7 +70,7 @@
                         <td class="px-6 py-4 text-right">
                             <form method="POST" action="{{ route('admin.users.destroy', $u) }}" class="inline shadow-confirm">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="text-danger hover:text-danger/80 text-xs font-bold hover:underline" onclick="return confirm('Hapus user {{ $u->name }}? Konfirmasi diperlukan.')">
+                                <button type="button" class="text-danger hover:text-danger/80 text-xs font-bold hover:underline" onclick="event.preventDefault(); window.confirmModal('Hapus user {{ $u->name }}? Konfirmasi diperlukan.', this.closest('form'));">
                                     Hapus
                                 </button>
                             </form>

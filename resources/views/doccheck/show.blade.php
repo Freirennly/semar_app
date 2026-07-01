@@ -136,34 +136,46 @@
                 <h3 class="text-sm font-bold text-text uppercase tracking-wider">Keputusan</h3>
             </div>
             <div class="p-5 space-y-5">
-                <form method="POST" action="{{ route('doccheck.approve', $submission) }}">
-                    @csrf
-                    <button type="submit" @if(!$submission->hasAllDocuments()) disabled @endif class="w-full py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 {{ $submission->hasAllDocuments() ? 'bg-primary hover:bg-primary-hover text-white' : 'bg-bg text-text-muted cursor-not-allowed border border-border' }}">
-                        Terima Dokumen
-                    </button>
-                </form>
-
-                <div class="flex items-center gap-3">
-                    <div class="flex-1 h-px bg-border"></div>
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-text-muted">atau</span>
-                    <div class="flex-1 h-px bg-border"></div>
-                </div>
-
-                <form method="POST" action="{{ route('doccheck.return', $submission) }}" class="space-y-4">
-                    @csrf
-                    <div>
-                        <label for="note" class="block text-xs font-bold mb-1.5 text-text-secondary">
-                            Catatan Pengembalian <span class="text-danger">*</span>
-                        </label>
-                        <textarea name="note" id="note" rows="3" class="input-field" placeholder="Jelaskan dokumen apa yang perlu diperbaiki...">{{ old('note') }}</textarea>
-                        @error('note')
-                            <p class="text-xs mt-1 font-medium text-danger">{{ $message }}</p>
-                        @enderror
+                @php
+                    $isVerified = $submission->status === \App\Enums\SubmissionStatus::PROCESS && $submission->activityLogs()->where('description', 'like', '%Dokumen dinyatakan lengkap%')->exists();
+                    $canApprove = $submission->hasAllDocuments();
+                @endphp
+                
+                @if($isVerified)
+                    <div class="w-full py-2.5 rounded-xl text-sm font-bold bg-success/10 text-success border border-success/20 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        Dokumen Telah Diterima
                     </div>
-                    <button type="submit" class="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border border-danger/30 text-danger hover:bg-danger/10 transition-colors">
-                        Kembalikan ke Pengusul
-                    </button>
-                </form>
+                @else
+                    <form method="POST" action="{{ route('doccheck.approve', $submission) }}">
+                        @csrf
+                        <button type="button" @if(!$canApprove) disabled @endif class="w-full py-2.5 rounded-xl text-sm font-bold transition-colors flex items-center justify-center gap-2 {{ $canApprove ? 'bg-primary hover:bg-primary-hover text-white' : 'bg-bg text-text-muted cursor-not-allowed border border-border' }}" @if($canApprove) onclick="event.preventDefault(); window.confirmModal('Terima dokumen ini?', this.closest('form'));" @endif>
+                            Terima Dokumen
+                        </button>
+                    </form>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-px bg-border"></div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-text-muted">atau</span>
+                        <div class="flex-1 h-px bg-border"></div>
+                    </div>
+
+                    <form method="POST" action="{{ route('doccheck.return', $submission) }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label for="note" class="block text-xs font-bold mb-1.5 text-text-secondary">
+                                Catatan Pengembalian <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="note" id="note" rows="3" class="input-field" placeholder="Jelaskan dokumen apa yang perlu diperbaiki...">{{ old('note') }}</textarea>
+                            @error('note')
+                                <p class="text-xs mt-1 font-medium text-danger">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <button type="button" class="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border border-danger/30 text-danger hover:bg-danger/10 transition-colors" onclick="event.preventDefault(); window.confirmModal('Kembalikan dokumen ke pengusul?', this.closest('form'));">
+                            Kembalikan ke Pengusul
+                        </button>
+                    </form>
+                @endif
             </div>
         </div>
     </div>

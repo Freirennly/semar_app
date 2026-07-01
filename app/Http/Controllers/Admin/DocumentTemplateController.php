@@ -52,6 +52,49 @@ class DocumentTemplateController extends Controller
     }
 
     /**
+     * Pulihkan template dokumen default dari SEMAR
+     */
+    public function restoreDefault(Request $request)
+    {
+        $defaults = DocumentTemplate::DEFAULT_TEMPLATES;
+
+        $createdCount = 0;
+
+        DB::transaction(function () use ($defaults, &$createdCount) {
+            foreach ($defaults as $default) {
+                if (!DocumentTemplate::where('code', $default['code'])->exists()) {
+                    DocumentTemplate::create([
+                        'name' => $default['name'],
+                        'code' => $default['code'],
+                        'file_path' => '', // Dummy path since we don't have the file
+                        'description' => 'Template dokumen bawaan sistem SEMAR.',
+                        'is_required' => true,
+                        'is_shown' => true,
+                        'is_archived' => false,
+                    ]);
+                    $createdCount++;
+                }
+            }
+
+            if ($createdCount > 0) {
+                ActivityLog::create([
+                    'user_id' => auth()->id(),
+                    'submission_id' => null,
+                    'old_status' => null,
+                    'new_status' => 'TEMPLATE_DEFAULT_RESTORED',
+                    'description' => "$createdCount template dokumen bawaan berhasil dipulihkan.",
+                ]);
+            }
+        });
+
+        if ($createdCount > 0) {
+            return redirect()->route('admin.templates.index')->with('success', "$createdCount Template berhasil dipulihkan.");
+        }
+
+        return redirect()->route('admin.templates.index')->with('success', 'Semua Template Bawaan sudah tersedia.');
+    }
+
+    /**
      * Form membuat template baru.
      */
     public function create()

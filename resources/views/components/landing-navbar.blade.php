@@ -4,9 +4,7 @@
             <!-- Brand -->
             <div class="flex-shrink-0 flex items-center gap-3">
                 <a href="{{ route('landing') }}" class="flex items-center gap-2 group">
-                    <div class="w-10 h-10 bg-white/10 text-white rounded-xl flex items-center justify-center font-bold text-xl group-hover:bg-white group-hover:text-primary transition-colors duration-300">
-                        S
-                    </div>
+                    <img src="{{ asset('assets/logo.png') }}" alt="SEMAR Logo" class="h-10 w-auto object-contain">
                     <div>
                         <h1 class="font-bold text-xl leading-none text-white transition-colors">SEMAR</h1>
                         <p class="text-[0.65rem] text-white/70 font-medium tracking-wider uppercase mt-0.5">Portal Manajemen Riset</p>

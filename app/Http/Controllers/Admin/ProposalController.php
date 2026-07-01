@@ -263,10 +263,10 @@ class ProposalController extends Controller
             ->first();
 
         if (!$document) {
-            $document = $proposal->documents()->where('type', 'file')->first();
+            $document = $proposal->documents()->where('mime', '!=', 'text/url')->first();
         }
 
-        if (!$document || $document->type !== 'file') {
+        if (!$document || $document->mime === 'text/url') {
             return back()->with('error', 'Berkas proposal utama tidak ditemukan atau hanya berupa link.');
         }
 

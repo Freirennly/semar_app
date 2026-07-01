@@ -164,13 +164,23 @@
             @role('student')
             @if($submission->status === \App\Enums\SubmissionStatus::REVISION_REQUIRED)
                 @if($hasAllDocs)
-                    <form method="POST" action="{{ route('submissions.submit', $submission) }}" class="mt-6 space-y-4">
+                    <form method="POST" action="{{ route('submissions.submit', $submission) }}" enctype="multipart/form-data" class="mt-6 space-y-4">
                         @csrf
                         <div>
                             <label for="note" class="block text-[12px] font-semibold text-text-secondary mb-1">Catatan Revisi <span class="text-danger">*</span></label>
-                            <textarea name="note" id="note" rows="3" required class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" placeholder="Tulis ringkasan perbaikan atau catatan revisi Anda..."></textarea>
+                            <textarea name="note" id="note" rows="3" required class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" placeholder="Tulis ringkasan perbaikan atau catatan revisi Anda...">{{ old('note') }}</textarea>
+                            @error('note')
+                                <p class="text-[11px] text-danger mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
-                        <button type="submit" class="w-full btn-primary">Kirim Revisi</button>
+                        <div>
+                            <label for="revision_file" class="block text-[12px] font-semibold text-text-secondary mb-1">Lampiran Revisi (Opsional)</label>
+                            <input type="file" name="revision_file" id="revision_file" accept=".pdf,.doc,.docx,.zip,.rar" class="w-full text-[12px] text-text border border-border rounded-lg bg-white file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-[12px] file:font-semibold file:bg-slate-100 file:text-text-secondary hover:file:bg-slate-200 cursor-pointer">
+                            @error('revision_file')
+                                <p class="text-[11px] text-danger mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <button type="button" class="w-full btn-primary" onclick="event.preventDefault(); window.confirmModal('Kirim revisi ini ke sekretariat?', this.closest('form'));">Kirim Revisi</button>
                     </form>
                 @else
                     <x-alert type="warning" class="mt-6">
@@ -221,7 +231,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                             <form method="POST" action="{{ route('submissions.confirm', $submission) }}">
                                 @csrf
-                                <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150" onclick="return confirm('Apakah Anda yakin data Draft EC sudah benar dan siap dikonfirmasi?')">
+                                <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150" onclick="event.preventDefault(); window.confirmModal('Apakah Anda yakin data Draft EC sudah benar dan siap dikonfirmasi?', this.closest('form'));">
                                     Konfirmasi Draft
                                 </button>
                             </form>
@@ -280,7 +290,7 @@
 
                         <form method="POST" action="{{ route('submissions.sign', $submission) }}">
                             @csrf
-                            <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150" onclick="return confirm('Apakah Anda yakin ingin menyetujui dan menandatangani dokumen Ethical Clearance ini? Tindakan ini tidak dapat dibatalkan.')">
+                            <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150" onclick="event.preventDefault(); window.confirmModal('Apakah Anda yakin ingin menyetujui dan menandatangani dokumen Ethical Clearance ini? Tindakan ini tidak dapat dibatalkan.', this.closest('form'));">
                                 Tandatangani Ethical Clearance
                             </button>
                         </form>
@@ -294,10 +304,11 @@
 
     {{-- KONTEN TAB 2: DOKUMEN --}}
     @if($tab === 'documents')
+    <div class="space-y-6">
     <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
         <div>
-            <h2 class="text-xl md:text-[24px] font-semibold text-text">Dokumen Pendukung</h2>
-            <p class="text-[14px] text-text-secondary mt-1">Semua dokumen wajib harus diupload dalam format PDF (maks. 10MB).</p>
+            <h2 class="text-xl md:text-[24px] font-semibold text-text">Lampiran Persyaratan</h2>
+            <p class="text-[14px] text-text-secondary mt-1">Semua dokumen wajib harus diupload dalam format PDF, DOC, DOCX (maks. 5MB) atau link Google Drive.</p>
         </div>
         <div class="space-y-4">
             @foreach($documentTemplates as $template)
@@ -338,7 +349,7 @@
                                 <form method="POST" action="{{ route('submissions.delete-document', [$submission, $doc]) }}" class="inline">
                                     @csrf 
                                     @method('DELETE')
-                                    <button type="submit" class="text-[12px] text-danger hover:text-danger/80 font-bold px-3 py-1.5 border border-danger/20 rounded-lg hover:bg-danger-bg transition-colors" onclick="return confirm('Hapus dokumen ini?')" aria-label="Hapus dokumen {{ $template->name }}">Hapus</button>
+                                    <button type="button" class="text-[12px] text-danger hover:text-danger/80 font-bold px-3 py-1.5 border border-danger/20 rounded-lg hover:bg-danger-bg transition-colors" onclick="event.preventDefault(); window.confirmModal('Hapus dokumen ini?', this.closest('form'));" aria-label="Hapus dokumen {{ $template->name }}">Hapus</button>
                                 </form>
                             @endif
                         @endif
@@ -349,8 +360,8 @@
                                 <input type="hidden" name="document_template_id" value="{{ $template->id }}">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                                     <div class="space-y-2">
-                                        <label class="block text-[12px] font-semibold text-text-secondary">Unggah Berkas PDF</label>
-                                        <input type="file" name="file" accept=".pdf" class="w-full text-[12px] text-text border border-border rounded-lg bg-white file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-[12px] file:font-semibold file:bg-slate-100 file:text-text-secondary hover:file:bg-slate-200 cursor-pointer" aria-label="Pilih file {{ $template->name }}">
+                                        <label class="block text-[12px] font-semibold text-text-secondary">Unggah Berkas Baru</label>
+                                        <input type="file" name="file" accept=".pdf,.doc,.docx" class="w-full text-[12px] text-text border border-border rounded-lg bg-white file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-[12px] file:font-semibold file:bg-slate-100 file:text-text-secondary hover:file:bg-slate-200 cursor-pointer" aria-label="Pilih file {{ $template->name }}">
                                     </div>
                                     <div class="space-y-2">
                                         <label class="block text-[12px] font-semibold text-text-secondary">Atau Link Google Drive</label>
@@ -366,6 +377,74 @@
                 </div>
             @endforeach
         </div>
+    </div>
+    
+    <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
+        <div>
+            <h2 class="text-xl md:text-[24px] font-semibold text-text">Dokumen Hasil Review</h2>
+            <p class="text-[14px] text-text-secondary mt-1">Catatan etik dan dokumen balasan dari reviewer.</p>
+        </div>
+        <div class="space-y-4">
+            @php
+                $reviewerDocs = $submission->documents->filter(function($doc) {
+                    return str_starts_with($doc->doc_type, 'REVIEW_ATTACHMENT_');
+                });
+            @endphp
+            @forelse($reviewerDocs as $rDoc)
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl bg-surface gap-4">
+                    <div class="flex items-start gap-4 min-w-0">
+                        <div class="w-10 h-10 rounded-xl bg-info-bg flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-info" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[14px] font-semibold text-text">{{ $rDoc->original_name }}</p>
+                            <p class="text-[12px] text-text-secondary mt-1 truncate max-w-md">Ukuran: {{ number_format($rDoc->size / 1024, 0) }} KB</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
+                        <a href="{{ route('submissions.view-document', [$submission, $rDoc]) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
+                    </div>
+                </div>
+            @empty
+                <p class="text-[14px] text-text-secondary italic">Belum ada dokumen hasil review yang diunggah.</p>
+            @endforelse
+        </div>
+    </div>
+    
+    {{-- Dokumen Revisi (Dari Mahasiswa) --}}
+    @php
+        $revisionDocs = $submission->documents->where('doc_type', 'REVISION');
+    @endphp
+    @if($revisionDocs->count() > 0)
+    <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6 mt-6">
+        <div>
+            <h2 class="text-xl md:text-[24px] font-semibold text-text">Lampiran Revisi</h2>
+            <p class="text-[14px] text-text-secondary mt-1">Dokumen tambahan yang diunggah oleh mahasiswa saat revisi.</p>
+        </div>
+        <div class="space-y-4">
+            @foreach($revisionDocs as $doc)
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl bg-surface gap-4">
+                <div class="flex items-start gap-4 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[14px] font-semibold text-text">{{ $doc->original_name }}</p>
+                        <p class="text-[12px] text-text-secondary mt-1 truncate max-w-md">Diupload: {{ $doc->created_at->format('d M Y H:i') }}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
+                    @if($doc->type === 'file')
+                        <a href="{{ route('submissions.view-document', [$submission, $doc]) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
+                    @else
+                        <a href="{{ $doc->file_path }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Buka Tautan</a>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
     </div>
     @endif
 

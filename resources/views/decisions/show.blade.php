@@ -374,12 +374,12 @@
                     </div>
 
                     {{-- Submit --}}
-                    <button type="submit"
+                    <button type="button"
                             class="w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-150 flex items-center justify-center gap-2"
                             style="background:#463EE3; color:white; box-shadow:0 2px 8px rgba(70,62,227,0.28);"
                             onmouseover="this.style.background='#332DB8'; this.style.boxShadow='0 5px 16px rgba(70,62,227,0.35)'"
                             onmouseout="this.style.background='#463EE3'; this.style.boxShadow='0 2px 8px rgba(70,62,227,0.28)'"
-                            onclick="return confirm('Simpan keputusan akhir? Tindakan ini tidak dapat dibatalkan.')">
+                            onclick="event.preventDefault(); window.confirmModal('Simpan keputusan akhir? Tindakan ini tidak dapat dibatalkan.', this.closest('form'));">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                         </svg>

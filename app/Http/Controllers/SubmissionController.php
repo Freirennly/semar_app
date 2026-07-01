@@ -43,7 +43,7 @@ class SubmissionController extends Controller
         $submissions = $query->get();
 
         // Mengambil master berkas template aktif untuk diunduh mahasiswa
-        $documentTemplates = DocumentTemplate::visible()->get();
+        $documentTemplates = DocumentTemplate::visible()->orderBy('id')->get();
 
         return view('submissions.index', compact('submissions', 'documentTemplates'));
     }
@@ -57,7 +57,7 @@ class SubmissionController extends Controller
         $this->authorize('create', Submission::class);
 
         // AMBIL MASTER TEMPLATE DOKUMEN DARI DATABASE AGAR BISA DI-LOOP PADA BLOK KARTU VIEW
-        $documentTemplates = DocumentTemplate::visible()->get();
+        $documentTemplates = DocumentTemplate::visible()->orderBy('id')->get();
 
         return view('submissions.create', compact('documentTemplates'));
     }
@@ -72,12 +72,16 @@ class SubmissionController extends Controller
             'title'         => 'required|string|max:255',
             'type'          => 'required|string',
             'abstract'      => 'nullable|string',
+<<<<<<< HEAD
             'files.*'       => 'nullable|file|mimes:pdf|max:2048', 
+=======
+            'files.*'       => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+>>>>>>> feature/fix-permission-issue
             'hyperlinks.*'  => 'nullable|url',
         ]);
 
         // 2. Ambil Master Template untuk Validasi Aturan Wajib Atas Array Masukan
-        $documentTemplates = DocumentTemplate::visible()->get();
+        $documentTemplates = DocumentTemplate::visible()->orderBy('id')->get();
 
         foreach ($documentTemplates as $template) {
             $hasFile = $request->hasFile("files.{$template->id}");
@@ -85,7 +89,11 @@ class SubmissionController extends Controller
 
             // Jika Template bersifat WAJIB, pastikan salah satu (file/link) terisi
             if ($template->is_required && !$hasFile && !$hasLink) {
-                return back()->withErrors(["files.{$template->id}" => "Dokumen '{$template->name}' wajib diisi melalui File Upload atau Hyperlink GDrive."])->withInput();
+                return back()->withErrors(["files.{$template->id}" => "Dokumen '{$template->name}' wajib diisi melalui File Upload atau Link Dokumen."])->withInput();
+            }
+
+            if ($hasFile && $hasLink) {
+                return back()->withErrors(["files.{$template->id}" => "Dokumen '{$template->name}' tidak boleh diisi keduanya (File dan Link). Silakan pilih salah satu."])->withInput();
             }
         }
 
@@ -123,7 +131,7 @@ class SubmissionController extends Controller
                     'document_template_id' => $template->id,
                     'doc_type'             => $template->code,
                     'file_path'            => $request->input("hyperlinks.{$template->id}"),
-                    'original_name'        => 'Link Google Drive',
+                    'original_name'        => 'Link Dokumen',
                     'mime'                 => 'text/url',
                     'size'                 => 0,
                     'uploaded_by'          => auth()->id(),
@@ -154,7 +162,7 @@ class SubmissionController extends Controller
         // Eager load seluruh relasi pendukung
         $submission->load(['documents.template', 'student', 'assignments.reviewer', 'reviews.reviewer', 'statusHistories.changer', 'decisions.decider']);
 
-        $documentTemplates = DocumentTemplate::visible()->get();
+        $documentTemplates = DocumentTemplate::visible()->orderBy('id')->get();
         $uploadedTemplateIds = $submission->documents->pluck('document_template_id')->toArray();
         $tab = $request->input('tab', 'details');
 
@@ -181,7 +189,15 @@ class SubmissionController extends Controller
      */
     public function downloadTemplate(DocumentTemplate $template)
     {
-        if (!$template->file_path || !Storage::disk('public')->exists($template->file_path)) {
+        if (empty($template->file_path)) {
+            return back()->with('error', 'Template dokumen ini belum memiliki file terlampir.');
+        }
+
+        if (filter_var($template->file_path, FILTER_VALIDATE_URL)) {
+            return redirect()->away($template->file_path);
+        }
+
+        if (!Storage::disk('public')->exists($template->file_path)) {
             return back()->with('error', 'Mohon maaf, fisik master berkas template tidak ditemukan di server penyimpanan lokal.');
         }
 
@@ -220,7 +236,7 @@ class SubmissionController extends Controller
     public function edit(Submission $submission)
     {
         $this->authorize('update', $submission);
-        $documentTemplates = DocumentTemplate::visible()->get();
+        $documentTemplates = DocumentTemplate::visible()->orderBy('id')->get();
         return view('submissions.edit', compact('submission', 'documentTemplates'));
     }
 
@@ -232,11 +248,11 @@ class SubmissionController extends Controller
             'title' => 'required|string|max:500',
             'type' => 'required|string|max:100',
             'abstract' => 'nullable|string|max:5000',
-            'files.*' => 'nullable|file|mimes:pdf|max:2048',
+            'files.*' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
             'hyperlinks.*' => 'nullable|url',
         ]);
 
-        $documentTemplates = DocumentTemplate::visible()->get();
+        $documentTemplates = DocumentTemplate::visible()->orderBy('id')->get();
 
         foreach ($documentTemplates as $template) {
             $hasFile = $request->hasFile("files.{$template->id}");
@@ -244,7 +260,11 @@ class SubmissionController extends Controller
             $hasExisting = $submission->documents()->where('document_template_id', $template->id)->exists();
 
             if ($template->is_required && !$hasFile && !$hasLink && !$hasExisting) {
-                return back()->withErrors(["files.{$template->id}" => "Dokumen '{$template->name}' wajib diisi melalui File Upload atau Hyperlink GDrive."])->withInput();
+                return back()->withErrors(["files.{$template->id}" => "Dokumen '{$template->name}' wajib diisi melalui File Upload atau Link Dokumen."])->withInput();
+            }
+
+            if ($hasFile && $hasLink) {
+                return back()->withErrors(["files.{$template->id}" => "Dokumen '{$template->name}' tidak boleh diisi keduanya (File dan Link). Silakan pilih salah satu."])->withInput();
             }
         }
 
@@ -292,7 +312,7 @@ class SubmissionController extends Controller
                         'document_template_id' => $template->id,
                         'doc_type'             => $template->code,
                         'file_path'            => $newLink,
-                        'original_name'        => 'Link Google Drive',
+                        'original_name'        => 'Link Dokumen',
                         'mime'                 => 'text/url',
                         'size'                 => 0,
                         'uploaded_by'          => auth()->id(),
@@ -316,6 +336,7 @@ class SubmissionController extends Controller
 
         $request->validate([
             'note' => 'required|string|max:5000',
+            'revision_file' => 'nullable|file|mimes:pdf,doc,docx,zip,rar|max:5120',
         ]);
 
         // Validasi Kelengkapan Berkas Dinamis langsung dari berkas terunggah
@@ -330,6 +351,21 @@ class SubmissionController extends Controller
 
         if ($submission->status !== SubmissionStatus::REVISION_REQUIRED) {
             return back()->with('error', 'Pengajuan tidak dalam status yang bisa di-submit.');
+        }
+
+        if ($request->hasFile('revision_file')) {
+            $file = $request->file('revision_file');
+            $path = $file->store('submissions/' . $submission->id, 'public');
+
+            $submission->documents()->create([
+                'document_template_id' => null,
+                'doc_type'             => 'REVISION',
+                'file_path'            => $path,
+                'original_name'        => $file->getClientOriginalName(),
+                'mime'                 => $file->getClientMimeType(),
+                'size'                 => $file->getSize(),
+                'uploaded_by'          => auth()->id(),
+            ]);
         }
 
         $this->workflow->transition($submission, SubmissionStatus::REVISED, $request->user(), $request->input('note'));
@@ -355,7 +391,7 @@ class SubmissionController extends Controller
 
         $request->validate([
             'document_template_id' => 'required|in:' . $allowedIdsString,
-            'file' => 'nullable|file|mimes:pdf|max:2048',
+            'file' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
             'hyperlink' => 'nullable|url',
         ]);
 
@@ -363,7 +399,7 @@ class SubmissionController extends Controller
         $hasLink = $request->filled('hyperlink');
 
         if (!$hasFile && !$hasLink) {
-            return back()->withErrors(['file' => 'Pilih file PDF atau masukkan link Google Drive.']);
+            return back()->withErrors(['file' => 'Pilih file PDF, DOC, DOCX atau masukkan Link Dokumen.']);
         }
 
         $oldDoc = $submission->documents()->where('document_template_id', $request->document_template_id)->first();
@@ -395,7 +431,7 @@ class SubmissionController extends Controller
                 'document_template_id' => $request->document_template_id,
                 'doc_type' => $backupEnumStr,
                 'file_path' => $request->hyperlink,
-                'original_name' => 'Link Google Drive',
+                'original_name' => 'Link Dokumen',
                 'mime' => 'text/url',
                 'size' => 0,
                 'uploaded_by' => $request->user()->id,

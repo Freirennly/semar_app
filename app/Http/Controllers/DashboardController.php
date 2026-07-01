@@ -165,13 +165,18 @@ class DashboardController extends Controller
         $submitted = Submission::where('secretary_id', $userId)->whereIn('status', [
             SubmissionStatus::PROCESS,
             SubmissionStatus::REVISED
-        ])->with('student')->latest()->get();
+        ])->with('student')->latest()->get()->filter(function($sub) {
+            if ($sub->status === SubmissionStatus::REVISED) return true;
+            return !$sub->activityLogs()->where('description', 'like', '%Dokumen dinyatakan lengkap%')->exists();
+        });
 
         $pendingDecision = Submission::where('secretary_id', $userId)->where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'reviews.reviewer', 'assignments.reviewer')->latest()->get();
 
         $needAssign = Submission::where('secretary_id', $userId)->where('status', SubmissionStatus::PROCESS)
-            ->whereDoesntHave('assignments')->with('student')->latest()->get();
+            ->whereDoesntHave('assignments')->with('student')->latest()->get()->filter(function($sub) {
+                return $sub->activityLogs()->where('description', 'like', '%Dokumen dinyatakan lengkap%')->exists();
+            });
 
         $assigned = Submission::where('secretary_id', $userId)->where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'assignments.reviewer')->latest()->get();

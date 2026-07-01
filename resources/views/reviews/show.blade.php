@@ -178,7 +178,7 @@
                 </div>
 
                 <div class="pt-4 border-t border-border">
-                    <button type="submit" class="btn-primary" onclick="return confirm('Submit review ini? Anda tidak dapat mengubahnya setelah submit.')">
+                    <button type="button" class="btn-primary" onclick="event.preventDefault(); window.confirmModal('Submit review ini? Anda tidak dapat mengubahnya setelah submit.', this.closest('form'));">
                         Submit Review
                     </button>
                 </div>

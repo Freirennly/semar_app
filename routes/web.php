@@ -161,6 +161,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('announcements', AnnouncementController::class)->except(['show']);
         
         // Fitur Admin Template Dokumen
+        Route::post('templates/restore-default', [DocumentTemplateController::class, 'restoreDefault'])->name('templates.restore-default');
         Route::resource('templates', DocumentTemplateController::class)->except(['show', 'destroy']);
         Route::post('templates/{template}/toggle-required', [DocumentTemplateController::class, 'toggleRequired'])->name('templates.toggle-required');
         Route::post('templates/{template}/toggle-shown', [DocumentTemplateController::class, 'toggleShown'])->name('templates.toggle-shown');

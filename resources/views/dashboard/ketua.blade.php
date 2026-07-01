@@ -93,12 +93,16 @@
                                         </td>
                                         <td class="px-5 py-3 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
                                         <td class="px-5 py-3 text-right">
-                                            <form action="{{ route('submissions.sign', $sub) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menandatangani Surat Kelayakan Etik (Ethical Clearance) untuk pengajuan ini?')">
-                                                @csrf
-                                                <button type="submit" class="text-xs font-bold text-primary hover:underline">
-                                                    Tandatangani
-                                                </button>
-                                            </form>
+                                            <div class="flex items-center justify-end gap-3">
+                                                <a href="{{ route('submissions.show', $sub) }}" class="text-[11px] font-bold text-text-secondary hover:text-primary transition-colors" title="Detail Pengajuan">Detail</a>
+                                                <a href="{{ route('submissions.preview-final', $sub) }}" target="_blank" class="text-[11px] font-bold text-text-secondary hover:text-primary transition-colors" title="Preview Final PDF">Preview</a>
+                                                <form action="{{ route('submissions.sign', $sub) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    <button type="button" class="text-[11px] font-bold px-2.5 py-1 rounded-md bg-primary/10 text-primary hover:bg-primary/20 transition-colors" onclick="event.preventDefault(); window.confirmModal('Tandatangani Surat Kelayakan Etik (Ethical Clearance)?', this.closest('form'));">
+                                                        Tandatangani
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
