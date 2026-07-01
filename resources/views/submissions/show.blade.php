@@ -19,14 +19,13 @@
 
     {{-- Error Alerts --}}
     @if($errors->any())
-        <div class="mb-6 bg-danger-bg border border-danger/20 text-danger rounded-xl px-5 py-3 text-[14px] shadow-sm">
-            <p class="font-bold mb-1">⚠️ Gagal Memproses File:</p>
+        <x-alert type="error" title="Gagal Memproses File" class="mb-6">
             <ul class="list-disc pl-5 space-y-0.5 text-[12px]">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-        </div>
+        </x-alert>
     @endif
 
     {{-- Tabs --}}
@@ -65,6 +64,73 @@
                     <div class="font-academic text-text p-4 bg-slate-50 border border-border rounded-xl whitespace-pre-line">{{ $submission->abstract ?? 'Tidak ada abstrak.' }}</div>
                 </div>
             </dl>
+
+            @if($submission->reviews->whereNotNull('submitted_at')->isNotEmpty())
+            <div class="pt-6 border-t border-border space-y-4">
+                <span class="text-text-secondary text-[12px] font-semibold block uppercase tracking-wide">Riwayat Revisi & Review</span>
+                
+                @php
+                    $groupedReviews = $submission->reviews->whereNotNull('submitted_at')
+                        ->sortBy(function($r) { return $r->reviewer->name ?? ''; })
+                        ->groupBy('revision_round')
+                        ->sortKeys();
+                    $revisionHistories = $submission->statusHistories()->where('to_status', \App\Enums\SubmissionStatus::REVISED)->orderBy('created_at', 'asc')->get();
+                    $maxRound = $groupedReviews->keys()->max();
+                @endphp
+
+                <div class="space-y-6">
+                    @foreach($groupedReviews as $round => $reviews)
+                        <div class="bg-slate-50 border border-border rounded-xl overflow-hidden">
+                            <div class="bg-slate-100/50 border-b border-border px-4 py-2.5 flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[13px] font-bold text-text">Putaran {{ $round }}</span>
+                                    @if($round === $maxRound && in_array($submission->status->value, ['PROCESS', 'ON_REVIEW', 'REVISION_REQUIRED', 'REVISED']))
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-primary/10 text-primary uppercase">Putaran Aktif</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="p-4 space-y-4">
+                                @foreach($reviews as $review)
+                                    <div class="p-4 bg-amber-50/50 border border-amber-200/50 rounded-xl space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[12px] font-bold text-amber-800">{{ $review->reviewer->name ?? 'Reviewer' }}</span>
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 uppercase">
+                                                {{ $review->recommendation->label() }}
+                                            </span>
+                                        </div>
+                                        <p class="text-[13px] text-text-secondary whitespace-pre-line leading-relaxed">{{ $review->notes }}</p>
+                                        @php
+                                            $attachment = $submission->documents->where('uploaded_by', $review->reviewer_id)
+                                                ->where('doc_type', 'REVIEW_ATTACHMENT_R' . $round . '_U' . $review->reviewer_id)
+                                                ->first();
+                                        @endphp
+                                        @if($attachment)
+                                            <div class="mt-2 text-xs flex items-center gap-1 border-t border-amber-200/50 pt-2">
+                                                <span class="text-text-secondary font-medium">Lampiran:</span>
+                                                <a href="{{ route('submissions.view-document', [$submission, $attachment]) }}" target="_blank" class="text-primary hover:text-primary-hover font-semibold inline-flex items-center gap-1">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    {{ $attachment->original_name }}
+                                                </a>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endforeach
+
+                                @if(isset($revisionHistories[$round - 1]))
+                                    <div class="p-4 bg-blue-50/50 border border-blue-200/50 rounded-xl space-y-2 mt-4">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[12px] font-bold text-blue-800">Catatan Revisi Mahasiswa</span>
+                                            <span class="text-[10px] font-medium text-blue-600">{{ $revisionHistories[$round - 1]->created_at->timezone('Asia/Jakarta')->format('d M Y, H:i') }}</span>
+                                        </div>
+                                        <p class="text-[13px] text-text-secondary whitespace-pre-line leading-relaxed">{{ $revisionHistories[$round - 1]->note }}</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
         
         <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm h-fit space-y-6">
@@ -96,38 +162,129 @@
             </div>
 
             @role('student')
-            @if($submission->status === \App\Enums\SubmissionStatus::RESUBMISSION)
+            @if($submission->status === \App\Enums\SubmissionStatus::REVISION_REQUIRED)
                 @if($hasAllDocs)
-                    <form method="POST" action="{{ route('submissions.submit', $submission) }}" class="mt-6">
+                    <form method="POST" action="{{ route('submissions.submit', $submission) }}" class="mt-6 space-y-4">
                         @csrf
+                        <div>
+                            <label for="note" class="block text-[12px] font-semibold text-text-secondary mb-1">Catatan Revisi <span class="text-danger">*</span></label>
+                            <textarea name="note" id="note" rows="3" required class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" placeholder="Tulis ringkasan perbaikan atau catatan revisi Anda..."></textarea>
+                        </div>
                         <button type="submit" class="w-full btn-primary">Kirim Revisi</button>
                     </form>
                 @else
-                    <div class="mt-6 bg-warning-bg border border-warning/20 rounded-xl px-4 py-3 text-[14px] text-warning" role="alert">
+                    <x-alert type="warning" class="mt-6">
                         Upload semua dokumen wajib sebelum kirim revisi. Buka tab <strong>Dokumen</strong> untuk mengupload.
-                    </div>
+                    </x-alert>
                 @endif
             @endif
 
-            @if($submission->status === \App\Enums\SubmissionStatus::APPROVED && !empty($submission->ec_number))
+            @if($submission->status === \App\Enums\SubmissionStatus::WAITING_STUDENT_CONFIRMATION && !empty($submission->ec_number))
                 <div class="mt-6 border-t border-border pt-6 space-y-4">
-                    <h3 class="text-sm font-bold text-text uppercase tracking-wider">Konfirmasi Ethical Clearance</h3>
-                    <p class="text-xs text-text-secondary">Silakan periksa dan konfirmasi judul penelitian serta nama peneliti sebelum ditandatangani oleh Ketua.</p>
+                    <h3 class="text-sm font-bold text-text uppercase tracking-wider">Konfirmasi Draft Ethical Clearance</h3>
                     
-                    <form method="POST" action="{{ route('submissions.confirm', $submission) }}" class="space-y-4">
-                        @csrf
+                    <div class="space-y-3 text-sm p-4 bg-slate-50 border border-border rounded-xl">
                         <div>
-                            <label for="confirmed_title" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Judul Penelitian</label>
-                            <input type="text" name="confirmed_title" id="confirmed_title" value="{{ old('confirmed_title', $submission->title) }}" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" required>
+                            <p class="text-text-secondary text-xs font-medium uppercase tracking-wide">Nomor EC</p>
+                            <p class="font-semibold text-text mt-0.5">{{ $submission->ec_number }}</p>
                         </div>
                         <div>
-                            <label for="confirmed_researcher_name" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Nama Peneliti</label>
-                            <input type="text" name="confirmed_researcher_name" id="confirmed_researcher_name" value="{{ old('confirmed_researcher_name', $submission->student->name) }}" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" required>
+                            <p class="text-text-secondary text-xs font-medium uppercase tracking-wide">Judul Penelitian</p>
+                            <p class="font-semibold text-text mt-0.5">{{ $submission->confirmed_title }}</p>
                         </div>
-                        <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150">
-                            Konfirmasi Data
-                        </button>
-                    </form>
+                        <div>
+                            <p class="text-text-secondary text-xs font-medium uppercase tracking-wide">Nama Peneliti</p>
+                            <p class="font-semibold text-text mt-0.5">{{ $submission->confirmed_researcher_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-text-secondary text-xs font-medium uppercase tracking-wide">Penandatangan (Ketua)</p>
+                            <p class="font-semibold text-text mt-0.5">{{ optional($submission->signatory)->name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-text-secondary text-xs font-medium uppercase tracking-wide">Status Draft</p>
+                            <div class="mt-1 flex items-center justify-between">
+                                <span class="px-2 py-1 text-[11px] font-bold uppercase rounded-md bg-info-bg text-info border border-info/20">Menunggu Konfirmasi</span>
+                                <a href="{{ route('submissions.preview-draft', $submission) }}" target="_blank" class="text-[11px] font-bold text-primary hover:text-primary-hover underline underline-offset-2">Preview Draft PDF</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if(isset($isRevisionPending) && $isRevisionPending)
+                        <div class="mt-4 p-4 bg-warning/10 border border-warning/20 rounded-xl">
+                            <p class="text-xs font-bold text-warning-dark">Status: Menunggu Perbaikan Admin</p>
+                            <p class="text-xs text-warning-dark mt-1">Anda telah meminta perbaikan draf ini. Silakan tunggu Admin mengirimkan draf terbaru.</p>
+                            <div class="mt-3 p-3 bg-white/60 rounded-lg text-xs italic text-text-secondary">
+                                " {{ $revisionNote }} "
+                            </div>
+                        </div>
+                    @else
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                            <form method="POST" action="{{ route('submissions.confirm', $submission) }}">
+                                @csrf
+                                <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150" onclick="return confirm('Apakah Anda yakin data Draft EC sudah benar dan siap dikonfirmasi?')">
+                                    Konfirmasi Draft
+                                </button>
+                            </form>
+
+                            <button type="button" onclick="document.getElementById('revision-form-container').classList.toggle('hidden');" class="w-full bg-white hover:bg-slate-50 text-danger border border-danger/20 hover:border-danger text-xs font-bold py-2.5 rounded-xl transition-all duration-150">
+                                Minta Perbaikan
+                            </button>
+                        </div>
+
+                        <div id="revision-form-container" class="hidden mt-4 p-4 border border-border rounded-xl bg-slate-50">
+                            <form method="POST" action="{{ route('submissions.request-revision', $submission) }}" class="space-y-4">
+                                @csrf
+                                <div>
+                                    <label for="note" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Catatan Perbaikan <span class="text-danger">*</span></label>
+                                    <textarea name="note" id="note" rows="3" required class="w-full bg-white border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors" placeholder="Jelaskan bagian mana dari Draft EC yang perlu diperbaiki..."></textarea>
+                                </div>
+                                <button type="submit" class="w-full bg-danger hover:bg-danger/90 text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150">
+                                    Kirim Permintaan Perbaikan
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
+            @if($submission->status === \App\Enums\SubmissionStatus::DONE)
+                <div class="mt-6 border-t border-border pt-6">
+                    <div class="flex items-center justify-between p-4 bg-success/10 border border-success/20 rounded-xl">
+                        <div>
+                            <h3 class="text-sm font-bold text-success-dark uppercase tracking-wider">Ethical Clearance Diterbitkan</h3>
+                            <p class="text-xs text-success-dark mt-1 flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                Siap diunduh
+                            </p>
+                        </div>
+                        <a href="{{ route('submissions.download-ec', $submission) }}" target="_blank" class="bg-success hover:bg-success-hover text-white text-xs font-bold py-2.5 px-6 rounded-xl transition-all duration-150 whitespace-nowrap">
+                            Unduh PDF
+                        </a>
+                    </div>
+                </div>
+            @endif
+            @endrole
+
+            @role('ketua')
+            @if($submission->status === \App\Enums\SubmissionStatus::WAITING_SIGNATURE)
+                <div class="mt-6 border-t border-border pt-6 space-y-4">
+                    <h3 class="text-sm font-bold text-text uppercase tracking-wider">Tandatangani Ethical Clearance</h3>
+                    
+                    <div class="p-4 bg-slate-50 border border-border rounded-xl">
+                        <p class="text-xs text-text-secondary mb-3">Mohon periksa pratinjau dokumen Final Ethical Clearance di bawah ini sebelum memberikan tanda tangan digital persetujuan Anda.</p>
+                        
+                        <a href="{{ route('submissions.preview-final', $submission) }}" target="_blank" class="inline-flex items-center gap-1 text-[12px] font-bold text-primary hover:text-primary-hover mb-4">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            Lihat Pratinjau Final PDF
+                        </a>
+
+                        <form method="POST" action="{{ route('submissions.sign', $submission) }}">
+                            @csrf
+                            <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150" onclick="return confirm('Apakah Anda yakin ingin menyetujui dan menandatangani dokumen Ethical Clearance ini? Tindakan ini tidak dapat dibatalkan.')">
+                                Tandatangani Ethical Clearance
+                            </button>
+                        </form>
+                    </div>
                 </div>
             @endif
             @endrole
@@ -146,7 +303,7 @@
             @foreach($documentTemplates as $template)
                 @php
                     $doc = $submission->documents->firstWhere('document_template_id', $template->id);
-                    $canUpload = auth()->user()->hasRole('student') && $submission->status === \App\Enums\SubmissionStatus::RESUBMISSION;
+                    $canUpload = auth()->user()->hasRole('student') && $submission->status === \App\Enums\SubmissionStatus::REVISION_REQUIRED;
                 @endphp
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl {{ $doc ? 'bg-surface' : 'bg-slate-50/50' }} gap-4">
                     <div class="flex items-start gap-4 min-w-0">
@@ -236,7 +393,7 @@
                                     <x-status-badge :status="$h->to_status" />
                                 </div>
                                 <p class="text-[12px] text-text-secondary mt-1">
-                                    {{ $h->created_at->format('d M Y, H:i') }} — oleh <span class="font-semibold text-text">{{ optional($h->changer)->name ?? 'System' }}</span>
+                                    {{ $h->created_at->timezone('Asia/Jakarta')->format('d M Y, H:i') }} — oleh <span class="font-semibold text-text">{{ optional($h->changer)->name ?? 'System' }}</span>
                                 </p>
                                 @if($h->note)
                                     <div class="text-[14px] text-text-secondary mt-2 bg-slate-50 rounded-xl px-4 py-3 border border-border italic">

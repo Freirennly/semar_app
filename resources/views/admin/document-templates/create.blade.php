@@ -12,14 +12,13 @@
 
     {{-- Validation Errors --}}
     @if($errors->any())
-        <div class="mb-4 px-4 py-3 rounded-xl border text-sm"
-             style="background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.2); color:#b91c1c;">
+        <x-alert type="error" class="mb-4">
             <ul class="list-disc list-inside space-y-1">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-        </div>
+        </x-alert>
     @endif
 
     <div class="bg-white border border-border rounded-xl p-6 max-w-2xl">

@@ -11,13 +11,13 @@ use Illuminate\Support\Facades\DB;
 class WorkflowService
 {
     private const TRANSITIONS = [
-        'NEW_PROPOSAL' => ['PROCESS', 'REJECTED', 'RESUBMISSION'],
-        'PROCESS' => ['ON_REVIEW', 'REJECTED'],
-        'ON_REVIEW' => ['APPROVED', 'APPROVED_WITH_REVISION', 'REJECTED', 'PROCESS'],
-        'APPROVED' => ['WAITING_SIGNATURE'],
-        'APPROVED_WITH_REVISION' => ['RESUBMISSION'],
-        'RESUBMISSION' => ['REVISED'],
-        'REVISED' => ['PROCESS', 'RESUBMISSION'],
+        'NEW_PROPOSAL' => ['PROCESS', 'REJECTED', 'REVISION_REQUIRED'],
+        'PROCESS' => ['ON_REVIEW', 'APPROVED', 'REVISION_REQUIRED', 'REJECTED'],
+        'ON_REVIEW' => ['APPROVED', 'REVISION_REQUIRED', 'REJECTED', 'PROCESS'],
+        'APPROVED' => ['WAITING_STUDENT_CONFIRMATION'],
+        'WAITING_STUDENT_CONFIRMATION' => ['WAITING_SIGNATURE', 'WAITING_STUDENT_CONFIRMATION'],
+        'REVISION_REQUIRED' => ['REVISED'],
+        'REVISED' => ['PROCESS', 'REVISION_REQUIRED', 'APPROVED', 'REJECTED'],
         'WAITING_SIGNATURE' => ['DONE'],
         'REJECTED' => [],
         'DONE' => [],
@@ -166,7 +166,7 @@ class WorkflowService
                     }
                     break;
 
-                case SubmissionStatus::APPROVED_WITH_REVISION:
+                case SubmissionStatus::REVISION_REQUIRED:
                     if ($submission->student) {
                         $submission->student->notify(new \App\Notifications\ProposalRevisionRequested($submission));
                     }
@@ -188,20 +188,8 @@ class WorkflowService
             \Illuminate\Support\Facades\Log::error("Failed to dispatch production-grade notifications: " . $e->getMessage());
         }
 
-        // Keep legacy database notifications to prevent dashboard breaking
+        // Keep legacy database notifications for statuses not covered by production-grade ones to prevent dashboard breaking
         switch ($newStatus) {
-            case SubmissionStatus::NEW_PROPOSAL:
-                $admins = User::role('admin')->get();
-                foreach ($admins as $admin) {
-                    $admin->notify(new \App\Notifications\SubmissionWorkflowNotification(
-                        'Proposal Baru Diajukan',
-                        "Mahasiswa {$submission->student->name} telah mengajukan proposal baru: \"{$submission->title}\".",
-                        $submission->id,
-                        route('admin.proposals.show', $submission)
-                    ));
-                }
-                break;
-
             case SubmissionStatus::PROCESS:
                 $student = $submission->student;
                 if ($student) {
@@ -214,23 +202,6 @@ class WorkflowService
                 }
                 break;
 
-            case SubmissionStatus::ON_REVIEW:
-                $submission->load('assignments.reviewer');
-                foreach ($submission->assignments as $assignment) {
-                    $reviewer = $assignment->reviewer;
-                    if ($reviewer) {
-                        $reviewer->notify(new \App\Notifications\SubmissionWorkflowNotification(
-                            'Penugasan Reviewer Baru',
-                            "Anda telah ditugaskan untuk meninjau proposal: \"{$submission->title}\".",
-                            $submission->id,
-                            route('reviews.show', $submission)
-                        ));
-                    }
-                }
-                break;
-
-            case SubmissionStatus::APPROVED:
-            case SubmissionStatus::APPROVED_WITH_REVISION:
             case SubmissionStatus::REJECTED:
                 $student = $submission->student;
                 if ($student) {
@@ -244,50 +215,21 @@ class WorkflowService
                 }
                 break;
 
-            case SubmissionStatus::RESUBMISSION:
-                $student = $submission->student;
-                if ($student) {
-                    $student->notify(new \App\Notifications\SubmissionWorkflowNotification(
-                        'Permintaan Revisi Proposal',
-                        "Anda diminta untuk melakukan revisi pada proposal: \"{$submission->title}\".",
-                        $submission->id,
-                        route('submissions.show', $submission)
-                    ));
-                }
-                break;
-
             case SubmissionStatus::REVISED:
-                $adminsAndSecretaries = User::role(['admin', 'sekretariat'])->get();
-                foreach ($adminsAndSecretaries as $user) {
+                $admins = User::role('admin')->get();
+                $recipients = $admins;
+                
+                $secretary = $submission->secretary;
+                if ($secretary) {
+                    $recipients->push($secretary);
+                }
+                
+                foreach ($recipients as $user) {
                     $user->notify(new \App\Notifications\SubmissionWorkflowNotification(
                         'Revisi Proposal Dikirim',
                         "Mahasiswa {$submission->student->name} telah mengirimkan revisi untuk proposal: \"{$submission->title}\".",
                         $submission->id,
                         route('doccheck.show', $submission)
-                    ));
-                }
-                break;
-
-            case SubmissionStatus::WAITING_SIGNATURE:
-                $chairmen = User::role('ketua')->get();
-                foreach ($chairmen as $chairman) {
-                    $chairman->notify(new \App\Notifications\SubmissionWorkflowNotification(
-                        'Menunggu Tanda Tangan Sertifikat',
-                        "Sertifikat untuk proposal \"{$submission->title}\" menunggu tanda tangan Anda.",
-                        $submission->id,
-                        route('submissions.show', $submission)
-                    ));
-                }
-                break;
-
-            case SubmissionStatus::DONE:
-                $student = $submission->student;
-                if ($student) {
-                    $student->notify(new \App\Notifications\SubmissionWorkflowNotification(
-                        'Sertifikat Laik Etik Terbit',
-                        "Selamat! Sertifikat Laik Etik untuk proposal \"{$submission->title}\" telah selesai diterbitkan dan dapat diunduh.",
-                        $submission->id,
-                        route('submissions.show', $submission)
                     ));
                 }
                 break;

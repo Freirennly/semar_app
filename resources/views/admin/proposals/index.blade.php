@@ -20,7 +20,7 @@
                     <option value="">Semua Status</option>
                     @foreach(\App\Enums\SubmissionStatus::cases() as $status)
                         <option value="{{ $status->value }}" {{ request('status') === $status->value ? 'selected' : '' }}>
-                            {{ str_replace('_', ' ', $status->value) }}
+                            {{ $status->label() }}
                         </option>
                     @endforeach
                 </select>
@@ -72,7 +72,7 @@
                             <x-status-badge :status="$p->status" />
                         </td>
                         <td class="px-6 py-4 text-xs text-text-secondary whitespace-nowrap">
-                            {{ $p->created_at->format('d/m/Y H:i') }}
+                            {{ $p->created_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
                             <div class="flex items-center justify-end gap-3">

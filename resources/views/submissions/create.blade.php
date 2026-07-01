@@ -12,14 +12,14 @@
 
     {{-- Kotak Notifikasi Validasi Error --}}
     @if($errors->any())
-        <div class="mb-6 bg-danger-bg border border-danger/20 text-danger rounded-xl px-5 py-3 text-[14px] shadow-sm">
-            <p class="font-bold mb-1">⚠️ Gagal menyimpan data. Mohon periksa kembali inputan Anda:</p>
+        <x-alert type="error" title="Gagal menyimpan data" class="mb-6">
+            <p class="mb-1">Mohon periksa kembali inputan Anda:</p>
             <ul class="list-disc pl-5 space-y-0.5 text-[12px]">
                 @foreach($errors->all() as $e)
                     <li>{{ $e }}</li>
                 @endforeach
             </ul>
-        </div>
+        </x-alert>
     @endif
 
     {{-- FORM UTAMA MASUKAN DATA (LAYOUT MEMANJANG PREMIUM) --}}
@@ -64,53 +64,59 @@
 
             <div class="space-y-6">
                 @foreach($documentTemplates as $template)
-                    <div class="p-6 bg-white border border-border rounded-xl shadow-sm space-y-6 relative group hover:border-primary/40 transition-all">
-                        
-                        {{-- Baris Atas: Nama Dokumen & Tombol Unduh Template Master --}}
-                        <div class="flex items-start justify-between gap-4 flex-wrap">
+                    <div class="p-5 bg-white border border-border rounded-lg mb-4 hover:border-primary transition-colors">
+                        {{-- Header Template Info --}}
+                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-border pb-4 mb-4">
                             <div>
-                                <h3 class="text-base md:text-[18px] font-medium text-text flex items-center gap-1.5">
+                                <h3 class="text-base font-bold text-text flex items-center gap-2">
                                     {{ $template->name }}
                                     @if($template->is_required)
-                                        <span class="text-red-500 font-bold" title="Wajib Diisi">*</span>
+                                        <span class="text-[10px] uppercase font-bold text-white bg-danger px-2 py-0.5 rounded-full">Wajib</span>
+                                    @else
+                                        <span class="text-[10px] uppercase font-bold text-text-secondary bg-soft-surface px-2 py-0.5 rounded-full border border-border">Opsional</span>
                                     @endif
                                 </h3>
                                 @if($template->description)
                                     <p class="text-[12px] text-text-secondary mt-1">{{ $template->description }}</p>
                                 @endif
+                                
+                                {{-- Hardcoded limitations info since configuration columns are not yet in DB --}}
+                                <div class="flex flex-wrap items-center gap-3 mt-2">
+                                    <span class="text-[11px] font-semibold text-text-muted bg-slate-50 px-2 py-1 rounded border border-slate-200">Format: PDF</span>
+                                    <span class="text-[11px] font-semibold text-text-muted bg-slate-50 px-2 py-1 rounded border border-slate-200">Maks: 10 MB</span>
+                                </div>
                             </div>
 
-                            {{-- Tombol Download Template Di Kanan Atas --}}
-                            <a href="{{ asset('storage/' . $template->file_path) }}" download class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary text-[12px] font-bold rounded-lg transition-colors shadow-sm">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                Download Template
+                            @if($template->file_path)
+                            <a href="{{ route('submissions.download-template', $template) }}" class="inline-flex items-center justify-center bg-white border border-border hover:border-primary hover:text-primary text-text text-xs font-bold px-3 py-1.5 rounded transition-colors whitespace-nowrap">
+                                Unduh Template
                             </a>
+                            @endif
                         </div>
 
-                        {{-- Baris Bawah: Dua Input Pilihan (Upload File atau Hyperlink) --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                            
+                        {{-- Area Upload --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {{-- Sisi Kiri: Upload File --}}
-                            <div class="space-y-2">
-                                <label class="text-[14px] font-semibold text-text-secondary block">Upload File</label>
+                            <div class="space-y-1.5">
+                                <label class="text-xs font-bold text-text uppercase tracking-wider">Unggah File PDF</label>
                                 <input type="file" 
                                        name="files[{{ $template->id }}]" 
                                        accept=".pdf" 
-                                       class="w-full text-[14px] text-text border border-border rounded-lg bg-white file:mr-3 file:py-2.5 file:px-4 file:rounded-l-lg file:border-0 file:text-[12px] file:font-semibold file:bg-slate-100 file:text-text-secondary hover:file:bg-slate-200 cursor-pointer">
-                                <p class="text-[12px] text-text-secondary mt-1">Maximum file size: 10 MB (Format: PDF)</p>
+                                       class="w-full text-sm text-text border border-border rounded bg-white file:mr-3 file:py-2 file:px-3 file:border-0 file:border-r file:border-border file:text-xs file:font-bold file:bg-slate-50 file:text-text-secondary hover:file:bg-slate-100 cursor-pointer transition-colors"
+                                       {{ $template->is_required ? 'required' : '' }}>
                             </div>
 
-                            {{-- Sisi Kanan: Or Hyperlink GDrive --}}
-                            <div class="space-y-2">
-                                <label for="link_{{ $template->id }}" class="text-[14px] font-semibold text-text-secondary block">Or Hyperlink</label>
+                            {{-- Sisi Kanan: Atau Hyperlink --}}
+                            <div class="space-y-1.5">
+                                <label for="link_{{ $template->id }}" class="text-xs font-bold text-text uppercase tracking-wider">Atau Tautan GDrive</label>
                                 <input type="url" 
                                        name="hyperlinks[{{ $template->id }}]" 
                                        id="link_{{ $template->id }}" 
                                        value="{{ old('hyperlinks.'.$template->id) }}"
                                        placeholder="https://drive.google.com/..." 
-                                       class="input-field">
+                                       class="input-field py-2 text-sm bg-slate-50 focus:bg-white"
+                                       {{ $template->is_required ? 'required' : '' }}>
                             </div>
-
                         </div>
                     </div>
                 @endforeach

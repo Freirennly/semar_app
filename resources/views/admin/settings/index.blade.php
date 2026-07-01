@@ -11,6 +11,7 @@
         <div class="col-span-1 lg:col-span-2 card p-6 shadow-sm border-primary/10">
             <form method="POST" action="{{ route('admin.settings.store') }}" class="space-y-6">
                 @csrf
+                @method('PUT')
                 
                 <h3 class="font-bold text-text text-sm uppercase tracking-wider mb-4 border-b border-border pb-2">Informasi Umum</h3>
                 
@@ -34,24 +35,7 @@
                     @error('contact_email')<p class="text-danger text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
-                <h3 class="font-bold text-text text-sm uppercase tracking-wider mb-4 border-b border-border pb-2 pt-4 mt-8">Keamanan & Pemeliharaan</h3>
-                
-                <div class="p-4 rounded-xl border border-warning/30 bg-warning-bg/50">
-                    <div class="flex items-start gap-4">
-                        <div class="w-10 h-10 rounded-full bg-warning/20 text-warning flex items-center justify-center shrink-0">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                        </div>
-                        <div class="flex-1">
-                            <label class="flex items-center gap-3 cursor-pointer mb-1">
-                                <input type="checkbox" name="maintenance_mode" value="1" {{ old('maintenance_mode', $settings['maintenance_mode']) === '1' ? 'checked' : '' }} class="w-5 h-5 text-warning rounded border-border-strong focus:ring-warning focus:ring-offset-0">
-                                <span class="text-sm font-bold text-warning-dark uppercase tracking-wide">Mode Pemeliharaan (Maintenance Mode)</span>
-                            </label>
-                            <p class="text-xs text-text-secondary mt-1 leading-relaxed">
-                                Jika diaktifkan, semua pengguna selain Administrator tidak akan bisa mengakses sistem. Gunakan hanya saat melakukan update atau perbaikan krusial.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+
 
                 <div class="flex items-center justify-end gap-3 pt-6 border-t border-border mt-8">
                     <button type="submit" class="btn-primary px-8">Simpan Pengaturan</button>

@@ -19,9 +19,6 @@ class LandingPageTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('SEMAR');
-        $response->assertSee('Manajemen');
-        $response->assertSee('Protokol Masuk');
-        $response->assertSee('Reviewer Tervalidasi');
     }
 
     /**

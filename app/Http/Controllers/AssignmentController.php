@@ -22,11 +22,9 @@ class AssignmentController extends Controller
 
     public function index(Request $request)
     {
-        if (! $request->user()->hasRole('sekretariat')) {
-            abort(403, 'Hanya Sekretariat yang dapat mengelola penugasan.');
-        }
+        $this->authorize('viewAny', Assignment::class);
 
-        $submissions = Submission::whereIn('status', [
+        $submissions = Submission::where('secretary_id', auth()->id())->whereIn('status', [
             SubmissionStatus::PROCESS,
             SubmissionStatus::ON_REVIEW,
         ])->with('student', 'assignments.reviewer')->latest()->get();
@@ -36,24 +34,46 @@ class AssignmentController extends Controller
         return view('assignments.index', compact('submissions', 'reviewers'));
     }
 
-    public function store(Request $request, Submission $submission)
+    /**
+     * RESTful store: POST /assignments
+     * Payload: submission_id, reviewer_id, due_at
+     */
+    public function store(Request $request)
     {
-        if (! $request->user()->hasRole('sekretariat')) {
-            abort(403, 'Hanya Sekretariat yang dapat mengelola penugasan.');
-        }
-
         $request->validate([
+            'submission_id' => 'required|exists:submissions,id',
             'reviewer_id' => 'required|exists:users,id',
-            'due_at' => 'nullable|date|after:today',
+            'due_at' => 'nullable|date|after_or_equal:today',
         ]);
 
+        $submission = Submission::findOrFail($request->submission_id);
+        $this->authorize('create', [Assignment::class, $submission]);
         $reviewer = User::findOrFail($request->reviewer_id);
+
         if (! $reviewer->hasRole('reviewer')) {
             return back()->with('error', 'User yang dipilih bukan reviewer.');
         }
 
+        if (!in_array($submission->status, [SubmissionStatus::PROCESS, SubmissionStatus::ON_REVIEW])) {
+            return back()->with('error', 'Penugasan reviewer hanya diperbolehkan saat proposal berstatus Diproses atau Sedang Direview.');
+        }
+
         if ($submission->assignments()->where('reviewer_id', $reviewer->id)->exists()) {
             return back()->with('error', 'Reviewer sudah ditugaskan ke pengajuan ini.');
+        }
+
+        if ($submission->assignments()->count() >= 2) {
+            return back()->with('error', 'Satu pengajuan maksimal hanya boleh ditugaskan kepada 2 reviewer.');
+        }
+
+        $round = $submission->decisions()->where('decision', 'REVISION_REQUIRED')->count() + 1;
+        $hasReviews = $submission->reviews()
+            ->where('revision_round', $round)
+            ->whereNotNull('submitted_at')
+            ->exists();
+
+        if ($hasReviews) {
+            return back()->with('error', 'Penugasan reviewer dikunci karena sudah ada review masuk pada putaran revisi ini.');
         }
 
         Assignment::create([
@@ -72,13 +92,6 @@ class AssignmentController extends Controller
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error("Failed to notify reviewer: " . $e->getMessage());
             }
-
-            $reviewer->notify(new \App\Notifications\SubmissionWorkflowNotification(
-                'Penugasan Reviewer Baru',
-                "Anda telah ditugaskan untuk meninjau proposal: \"{$submission->title}\".",
-                $submission->id,
-                route('reviews.show', $submission)
-            ));
         }
 
         $response = back()->with('success', "Reviewer {$reviewer->name} berhasil ditugaskan.");
@@ -97,12 +110,21 @@ class AssignmentController extends Controller
 
     public function destroy(Request $request, Assignment $assignment)
     {
-        if (! $request->user()->hasRole('sekretariat')) {
-            abort(403, 'Hanya Sekretariat yang dapat mengelola penugasan.');
+        $this->authorize('delete', $assignment);
+
+        $submission = $assignment->submission;
+        $round = $submission->decisions()->where('decision', 'REVISION_REQUIRED')->count() + 1;
+        $hasSubmittedReview = $submission->reviews()
+            ->where('reviewer_id', $assignment->reviewer_id)
+            ->where('revision_round', $round)
+            ->whereNotNull('submitted_at')
+            ->exists();
+
+        if ($hasSubmittedReview) {
+            return back()->with('error', 'Penugasan tidak dapat dihapus karena reviewer sudah mengirim review pada putaran revisi ini.');
         }
 
         // Snapshot variables before delete
-        $submission = $assignment->submission;
         $assignmentId = $assignment->id;
         $submissionId = $assignment->submission_id;
         $reviewerName = $assignment->reviewer->name;
@@ -134,4 +156,3 @@ class AssignmentController extends Controller
         return $response;
     }
 }
-

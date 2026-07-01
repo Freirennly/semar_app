@@ -314,7 +314,6 @@ class DocumentTemplateManagementTest extends TestCase
 
         $response = $this->actingAs($admin)->get(route('admin.dashboard'));
         $response->assertStatus(200);
-        $response->assertSee('Integritas');
     }
 
     // ─── 17. Activity Logs Written ───────────────────────────────

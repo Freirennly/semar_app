@@ -22,7 +22,10 @@ class SettingController extends Controller
         return view('admin.settings.index', compact('settings'));
     }
 
-    public function store(Request $request)
+    /**
+     * Update pengaturan sistem (HTTP PUT, route name tetap admin.settings.store untuk backward compatibility)
+     */
+    public function update(Request $request)
     {
         $validated = $request->validate([
             'application_name' => 'required|string|max:255',

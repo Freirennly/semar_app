@@ -27,32 +27,38 @@ class AdminDashboardController extends Controller
             });
         }
 
-        // 3. Dashboard Metrics
+        // 3. Dashboard Metrics & Status Distribution
+        $rawStatusDistribution = Submission::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->get();
+            
+        $statusDistribution = [];
+        foreach ($rawStatusDistribution as $item) {
+            $key = is_object($item->status) ? $item->status->value : $item->status;
+            $statusDistribution[$key] = $item->count;
+        }
+
         $metrics = [
             'total_users' => User::count(),
-            'total_submissions' => Submission::count(),
-            'active_submissions' => Submission::whereNotIn('status', [
-                SubmissionStatus::REJECTED,
-                SubmissionStatus::DONE
-            ])->count(),
-            'approved' => Submission::whereIn('status', [SubmissionStatus::APPROVED, SubmissionStatus::DONE])->count(),
-            'disapproved' => Submission::where('status', SubmissionStatus::REJECTED)->count(),
-            'resubmission' => Submission::where('status', SubmissionStatus::RESUBMISSION)->count(),
+            'total_students' => User::role('student')->count(),
             'total_reviewers' => User::role('reviewer')->count(),
             'total_secretariat' => User::role('sekretariat')->count(),
+            
+            'total_submissions' => Submission::count(),
+            'new_proposal' => ($statusDistribution[SubmissionStatus::NEW_PROPOSAL->value] ?? 0),
+            'process' => ($statusDistribution[SubmissionStatus::PROCESS->value] ?? 0),
+            'on_review' => ($statusDistribution[SubmissionStatus::ON_REVIEW->value] ?? 0),
+            'revision_required' => ($statusDistribution[SubmissionStatus::REVISION_REQUIRED->value] ?? 0),
+            'revised' => ($statusDistribution[SubmissionStatus::REVISED->value] ?? 0),
+            'approved' => ($statusDistribution[SubmissionStatus::APPROVED->value] ?? 0),
+            'waiting_student_confirmation' => ($statusDistribution[SubmissionStatus::WAITING_STUDENT_CONFIRMATION->value] ?? 0),
+            'rejected' => ($statusDistribution[SubmissionStatus::REJECTED->value] ?? 0),
+            'waiting_signature' => ($statusDistribution[SubmissionStatus::WAITING_SIGNATURE->value] ?? 0),
+            'done' => ($statusDistribution[SubmissionStatus::DONE->value] ?? 0),
         ];
 
         // 4. Admin Overview Sections Data
         $latestSubmissions = $submissionQuery->with('student')->latest()->limit(5)->get();
-
-        $statusDistribution = Submission::select('status', DB::raw('count(*) as count'))
-            ->groupBy('status')
-            ->get()
-            ->mapWithKeys(function($item) {
-                // Handle case where status might be enum or string
-                $key = is_object($item->status) ? $item->status->value : $item->status;
-                return [$key => $item->count];
-            });
 
         $latestActivities = StatusHistory::with(['submission', 'changer'])
             ->latest()
@@ -65,24 +71,7 @@ class AdminDashboardController extends Controller
             ->groupBy('roles.name')
             ->get();
 
-        $draftEcRequired = Submission::with('student')
-            ->where('status', SubmissionStatus::APPROVED)
-            ->whereNull('ec_number')
-            ->latest()
-            ->get();
 
-        $certificatesGenerated = Submission::with('student')
-            ->where('status', SubmissionStatus::DONE)
-            ->latest()
-            ->get();
-
-        $missingCertificatesCount = 0;
-        $doneSubmissions = Submission::where('status', SubmissionStatus::DONE)->get();
-        foreach ($doneSubmissions as $sub) {
-            if (empty($sub->ec_certificate_path) || !\Illuminate\Support\Facades\Storage::exists($sub->ec_certificate_path)) {
-                $missingCertificatesCount++;
-            }
-        }
 
         $backupDir = storage_path('app/private/backups/ec');
         $backupFiles = glob("{$backupDir}/ec-backup-*.zip");
@@ -116,9 +105,6 @@ class AdminDashboardController extends Controller
             'statusDistribution', 
             'latestActivities', 
             'userSummary',
-            'draftEcRequired',
-            'certificatesGenerated',
-            'missingCertificatesCount',
             'lastBackupTime',
             'templateMetrics',
             'integrityMetrics'

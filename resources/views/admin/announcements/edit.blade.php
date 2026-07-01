@@ -37,7 +37,7 @@
                 </div>
                 <div>
                     <label for="publish_date" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1.5">Tanggal Publish</label>
-                    <input type="datetime-local" name="publish_date" id="publish_date" class="input-field" value="{{ old('publish_date', $announcement->publish_date ? $announcement->publish_date->format('Y-m-d\TH:i') : '') }}">
+                    <input type="datetime-local" name="publish_date" id="publish_date" class="input-field" value="{{ old('publish_date', $announcement->publish_date ? $announcement->publish_date->timezone('Asia/Jakarta')->format('Y-m-d\TH:i') : '') }}">
                     @error('publish_date')<p class="text-danger text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
             </div>

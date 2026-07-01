@@ -43,6 +43,7 @@ class NewProposalSubmitted extends Notification implements ShouldQueue
             'message' => 'Mahasiswa ' . $this->submission->student->name . ' telah mengajukan proposal baru: "' . $this->submission->title . '"',
             'submission_id' => $this->submission->id,
             'url' => route('submissions.show', $this->submission),
+            'action_url' => route('submissions.show', $this->submission),
             'created_at' => now()->toIso8601String(),
         ];
     }

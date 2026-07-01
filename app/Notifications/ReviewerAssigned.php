@@ -43,6 +43,7 @@ class ReviewerAssigned extends Notification implements ShouldQueue
             'message' => 'Anda telah ditugaskan untuk meninjau proposal: "' . $this->submission->title . '"',
             'submission_id' => $this->submission->id,
             'url' => route('reviews.show', $this->submission),
+            'action_url' => route('reviews.show', $this->submission),
             'created_at' => now()->toIso8601String(),
         ];
     }

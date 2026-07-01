@@ -9,35 +9,29 @@ class VerificationController extends Controller
 {
     public function show(Request $request, $token)
     {
-        if (! $request->hasValidSignature()) {
-            abort(403, 'Tautan verifikasi tidak sah atau telah kedaluwarsa.');
+        // Gunakan eager loading untuk relasi yang akan ditampilkan di publik
+        $submission = Submission::with(['student', 'signatory'])->where('verification_token', $token)->first();
+
+        if (! $submission || $submission->status->value !== 'DONE') {
+            return response()->view('verification.show', [
+                'isValid' => false,
+                'message' => !$submission ? 'Verification Token tidak ditemukan.' : 'Dokumen belum diterbitkan.'
+            ], 404);
         }
 
-        $submission = Submission::where('verification_token', $token)->first();
-
-        if (! $submission) {
-            abort(404, 'Sertifikat tidak ditemukan.');
-        }
-
-        // Log verification access: IP address, verification token, actor (guest/auth), timestamp (created_at)
+        // Log the verification
         \App\Models\ActivityLog::create([
-            'user_id' => auth()->id(),
             'submission_id' => $submission->id,
             'old_status' => $submission->status->value,
             'new_status' => $submission->status->value,
-            'description' => "Verifikasi sertifikat diakses secara publik. Token: {$token}. IP: {$request->ip()}",
+            'description' => 'QR Code Validasi Verifikasi Publik diakses. IP: ' . $request->ip(),
         ]);
-
-        if ($submission->status->value !== 'DONE') {
-            return view('verification.show', [
-                'isValid' => false,
-                'message' => 'Certificate Not Valid'
-            ]);
-        }
 
         return view('verification.show', [
             'isValid' => true,
-            'submission' => $submission
+            'submission' => $submission,
+            'verificationDate' => now()->translatedFormat('d F Y, H:i:s T'),
+            'verificationId' => 'VER-' . strtoupper(substr($token, 0, 8))
         ]);
     }
 }

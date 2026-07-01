@@ -16,6 +16,8 @@ class ReviewController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Review::class);
+
         $user = $request->user();
         $assignments = Assignment::where('reviewer_id', $user->id)
             ->with('submission.student')
@@ -27,41 +29,88 @@ class ReviewController extends Controller
 
     public function show(Request $request, Submission $submission)
     {
+        $this->authorize('view', [Review::class, $submission]);
+
         $user = $request->user();
         $assignment = $submission->assignments()->where('reviewer_id', $user->id)->firstOrFail();
-        $review = Review::where('submission_id', $submission->id)->where('reviewer_id', $user->id)->first();
+        
+        $round = $submission->decisions()->where('decision', \App\Enums\DecisionType::REVISION_REQUIRED->value)->count() + 1;
+        $review = Review::where('submission_id', $submission->id)
+            ->where('reviewer_id', $user->id)
+            ->where('revision_round', $round)
+            ->first();
 
         $submission->load(['documents', 'student']);
 
         return view('reviews.show', compact('submission', 'assignment', 'review'));
     }
 
+    /**
+     * Submit review — hanya boleh satu kali per reviewer per submission per round.
+     * Menggunakan Review::create() bukan updateOrCreate().
+     */
     public function store(Request $request, Submission $submission)
     {
+        $this->authorize('create', [Review::class, $submission]);
+
         $user = $request->user();
         /** @var \App\Models\Assignment $assignment */
         $assignment = $submission->assignments()->where('reviewer_id', $user->id)->firstOrFail();
 
         $data = $request->validate([
-            'recommendation' => 'required|in:APPROVE,REVISION,REJECT',
+            'recommendation' => 'required|in:APPROVE,REVISION,REJECT,RECOMMEND_FULLBOARD',
             'notes' => 'required|string|max:10000',
+            'attachment' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,zip|max:10240',
         ]);
 
-        $review = Review::updateOrCreate(
-            ['submission_id' => $submission->id, 'reviewer_id' => $user->id],
-            [
-                'recommendation' => $data['recommendation'],
-                'notes' => $data['notes'],
-                'submitted_at' => now(),
-            ]
-        );
+        $round = $submission->decisions()->where('decision', \App\Enums\DecisionType::REVISION_REQUIRED->value)->count() + 1;
+
+        // Reviewer hanya boleh submit review satu kali per round — tidak boleh overwrite
+        $existingReview = Review::where('submission_id', $submission->id)
+            ->where('reviewer_id', $user->id)
+            ->where('revision_round', $round)
+            ->first();
+
+        if ($existingReview) {
+            return redirect()->back()
+                ->with('error', 'Review sudah pernah dikirim untuk pengajuan ini pada putaran revisi ini. Anda tidak dapat mengubah review.');
+        }
+
+        Review::create([
+            'submission_id' => $submission->id,
+            'reviewer_id' => $user->id,
+            'revision_round' => $round,
+            'recommendation' => $data['recommendation'],
+            'notes' => $data['notes'],
+            'submitted_at' => now(),
+        ]);
+
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $path = $file->store('reviews/' . $submission->id, 'public');
+            $submission->documents()->create([
+                'document_template_id' => null,
+                'doc_type' => 'REVIEW_ATTACHMENT_R' . $round . '_U' . $user->id,
+                'file_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime' => $file->getClientMimeType(),
+                'size' => $file->getSize(),
+                'uploaded_by' => $user->id,
+            ]);
+        }
 
         $assignment->update(['status' => 'COMPLETED']);
 
+        if ($submission->status === SubmissionStatus::PROCESS) {
+            $this->workflow->transition($submission, SubmissionStatus::ON_REVIEW, $user, "Reviewer mengunggah review: {$user->name}");
+        }
 
-        // Check if all reviews complete -> notify admins
+        // Check if all reviews complete for this round -> notify admins
         $totalAssignments = $submission->assignments()->count();
-        $completedReviews = $submission->reviews()->whereNotNull('submitted_at')->count();
+        $completedReviews = $submission->reviews()
+            ->where('revision_round', $round)
+            ->whereNotNull('submitted_at')
+            ->count();
 
         if ($completedReviews >= $totalAssignments && $submission->status === SubmissionStatus::ON_REVIEW) {
             $admins = \App\Models\User::role('admin')->get();

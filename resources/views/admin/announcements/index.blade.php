@@ -40,7 +40,7 @@
                             <p class="text-xs text-text-muted mt-1 truncate max-w-sm">{{ Str::limit($announcement->content, 50) }}</p>
                         </td>
                         <td class="px-6 py-4 text-xs text-text-secondary whitespace-nowrap">
-                            {{ $announcement->publish_date ? $announcement->publish_date->format('d/m/Y H:i') : '-' }}
+                            {{ $announcement->publish_date ? $announcement->publish_date->timezone('Asia/Jakarta')->format('d/m/Y H:i') : '-' }}
                         </td>
                         <td class="px-6 py-4">
                             @if($announcement->status === 'published')

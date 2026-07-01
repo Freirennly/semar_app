@@ -27,9 +27,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     
-    // Rute Register Tambahan
-    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    // Rute Register Tambahan (Dinonaktifkan)
+    // Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    // Route::post('/register', [AuthController::class, 'register']);
 
     // Rute Password Reset (Placeholder agar tidak error di view Login)
     Route::get('/forgot-password', [AuthController::class, 'showLinkRequestForm'])->name('password.request');
@@ -41,7 +41,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 Route::view('/tentang', 'about')->name('about');
 Route::view('/sop', 'sop')->name('sop');
-Route::get('verify/ec/{token}', [VerificationController::class, 'show'])->name('verification.verify')->middleware('throttle:verification');
+Route::get('verify/{token}', [VerificationController::class, 'show'])->name('verification.verify')->middleware(['throttle:verification', 'signed']);
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
@@ -54,13 +54,20 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
 
     // ═════════════════════════════════════════════════════════════════════════
-    // PERBAIKAN GLOBAL ROUTES (Aksesibel oleh Student, Sekretariat, Ketua, & Admin)
+    // GLOBAL ROUTES (Aksesibel oleh seluruh role yang terautentikasi)
     // ═════════════════════════════════════════════════════════════════════════
-    // 1. Rute Ambil File Template Dokumen Persyaratan
-    Route::get('submissions/download-template/{id}', [SubmissionController::class, 'downloadTemplate'])->name('submissions.download-template');
+    // 1. Rute Unduh File Template Dokumen Persyaratan (RESTful)
+    Route::get('templates/{template}/download', [SubmissionController::class, 'downloadTemplate'])->name('submissions.download-template');
     
-    // 2. Rute Pratinjau Dokumen PDF secara Inline (Dipakai di halaman Detail Student & Cek Dokumen Sekretariat)
-    Route::get('submissions/documents/{document}/view', [SubmissionController::class, 'viewDocument'])->name('submissions.view-document');
+    // 2. Rute Pratinjau Dokumen PDF secara Inline (Scoped Binding — IDOR Prevention)
+    Route::get('submissions/{submission}/documents/{document}/view', [SubmissionController::class, 'viewDocument'])
+        ->name('submissions.view-document')
+        ->scopeBindings();
+
+    // Rute Fullboard Schedule (Aksesibel oleh Ketua, Reviewer, Sekretariat)
+    Route::middleware('role:ketua|reviewer|sekretariat')->group(function () {
+        Route::get('fullboard', [\App\Http\Controllers\FullboardMeetingController::class, 'index'])->name('fullboard.index');
+    });
 
     // Student-only submission routes
     Route::middleware('role:student')->group(function () {
@@ -71,51 +78,58 @@ Route::middleware('auth')->group(function () {
         Route::get('submissions/{submission}/edit', [SubmissionController::class, 'edit'])->name('submissions.edit');
         Route::put('submissions/{submission}', [SubmissionController::class, 'update'])->name('submissions.update');
         
-        // Rute Aksi Dokumen & Submit
-        Route::post('submissions/{submission}/submit', [SubmissionController::class, 'submit'])->name('submissions.submit');
-        Route::post('submissions/{submission}/upload-document', [SubmissionController::class, 'uploadDocument'])->name('submissions.upload-document');
-        Route::delete('submissions/{submission}/documents/{document}', [SubmissionController::class, 'deleteDocument'])->name('submissions.delete-document');
+        // Rute Aksi Dokumen & Submit (dengan Throttle)
+        Route::post('submissions/{submission}/submit', [SubmissionController::class, 'submit'])->name('submissions.submit')->middleware('throttle:submit');
+        Route::post('submissions/{submission}/upload-document', [SubmissionController::class, 'uploadDocument'])->name('submissions.upload-document')->middleware('throttle:upload-document');
+        Route::delete('submissions/{submission}/documents/{document}', [SubmissionController::class, 'deleteDocument'])->name('submissions.delete-document')->scopeBindings();
         
         // Rute Ethical Clearance (EC) Konfirmasi & Download
         Route::post('submissions/{submission}/confirm', [SubmissionController::class, 'confirmEcData'])->name('submissions.confirm');
+        Route::post('submissions/{submission}/request-revision', [SubmissionController::class, 'requestEcRevision'])->name('submissions.request-revision');
+        Route::get('submissions/{submission}/preview-draft', [SubmissionController::class, 'previewDraftEc'])->name('submissions.preview-draft');
         Route::get('submissions/{submission}/download-ec', [SubmissionController::class, 'downloadEc'])->name('submissions.download-ec');
 
         // Halaman Utama Menu Kelola Sertifikat Ethical Clearance Sisi Mahasiswa
         Route::get('ethical-clearance', [EthicalClearanceController::class, 'index'])->name('ethical-clearance.index');
     });
 
-    // Submission show — accessible by all authenticated roles (auth checked in controller/policy)
+    // Submission show — accessible by all authenticated roles (policy-controlled)
     Route::get('submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
     Route::get('submissions/{submission}/certificate', [SubmissionController::class, 'downloadCertificate'])->name('submissions.certificate')->middleware('throttle:downloads');
 
     // Ketua: signing only
     Route::middleware('role:ketua')->group(function () {
         Route::post('submissions/{submission}/sign', [SubmissionController::class, 'sign'])->name('submissions.sign');
+        Route::get('submissions/{submission}/preview-final', [SubmissionController::class, 'previewFinalEc'])->name('submissions.preview-final');
     });
 
-    // Reviewer: reviews
+    // Reviewer: reviews (dengan Throttle pada submit review)
     Route::middleware('role:reviewer')->group(function () {
         Route::get('reviews', [ReviewController::class, 'index'])->name('reviews.index');
         Route::get('reviews/{submission}', [ReviewController::class, 'show'])->name('reviews.show');
-        Route::post('reviews/{submission}', [ReviewController::class, 'store'])->name('reviews.store');
+        Route::post('reviews/{submission}', [ReviewController::class, 'store'])->name('reviews.store')->middleware('throttle:review');
     });
 
     // Sekretariat: doc check + decisions + assignments
     Route::middleware('role:sekretariat')->group(function () {
         Route::get('assignments', [AssignmentController::class, 'index'])->name('assignments.index');
-        Route::post('assignments/{submission}', [AssignmentController::class, 'store'])->name('assignments.store');
+        Route::post('assignments', [AssignmentController::class, 'store'])->name('assignments.store');
         Route::delete('assignments/{assignment}', [AssignmentController::class, 'destroy'])->name('assignments.destroy');
 
-        // Modul Verifikasi Kelengkapan Berkas Lapangan
+        // Modul Verifikasi Kelengkapan Berkas Lapangan (dengan Throttle)
         Route::get('doccheck', [DocCheckController::class, 'index'])->name('doccheck.index');
         Route::get('doccheck/{submission}', [DocCheckController::class, 'show'])->name('doccheck.show');
-        Route::post('doccheck/{submission}/approve', [DocCheckController::class, 'approve'])->name('doccheck.approve');
-        Route::post('doccheck/{submission}/return', [DocCheckController::class, 'returnToDraft'])->name('doccheck.return');
+        Route::post('doccheck/{submission}/approve', [DocCheckController::class, 'approve'])->name('doccheck.approve')->middleware('throttle:approve');
+        Route::post('doccheck/{submission}/return', [DocCheckController::class, 'returnToDraft'])->name('doccheck.return')->middleware('throttle:return');
 
         // Modul Penentuan Sidang Keputusan Etik
         Route::get('decisions', [DecisionController::class, 'index'])->name('decisions.index');
         Route::get('decisions/{submission}', [DecisionController::class, 'show'])->name('decisions.show');
         Route::post('decisions/{submission}', [DecisionController::class, 'store'])->name('decisions.store');
+        
+        // Modul Fullboard Meeting
+        Route::get('submissions/{submission}/fullboard/create', [\App\Http\Controllers\FullboardMeetingController::class, 'create'])->name('fullboard.create');
+        Route::post('submissions/{submission}/fullboard', [\App\Http\Controllers\FullboardMeetingController::class, 'store'])->name('fullboard.store');
     });
 
     // Admin Panel Modules
@@ -133,6 +147,8 @@ Route::middleware('auth')->group(function () {
         // Rute Khusus Unduh Berkas Proposal Admin (Dikunci di atas resource proposals)
         Route::get('proposals/{proposal}/download', [ProposalController::class, 'downloadProposal'])->name('proposals.download');
         Route::post('proposals/{proposal}/draft', [ProposalController::class, 'storeDraft'])->name('proposals.store-draft');
+        Route::post('proposals/{proposal}/send-draft', [ProposalController::class, 'sendDraft'])->name('proposals.send-draft');
+        Route::post('proposals/{proposal}/assign-secretary', [ProposalController::class, 'assignSecretary'])->name('proposals.assign-secretary');
 
         // Admin Modules Resource
         Route::resource('proposals', ProposalController::class)->except(['create', 'store']);
@@ -151,6 +167,13 @@ Route::middleware('auth')->group(function () {
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/print', [ReportController::class, 'print'])->name('reports.print');
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
-        Route::post('settings', [SettingController::class, 'store'])->name('settings.store');
+        Route::put('settings', [SettingController::class, 'update'])->name('settings.store');
     });
+});
+
+// ═════════════════════════════════════════════════════════════════════════
+// FALLBACK ROUTE — Menangkap seluruh URL yang tidak cocok
+// ═════════════════════════════════════════════════════════════════════════
+Route::fallback(function () {
+    abort(404);
 });

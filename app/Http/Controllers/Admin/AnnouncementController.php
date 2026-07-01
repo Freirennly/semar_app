@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
+use App\Notifications\AnnouncementNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
 
 class AnnouncementController extends Controller
 {
@@ -41,7 +43,11 @@ class AnnouncementController extends Controller
             $validated['publish_date'] = now();
         }
 
-        Announcement::create($validated);
+        $announcement = Announcement::create($validated);
+
+        if ($announcement->status === 'published') {
+            $this->sendAnnouncementNotification($announcement);
+        }
 
         Cache::forget('admin_reports_stats');
 
@@ -62,6 +68,8 @@ class AnnouncementController extends Controller
             'publish_date' => 'nullable|date',
         ]);
 
+        $oldStatus = $announcement->status;
+
         if ($validated['status'] === 'published' && empty($validated['publish_date'])) {
             $validated['publish_date'] = now();
         } elseif ($validated['status'] === 'draft') {
@@ -69,6 +77,10 @@ class AnnouncementController extends Controller
         }
 
         $announcement->update($validated);
+
+        if ($oldStatus === 'draft' && $announcement->status === 'published') {
+            $this->sendAnnouncementNotification($announcement);
+        }
 
         Cache::forget('admin_reports_stats');
 
@@ -80,5 +92,12 @@ class AnnouncementController extends Controller
         $announcement->delete();
         Cache::forget('admin_reports_stats');
         return redirect()->route('admin.announcements.index')->with('success', 'Pengumuman berhasil dihapus.');
+    }
+
+    private function sendAnnouncementNotification(Announcement $announcement)
+    {
+        $users = \App\Models\User::where('is_active', true)->get();
+
+        Notification::send($users, new AnnouncementNotification($announcement));
     }
 }

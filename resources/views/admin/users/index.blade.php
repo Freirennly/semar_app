@@ -9,9 +9,9 @@
     <div class="card p-6 mb-8 border-primary/10 shadow-sm">
         <h3 class="text-base font-bold text-text mb-4">Tambah User Baru</h3>
         @if($errors->any())
-            <div class="mb-4 bg-danger-bg border border-danger/20 text-danger rounded-lg px-4 py-3 text-sm" role="alert">
+            <x-alert type="error" class="mb-4">
                 <ul class="list-disc list-inside">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-            </div>
+            </x-alert>
         @endif
         <form method="POST" action="{{ route('admin.users.store') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             @csrf

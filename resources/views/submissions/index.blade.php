@@ -78,7 +78,7 @@
                         <td class="px-6 py-4 font-semibold text-text max-w-xs truncate">{{ $sub->title }}</td>
                         @hasanyrole('sekretariat|ketua|admin')<td class="px-6 py-4 text-text-secondary hidden sm:table-cell">{{ $sub->student->name ?? '-' }}</td>@endhasanyrole
                         <td class="px-6 py-4"><x-status-badge :status="$sub->status" /></td>
-                        <td class="px-6 py-4 text-text-secondary hidden sm:table-cell">{{ $sub->created_at->format('d M Y') }}</td>
+                        <td class="px-6 py-4 text-text-secondary hidden sm:table-cell">{{ $sub->created_at->timezone('Asia/Jakarta')->format('d M Y') }}</td>
                         <td class="px-6 py-4"><a href="{{ route('submissions.show', $sub) }}" class="text-primary hover:text-primary-hover font-bold transition-colors">Lihat</a></td>
                     </tr>
                     @endforeach

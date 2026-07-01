@@ -144,4 +144,9 @@ class Submission extends Model
     {
         return $this->status === SubmissionStatus::DONE;
     }
+
+    public function fullboardMeeting()
+    {
+        return $this->hasOne(FullboardMeeting::class);
+    }
 }

@@ -43,6 +43,7 @@ class ProposalApproved extends Notification implements ShouldQueue
             'message' => 'Status proposal Anda "' . $this->submission->title . '" telah diperbarui menjadi APPROVED.',
             'submission_id' => $this->submission->id,
             'url' => route('submissions.show', $this->submission),
+            'action_url' => route('submissions.show', $this->submission),
             'created_at' => now()->toIso8601String(),
         ];
     }

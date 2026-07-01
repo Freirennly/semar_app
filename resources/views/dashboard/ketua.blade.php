@@ -1,15 +1,29 @@
 <x-layouts.app :title="'Dashboard Ketua'">
     {{-- Header Section --}}
-    <div class="mb-6">
-        <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Dashboard Ketua</h1>
-        <p class="text-sm text-text-secondary mt-1.5">Kelola penetapan penugasan reviewer dan pemantauan keputusan etik penelitian KEP.</p>
+    <div class="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
+        <div>
+            <nav class="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+                Home <span class="mx-1">/</span> Dashboard
+            </nav>
+            <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Dashboard Ketua</h1>
+            <p class="text-sm text-text-secondary mt-1">Kelola penetapan penugasan reviewer dan pemantauan keputusan etik penelitian KEP.</p>
+        </div>
+        <div class="flex flex-col md:items-end gap-3">
+            <div class="text-sm font-semibold text-text-secondary hidden md:block">
+                {{ \Carbon\Carbon::now()->timezone('Asia/Jakarta')->translatedFormat('l, d F Y') }}
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('fullboard.index') }}" class="text-xs font-semibold text-text hover:text-primary px-3 py-1.5 border border-border rounded transition-colors bg-white hover:border-primary">
+                    Jadwal Fullboard
+                </a>
+            </div>
+        </div>
     </div>
 
     @php
         // Fetch decision stats and waiting decision list directly
         $totalApproved = \App\Models\Submission::whereIn('status', [
             \App\Enums\SubmissionStatus::APPROVED,
-            \App\Enums\SubmissionStatus::APPROVED_WITH_REVISION,
             \App\Enums\SubmissionStatus::DONE
         ])->count();
 
@@ -25,22 +39,22 @@
 
     {{-- Ringkasan Statistik Keputusan & Tugas (Flat cards) --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-        <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Menunggu Tanda Tangan</p>
-            <p class="text-[28px] font-bold text-warning mt-2 leading-none">{{ $waitingSignature->count() }}</p>
+        <div class="bg-white border border-border p-5 rounded-lg flex flex-col justify-center hover:border-primary/50 transition-colors duration-200">
+            <p class="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Menunggu Tanda Tangan</p>
+            <p class="text-3xl font-bold text-text leading-none">{{ $waitingSignature->count() }}</p>
         </div>
-        <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Total Pengajuan Aktif</p>
-            <p class="text-[28px] font-bold text-primary mt-2 leading-none">
+        <div class="bg-white border border-border p-5 rounded-lg flex flex-col justify-center hover:border-primary/50 transition-colors duration-200">
+            <p class="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Total Pengajuan Aktif</p>
+            <p class="text-3xl font-bold text-text leading-none">
                 {{ \App\Models\Submission::whereNotIn('status', [\App\Enums\SubmissionStatus::REJECTED, \App\Enums\SubmissionStatus::DONE])->count() }}
             </p>
         </div>
-        <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Keputusan (Disetujui / Ditolak)</p>
-            <p class="text-[28px] font-bold text-text mt-2 leading-none">
-                <span class="text-success">{{ $totalApproved }}</span>
+        <div class="bg-white border border-border p-5 rounded-lg flex flex-col justify-center hover:border-primary/50 transition-colors duration-200">
+            <p class="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Keputusan (Disetujui / Ditolak)</p>
+            <p class="text-3xl font-bold text-text leading-none">
+                <span>{{ $totalApproved }}</span>
                 <span class="text-text-muted mx-1">/</span>
-                <span class="text-danger">{{ $totalRejected }}</span>
+                <span>{{ $totalRejected }}</span>
             </p>
         </div>
     </div>
@@ -50,9 +64,9 @@
         {{-- Left: Tasks (70% or lg:col-span-2) --}}
         <div class="lg:col-span-2 space-y-6">
             {{-- Waiting for Signature --}}
-            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
-                <div class="px-6 py-4 border-b border-border bg-white">
-                    <h2 class="text-[20px] font-semibold text-text">Waiting for Signature</h2>
+            <div class="bg-white border border-border rounded-lg flex flex-col overflow-hidden">
+                <div class="px-5 py-4 border-b border-border bg-white flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-text uppercase tracking-wider">Waiting for Signature</h2>
                 </div>
                 @if($waitingSignature->isEmpty())
                     <div class="text-center py-12 px-6">
@@ -62,25 +76,25 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold font-medium">Pengaju</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                                <tr class="text-left text-text-secondary text-[11px] uppercase tracking-wider border-b border-border bg-slate-50/50">
+                                    <th class="px-5 py-3 font-semibold">Kode</th>
+                                    <th class="px-5 py-3 font-semibold">Judul Usulan</th>
+                                    <th class="px-5 py-3 font-semibold">Pengaju</th>
+                                    <th class="px-5 py-3 font-semibold text-right">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-border">
+                            <tbody class="divide-y divide-border bg-white">
                                 @foreach($waitingSignature as $sub)
-                                    <tr class="hover:bg-soft-surface/25 transition-colors">
-                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                    <tr class="hover:bg-soft-surface/50 transition-colors">
+                                        <td class="px-5 py-3 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                        <td class="px-5 py-3 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
                                             {{ \Illuminate\Support\Str::title($sub->title) }}
                                         </td>
-                                        <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
-                                        <td class="px-6 py-4 text-right">
-                                            <form action="{{ route('submissions.sign', $sub) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menandatangani sertifikat laik etik untuk pengajuan ini?')">
+                                        <td class="px-5 py-3 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
+                                        <td class="px-5 py-3 text-right">
+                                            <form action="{{ route('submissions.sign', $sub) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menandatangani Surat Kelayakan Etik (Ethical Clearance) untuk pengajuan ini?')">
                                                 @csrf
-                                                <button type="submit" class="px-3.5 py-1.5 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">
+                                                <button type="submit" class="text-xs font-bold text-primary hover:underline">
                                                     Tandatangani
                                                 </button>
                                             </form>
@@ -94,37 +108,37 @@
             </div>
 
             {{-- Recently Signed Certificates --}}
-            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
-                <div class="px-6 py-4 border-b border-border bg-white">
-                    <h2 class="text-[20px] font-semibold text-text">Recently Signed Certificates</h2>
+            <div class="bg-white border border-border rounded-lg flex flex-col overflow-hidden">
+                <div class="px-5 py-4 border-b border-border bg-white flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-text uppercase tracking-wider">Surat Kelayakan Etik (Ethical Clearance) yang Baru Ditandatangani</h2>
                 </div>
                 @if(!isset($recentlySigned) || $recentlySigned->isEmpty())
                     <div class="text-center py-12 px-6">
-                        <p class="text-xs text-text-muted italic">Belum ada sertifikat yang ditandatangani baru-baru ini.</p>
+                        <p class="text-xs text-text-muted italic">Belum ada Surat Kelayakan Etik (Ethical Clearance) yang ditandatangani baru-baru ini.</p>
                     </div>
                 @else
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold font-medium">Peneliti</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Unduh</th>
+                                <tr class="text-left text-text-secondary text-[11px] uppercase tracking-wider border-b border-border bg-slate-50/50">
+                                    <th class="px-5 py-3 font-semibold">Kode</th>
+                                    <th class="px-5 py-3 font-semibold">Judul Usulan</th>
+                                    <th class="px-5 py-3 font-semibold">Peneliti</th>
+                                    <th class="px-5 py-3 font-semibold text-right">Unduh</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-border">
+                            <tbody class="divide-y divide-border bg-white">
                                 @foreach($recentlySigned as $sub)
-                                    <tr class="hover:bg-soft-surface/25 transition-colors">
-                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                    <tr class="hover:bg-soft-surface/50 transition-colors">
+                                        <td class="px-5 py-3 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                        <td class="px-5 py-3 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
                                             {{ \Illuminate\Support\Str::title($sub->title) }}
                                         </td>
-                                        <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
-                                        <td class="px-6 py-4 text-right">
+                                        <td class="px-5 py-3 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
+                                        <td class="px-5 py-3 text-right">
                                             @if($sub->ec_certificate_path)
-                                                <a href="{{ route('submissions.certificate', $sub) }}" class="inline-flex items-center justify-center bg-success hover:bg-success/90 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors">
-                                                    Download
+                                                <a href="{{ route('submissions.certificate', $sub) }}" class="text-xs font-bold text-success hover:underline">
+                                                    Unduh Surat Kelayakan Etik
                                                 </a>
                                             @else
                                                 <span class="text-xs text-text-muted">-</span>
@@ -139,9 +153,9 @@
             </div>
 
             {{-- Certificates Verified --}}
-            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
-                <div class="px-6 py-4 border-b border-border bg-white">
-                    <h2 class="text-[20px] font-semibold text-text">Certificates Verified</h2>
+            <div class="bg-white border border-border rounded-lg flex flex-col overflow-hidden">
+                <div class="px-5 py-4 border-b border-border bg-white flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-text uppercase tracking-wider">Surat Kelayakan Etik (Ethical Clearance) Terverifikasi</h2>
                 </div>
                 @if(!isset($verifiedLogs) || $verifiedLogs->isEmpty())
                     <div class="text-center py-12 px-6">
@@ -151,27 +165,27 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold">Detail Log Verifikasi</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Waktu</th>
+                                <tr class="text-left text-text-secondary text-[11px] uppercase tracking-wider border-b border-border bg-slate-50/50">
+                                    <th class="px-5 py-3 font-semibold">Kode</th>
+                                    <th class="px-5 py-3 font-semibold">Judul Usulan</th>
+                                    <th class="px-5 py-3 font-semibold">Detail Log Verifikasi</th>
+                                    <th class="px-5 py-3 font-semibold text-right">Waktu</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-border">
+                            <tbody class="divide-y divide-border bg-white">
                                 @foreach($verifiedLogs as $log)
-                                    <tr class="hover:bg-soft-surface/25 transition-colors">
-                                        <td class="px-6 py-4 font-mono text-xs text-text-secondary">
+                                    <tr class="hover:bg-soft-surface/50 transition-colors">
+                                        <td class="px-5 py-3 font-mono text-xs text-text-secondary">
                                             {{ $log->submission ? $log->submission->code : 'N/A' }}
                                         </td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $log->submission ? $log->submission->title : '' }}">
+                                        <td class="px-5 py-3 font-semibold text-text truncate max-w-[200px]" title="{{ $log->submission ? $log->submission->title : '' }}">
                                             {{ $log->submission ? \Illuminate\Support\Str::title($log->submission->title) : 'Unknown Submission' }}
                                         </td>
-                                        <td class="px-6 py-4 text-xs text-text-secondary">
+                                        <td class="px-5 py-3 text-xs text-text-secondary">
                                             {{ $log->description }}
                                         </td>
-                                        <td class="px-6 py-4 text-right text-xs text-text-secondary whitespace-nowrap">
-                                            {{ $log->created_at->diffForHumans() }}
+                                        <td class="px-5 py-3 text-right text-xs text-text-secondary whitespace-nowrap">
+                                            {{ $log->created_at->timezone('Asia/Jakarta')->diffForHumans() }}
                                         </td>
                                     </tr>
                                 @endforeach
@@ -184,9 +198,9 @@
 
         {{-- Right: Waiting Final Decision (30% or lg:col-span-1) --}}
         <div class="space-y-6">
-            <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
-                <div class="px-6 py-4 border-b border-border">
-                    <h2 class="text-[20px] font-semibold text-text">Menunggu Keputusan</h2>
+            <div class="bg-white border border-border rounded-lg flex flex-col overflow-hidden">
+                <div class="px-5 py-4 border-b border-border">
+                    <h2 class="text-sm font-bold text-text uppercase tracking-wider">Menunggu Keputusan</h2>
                 </div>
                 
                 @if($waitingDecision->isEmpty())
@@ -209,33 +223,75 @@
             </div>
 
             {{-- Statistik Keputusan Visual --}}
-            <div class="bg-white p-6 border border-border rounded-xl">
-                <h2 class="text-[20px] font-semibold text-text mb-4">Statistik Keputusan</h2>
+            <div class="bg-white p-5 border border-border rounded-lg flex flex-col justify-center">
+                <h2 class="text-sm font-bold text-text uppercase tracking-wider mb-4 border-b border-border pb-4">Statistik Keputusan</h2>
                 <div class="space-y-4">
                     @php
                         $totalAll = max($totalApproved + $totalRejected, 1);
                         $approvedPercent = ($totalApproved / $totalAll) * 100;
                         $rejectedPercent = ($totalRejected / $totalAll) * 100;
                     @endphp
-                    <div>
-                        <div class="flex items-center justify-between text-xs mb-1">
-                            <span class="font-semibold text-text-secondary">Disetujui</span>
-                            <span class="font-bold text-text">{{ $totalApproved }} ({{ round($approvedPercent) }}%)</span>
-                        </div>
-                        <div class="w-full bg-bg rounded-full h-2 overflow-hidden border border-border">
-                            <div class="bg-success h-full rounded-full" style="width: {{ $approvedPercent }}%"></div>
-                        </div>
+                    <div class="flex items-center justify-between text-sm py-2 border-b border-border">
+                        <span class="font-semibold text-text-secondary">Disetujui</span>
+                        <span class="font-bold text-text">{{ $totalApproved }} ({{ round($approvedPercent) }}%)</span>
                     </div>
-                    <div>
-                        <div class="flex items-center justify-between text-xs mb-1">
-                            <span class="font-semibold text-text-secondary">Ditolak</span>
-                            <span class="font-bold text-text">{{ $totalRejected }} ({{ round($rejectedPercent) }}%)</span>
-                        </div>
-                        <div class="w-full bg-bg rounded-full h-2 overflow-hidden border border-border">
-                            <div class="bg-danger h-full rounded-full" style="width: {{ $rejectedPercent }}%"></div>
-                        </div>
+                    <div class="flex items-center justify-between text-sm py-2">
+                        <span class="font-semibold text-text-secondary">Ditolak</span>
+                        <span class="font-bold text-text">{{ $totalRejected }} ({{ round($rejectedPercent) }}%)</span>
                     </div>
                 </div>
+            </div>
+            
+            {{-- Jadwal Fullboard Widget --}}
+            <div class="bg-white border border-border rounded-lg flex flex-col overflow-hidden">
+                <div class="px-5 py-4 border-b border-border bg-white flex justify-between items-center">
+                    <h2 class="text-sm font-bold text-text uppercase tracking-wider">Fullboard Mendatang</h2>
+                    <a href="{{ route('fullboard.index') }}" class="text-xs text-primary hover:underline font-bold">Lihat Semua</a>
+                </div>
+                
+                @if($upcomingFullboard->isEmpty())
+                    <div class="text-center py-8 px-6">
+                        <p class="text-xs text-text-muted italic">Tidak ada jadwal Fullboard.</p>
+                    </div>
+                @else
+                    <div class="divide-y divide-border overflow-y-auto max-h-[400px]">
+                        @foreach($upcomingFullboard as $fb)
+                            <div class="p-4 hover:bg-soft-surface/20 transition-colors">
+                                <div class="flex items-center justify-between mb-1">
+                                    <p class="text-xs font-semibold text-text line-clamp-1 flex-1">{{ \Illuminate\Support\Str::title($fb->submission->title) }}</p>
+                                    @if($fb->meeting_type === 'OFFLINE')
+                                        <span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">OFFLINE</span>
+                                    @elseif($fb->meeting_type === 'ONLINE')
+                                        <span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">ONLINE</span>
+                                    @else
+                                        <span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">HYBRID</span>
+                                    @endif
+                                </div>
+                                <div class="flex flex-col gap-1 mt-2 text-[11px] text-text-secondary">
+                                    <div class="flex items-center justify-between">
+                                        <span>{{ $fb->scheduled_at->timezone('Asia/Jakarta')->format('d M Y, H:i') }}</span>
+                                        
+                                        <div class="flex items-center gap-2">
+                                            @if($fb->meeting_type === 'OFFLINE' || $fb->meeting_type === 'HYBRID')
+                                                @if($fb->location)
+                                                    <span class="text-text-secondary font-medium">{{ $fb->location }}</span>
+                                                @endif
+                                            @endif
+                                            
+                                            @if($fb->meeting_type === 'ONLINE' || $fb->meeting_type === 'HYBRID')
+                                                @if($fb->meeting_url)
+                                                    <a href="{{ $fb->meeting_url }}" target="_blank" class="text-primary hover:underline font-bold flex items-center gap-1">
+                                                        Buka Meeting
+                                                    </a>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
     </div>

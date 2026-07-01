@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Review extends Model
 {
     protected $fillable = [
-        'submission_id', 'reviewer_id', 'recommendation', 'notes', 'submitted_at',
+        'submission_id', 'reviewer_id', 'revision_round', 'recommendation', 'notes', 'submitted_at',
     ];
 
     protected $casts = [

@@ -44,6 +44,7 @@ class EcWaitingSignature extends Notification implements ShouldQueue
             'message' => 'Sertifikat untuk proposal "' . ($this->submission->confirmed_title ?: $this->submission->title) . '" menunggu tanda tangan Anda.',
             'submission_id' => $this->submission->id,
             'url' => route('submissions.show', $this->submission),
+            'action_url' => route('submissions.show', $this->submission),
             'created_at' => now()->toIso8601String(),
         ];
     }

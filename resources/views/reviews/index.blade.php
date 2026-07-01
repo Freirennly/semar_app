@@ -34,7 +34,7 @@
                     <tr class="hover:bg-soft-surface/25 transition-colors">
                         <td class="px-6 py-4 font-semibold text-text max-w-xs truncate">{{ $a->submission->title }}</td>
                         <td class="px-6 py-4 text-text-secondary hidden sm:table-cell">{{ $a->submission->student->name }}</td>
-                        <td class="px-6 py-4 text-text-secondary hidden sm:table-cell">{{ $a->due_at ? $a->due_at->format('d M Y') : '—' }}</td>
+                        <td class="px-6 py-4 text-text-secondary hidden sm:table-cell">{{ $a->due_at ? $a->due_at->timezone('Asia/Jakarta')->format('d M Y') : '—' }}</td>
                         <td class="px-6 py-4">
                             @if($a->status === 'COMPLETED')
                                 <span class="text-[12px] font-semibold text-green-600">Selesai</span>

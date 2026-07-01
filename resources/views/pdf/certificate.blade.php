@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Ethical Clearance Certificate</title>
+    <title>Surat Kelayakan Etik (Ethical Clearance)</title>
     <style>
         @page {
             size: A4 portrait;
@@ -22,6 +22,19 @@
             min-height: 950px;
             box-sizing: border-box;
             position: relative;
+            z-index: 1;
+        }
+        .watermark {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 130px;
+            color: rgba(200, 200, 200, 0.35);
+            font-weight: bold;
+            text-transform: uppercase;
+            z-index: -1;
+            white-space: nowrap;
         }
         .header {
             text-align: center;
@@ -145,19 +158,23 @@
 </head>
 <body>
     <div class="border-outer">
+        @if(isset($isDraft) && $isDraft)
+            <div class="watermark">DRAFT</div>
+        @endif
+
         <div class="header">
-            <h1>SEMAR UNIVERSITY</h1>
-            <p>Komite Etik Penelitian Kesehatan (KEP) | Health Research Ethics Committee</p>
+            <h1>UNIVERSITAS ULTRAMEN</h1>
+            <p>Komite Etik Penelitian | Research Ethics Committee</p>
         </div>
 
         <div class="title-container">
-            <h2>ETHICAL CLEARANCE CERTIFICATE</h2>
-            <p>No: {{ $submission->ec_number }}</p>
+            <h2>SURAT KELAYAKAN ETIK (ETHICAL CLEARANCE)</h2>
+            <p>No: {{ $submission->ec_number ?? '-' }}</p>
         </div>
 
         <div class="content">
-            <p>Komite Etik Penelitian Kesehatan (KEP) SEMAR University, setelah mempelajari proposal penelitian yang diajukan, dengan ini menyatakan bahwa penelitian berikut dinyatakan laik etik:</p>
-            <p><em>The Health Research Ethics Committee (KEP) of SEMAR University, after reviewing the submitted research proposal, hereby declares that the following study is ethically approved:</em></p>
+            <p>Komite Etik Penelitian Universitas Ultramen, setelah mempelajari proposal penelitian yang diajukan, dengan ini menyatakan bahwa penelitian berikut dinyatakan laik etik:</p>
+            <p><em>The Research Ethics Committee of Universitas Ultramen, after reviewing the submitted research proposal, hereby declares that the following study is ethically approved:</em></p>
 
             <table class="details-table">
                 <tr>
@@ -175,14 +192,20 @@
 
         <div class="footer-section clearfix">
             <div class="qr-code-box">
-                <img src="{{ $qrCode }}" alt="QR Code Verification">
-                <p>Pindai kode QR di atas untuk memverifikasi keabsahan sertifikat secara online melalui sistem SEMAR.<br><em>Scan QR code to verify online.</em></p>
+                @if(!isset($isDraft) || !$isDraft)
+                    <img src="{{ $qrCode }}" alt="QR Code Verification">
+                    <p>Pindai kode QR di atas untuk memverifikasi keabsahan sertifikat secara online melalui sistem SEMAR.<br><em>Scan QR code to verify online.</em></p>
+                @endif
             </div>
 
             <div class="signature-box">
-                <div class="date">Yogyakarta, {{ $signedDate }}</div>
-                <p class="name">{{ optional($submission->signatory)->name }}</p>
-                <p class="role">Ketua KEP SEMAR University</p>
+                <div class="date">Surakarta, {{ $signedDate }}</div>
+                @if(!isset($isDraft) || !$isDraft)
+                    <p class="name">{{ optional($submission->signatory)->name }}</p>
+                @else
+                    <p class="name" style="color: #a0aec0; text-decoration: none;">(Area Tanda Tangan)</p>
+                @endif
+                <p class="role">Ketua Komite Etik Penelitian Universitas Ultramen</p>
             </div>
         </div>
     </div>

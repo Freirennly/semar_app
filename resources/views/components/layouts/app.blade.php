@@ -28,22 +28,16 @@
                 <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
                     {{-- Flash messages --}}
                     @if(session('success'))
-                    <div class="mb-4 border-l-4 border-l-primary bg-soft-surface text-primary rounded-lg px-4 py-3 text-sm flex items-center justify-between" id="toast-success" role="alert">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                            <span>{{ session('success') }}</span>
-                        </div>
-                        <button onclick="this.parentElement.remove()" class="text-primary/60 hover:text-primary" aria-label="Tutup notifikasi">&times;</button>
-                    </div>
+                        <x-alert type="success" :message="session('success')" class="mb-6" />
                     @endif
                     @if(session('error'))
-                    <div class="mb-4 border-l-4 border-l-danger bg-danger-bg text-danger rounded-lg px-4 py-3 text-sm flex items-center justify-between" id="toast-error" role="alert">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                            <span>{{ session('error') }}</span>
-                        </div>
-                        <button onclick="this.parentElement.remove()" class="text-danger/60 hover:text-danger" aria-label="Tutup notifikasi">&times;</button>
-                    </div>
+                        <x-alert type="error" :message="session('error')" class="mb-6" />
+                    @endif
+                    @if(session('warning'))
+                        <x-alert type="warning" :message="session('warning')" class="mb-6" />
+                    @endif
+                    @if(session('info'))
+                        <x-alert type="info" :message="session('info')" class="mb-6" />
                     @endif
                     {{ $slot }}
                 </div>
@@ -60,7 +54,7 @@
             sidebar.classList.toggle('sidebar-desktop');
             overlay.classList.toggle('open');
         }
-        setTimeout(() => { document.getElementById('toast-success')?.remove(); document.getElementById('toast-error')?.remove(); }, 5000);
+        setTimeout(() => { document.querySelectorAll('[role="alert"]').forEach(el => el.remove()); }, 5000);
     </script>
 </body>
 </html>

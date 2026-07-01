@@ -8,10 +8,10 @@ enum SubmissionStatus: string
     case PROCESS = 'PROCESS';
     case ON_REVIEW = 'ON_REVIEW';
     case APPROVED = 'APPROVED';
-    case APPROVED_WITH_REVISION = 'APPROVED_WITH_REVISION';
-    case RESUBMISSION = 'RESUBMISSION';
+    case REVISION_REQUIRED = 'REVISION_REQUIRED';
     case REVISED = 'REVISED';
     case REJECTED = 'REJECTED';
+    case WAITING_STUDENT_CONFIRMATION = 'WAITING_STUDENT_CONFIRMATION';
     case WAITING_SIGNATURE = 'WAITING_SIGNATURE';
     case DONE = 'DONE';
 
@@ -22,10 +22,10 @@ enum SubmissionStatus: string
             self::PROCESS => 'Diproses Sekretariat',
             self::ON_REVIEW => 'Sedang Direview',
             self::APPROVED => 'Disetujui',
-            self::APPROVED_WITH_REVISION => 'Disetujui dengan Revisi',
-            self::RESUBMISSION => 'Perlu Revisi',
+            self::REVISION_REQUIRED => 'Perlu Revisi',
             self::REVISED => 'Revisi Dikirim',
             self::REJECTED => 'Ditolak',
+            self::WAITING_STUDENT_CONFIRMATION => 'Menunggu Konfirmasi Mahasiswa',
             self::WAITING_SIGNATURE => 'Menunggu Tanda Tangan',
             self::DONE => 'Selesai',
         };
@@ -38,10 +38,10 @@ enum SubmissionStatus: string
             self::PROCESS => 'bg-cyan-50 text-cyan-700',
             self::ON_REVIEW => 'bg-violet-50 text-violet-700',
             self::APPROVED => 'bg-emerald-50 text-emerald-700',
-            self::APPROVED_WITH_REVISION => 'bg-amber-50 text-amber-700',
-            self::RESUBMISSION => 'bg-orange-50 text-orange-700',
+            self::REVISION_REQUIRED => 'bg-orange-50 text-orange-700',
             self::REVISED => 'bg-teal-50 text-teal-700',
             self::REJECTED => 'bg-red-50 text-red-700',
+            self::WAITING_STUDENT_CONFIRMATION => 'bg-blue-50 text-blue-700',
             self::WAITING_SIGNATURE => 'bg-rose-50 text-rose-700',
             self::DONE => 'bg-emerald-100 text-emerald-800',
         };
@@ -54,10 +54,10 @@ enum SubmissionStatus: string
             self::PROCESS => 'border-l-cyan-500',
             self::ON_REVIEW => 'border-l-violet-500',
             self::APPROVED => 'border-l-emerald-500',
-            self::APPROVED_WITH_REVISION => 'border-l-amber-500',
-            self::RESUBMISSION => 'border-l-orange-500',
+            self::REVISION_REQUIRED => 'border-l-orange-500',
             self::REVISED => 'border-l-teal-500',
             self::REJECTED => 'border-l-red-500',
+            self::WAITING_STUDENT_CONFIRMATION => 'border-l-blue-500',
             self::WAITING_SIGNATURE => 'border-l-rose-500',
             self::DONE => 'border-l-emerald-600',
         };

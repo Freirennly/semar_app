@@ -54,7 +54,7 @@ class SubmissionController extends Controller
     public function create()
     {
         // Validasi hak akses otorisasi policy
-        Gate::authorize('create', Submission::class);
+        $this->authorize('create', Submission::class);
 
         // AMBIL MASTER TEMPLATE DOKUMEN DARI DATABASE AGAR BISA DI-LOOP PADA BLOK KARTU VIEW
         $documentTemplates = DocumentTemplate::visible()->get();
@@ -116,7 +116,6 @@ class SubmissionController extends Controller
                     'mime'                 => $file->getClientMimeType(),
                     'size'                 => $file->getSize(),
                     'uploaded_by'          => auth()->id(),
-                    'type'                 => 'file'
                 ]);
             } 
             elseif ($hasLink) {
@@ -128,7 +127,6 @@ class SubmissionController extends Controller
                     'mime'                 => 'text/url',
                     'size'                 => 0,
                     'uploaded_by'          => auth()->id(),
-                    'type'                 => 'link'
                 ]);
             }
         }
@@ -141,13 +139,6 @@ class SubmissionController extends Controller
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error("Failed to notify admin on new proposal: " . $e->getMessage());
             }
-
-            $admin->notify(new \App\Notifications\SubmissionWorkflowNotification(
-                'Proposal Baru Diajukan',
-                "Mahasiswa {$submission->student->name} telah mengajukan proposal baru: \"{$submission->title}\".",
-                $submission->id,
-                route('admin.proposals.show', $submission)
-            ));
         }
 
         return redirect()->route('submissions.index')->with('success', 'Proposal beserta seluruh berkas berhasil diajukan!');
@@ -158,15 +149,7 @@ class SubmissionController extends Controller
      */
     public function show(Request $request, Submission $submission)
     {
-        $user = $request->user();
-
-        if ($user->hasRole('student') && $submission->student_id !== $user->id) {
-            abort(403);
-        }
-        if ($user->hasRole('reviewer')) {
-            $isAssigned = $submission->assignments()->where('reviewer_id', $user->id)->exists();
-            if (! $isAssigned) abort(403);
-        }
+        $this->authorize('view', $submission);
 
         // Eager load seluruh relasi pendukung
         $submission->load(['documents.template', 'student', 'assignments.reviewer', 'reviews.reviewer', 'statusHistories.changer', 'decisions.decider']);
@@ -175,42 +158,46 @@ class SubmissionController extends Controller
         $uploadedTemplateIds = $submission->documents->pluck('document_template_id')->toArray();
         $tab = $request->input('tab', 'details');
 
-        return view('submissions.show', compact('submission', 'documentTemplates', 'uploadedTemplateIds', 'tab'));
+        // Kalkulasi state UI untuk Konfirmasi EC Draft Mahasiswa
+        $latestHistory = $submission->statusHistories()->latest()->first();
+        $isRevisionPending = $submission->status === SubmissionStatus::WAITING_STUDENT_CONFIRMATION 
+                             && $latestHistory 
+                             && str_contains($latestHistory->note ?? '', 'Permintaan perbaikan Draf EC');
+        
+        $revisionNote = $isRevisionPending ? str_replace('Permintaan perbaikan Draf EC: ', '', $latestHistory->note) : '';
+
+        return view('submissions.show', compact(
+            'submission', 
+            'documentTemplates', 
+            'uploadedTemplateIds', 
+            'tab', 
+            'isRevisionPending', 
+            'revisionNote'
+        ));
     }
 
     /**
-     * PERBAIKAN: Mengunduh file template master secara aman lewat sistem manual ID parameter kueri
+     * Mengunduh file template master secara aman via implicit route model binding
      */
-    public function downloadTemplate($id)
+    public function downloadTemplate(DocumentTemplate $template)
     {
-        $documentTemplate = DocumentTemplate::find($id);
-
-        if (!$documentTemplate) {
-            return back()->with('error', 'Data master template tidak ditemukan di dalam sistem.');
-        }
-
-        if (!$documentTemplate->file_path || !Storage::disk('public')->exists($documentTemplate->file_path)) {
+        if (!$template->file_path || !Storage::disk('public')->exists($template->file_path)) {
             return back()->with('error', 'Mohon maaf, fisik master berkas template tidak ditemukan di server penyimpanan lokal.');
         }
 
-        $extension = pathinfo($documentTemplate->file_path, PATHINFO_EXTENSION);
-        $safeName = str_replace(' ', '_', $documentTemplate->name) . '.' . $extension;
+        $extension = pathinfo($template->file_path, PATHINFO_EXTENSION);
+        $safeName = str_replace(' ', '_', $template->name) . '.' . $extension;
 
-        return Storage::disk('public')->download($documentTemplate->file_path, $safeName);
+        return Storage::disk('public')->download($template->file_path, $safeName);
     }
 
     /**
-     * PERBAIKAN INTEGRASI: Membuka berkas dokumen PDF secara inline/link di tab baru browser tanpa memicu error 403
+     * Membuka berkas dokumen PDF secara inline/link di tab baru browser
+     * Menggunakan scoped binding: document harus milik submission (IDOR prevention)
      */
-    public function viewDocument(SubmissionDocument $document)
+    public function viewDocument(Submission $submission, SubmissionDocument $document)
     {
-        $user = auth()->user();
-        $submission = $document->submission;
-
-        // Otorisasi Keamanan Dokumen: Mahasiswa hanya boleh melihat berkas milik pengajuannya sendiri
-        if ($user->hasRole('student') && $submission->student_id !== $user->id) {
-            abort(403, 'Anda tidak memiliki hak akses untuk melihat dokumen ini.');
-        }
+        $this->authorize('viewDocument', $submission);
 
         // Jika dokumen disimpan sebagai hyperlink Google Drive, alihkan langsung ke URL terkait
         if ($document->type === 'link') {
@@ -232,14 +219,14 @@ class SubmissionController extends Controller
 
     public function edit(Submission $submission)
     {
-        Gate::authorize('update', $submission);
+        $this->authorize('update', $submission);
         $documentTemplates = DocumentTemplate::visible()->get();
         return view('submissions.edit', compact('submission', 'documentTemplates'));
     }
 
     public function update(Request $request, Submission $submission)
     {
-        Gate::authorize('update', $submission);
+        $this->authorize('update', $submission);
 
         $request->validate([
             'title' => 'required|string|max:500',
@@ -274,7 +261,7 @@ class SubmissionController extends Controller
 
             if ($hasFile) {
                 if ($oldDoc) {
-                    if ($oldDoc->type === 'file') {
+                    if ($oldDoc->type === 'file' && Storage::disk('public')->exists($oldDoc->file_path)) {
                         Storage::disk('public')->delete($oldDoc->file_path);
                     }
                     $oldDoc->delete();
@@ -291,12 +278,11 @@ class SubmissionController extends Controller
                     'mime'                 => $file->getClientMimeType(),
                     'size'                 => $file->getSize(),
                     'uploaded_by'          => auth()->id(),
-                    'type'                 => 'file'
                 ]);
             } elseif ($newLink) {
                 if (!$oldDoc || $oldDoc->type !== 'link' || $oldDoc->file_path !== $newLink) {
                     if ($oldDoc) {
-                        if ($oldDoc->type === 'file') {
+                        if ($oldDoc->type === 'file' && Storage::disk('public')->exists($oldDoc->file_path)) {
                             Storage::disk('public')->delete($oldDoc->file_path);
                         }
                         $oldDoc->delete();
@@ -310,7 +296,6 @@ class SubmissionController extends Controller
                         'mime'                 => 'text/url',
                         'size'                 => 0,
                         'uploaded_by'          => auth()->id(),
-                        'type'                 => 'link'
                     ]);
                 }
             } elseif ($oldDoc && $oldDoc->type === 'link' && $request->has("hyperlinks.{$template->id}") && !$newLink) {
@@ -327,8 +312,11 @@ class SubmissionController extends Controller
      */
     public function submit(Request $request, Submission $submission)
     {
-        $user = $request->user();
-        if ($submission->student_id !== $user->id) abort(403);
+        $this->authorize('submit', $submission);
+
+        $request->validate([
+            'note' => 'required|string|max:5000',
+        ]);
 
         // Validasi Kelengkapan Berkas Dinamis langsung dari berkas terunggah
         $requiredTemplateIds = DocumentTemplate::visible()->where('is_required', true)->pluck('id')->toArray();
@@ -340,11 +328,11 @@ class SubmissionController extends Controller
             }
         }
 
-        if ($submission->status !== SubmissionStatus::RESUBMISSION) {
+        if ($submission->status !== SubmissionStatus::REVISION_REQUIRED) {
             return back()->with('error', 'Pengajuan tidak dalam status yang bisa di-submit.');
         }
 
-        $this->workflow->transition($submission, SubmissionStatus::REVISED, $user, 'Revisi dikirim oleh mahasiswa');
+        $this->workflow->transition($submission, SubmissionStatus::REVISED, $request->user(), $request->input('note'));
         $submission->update(['submitted_at' => now()]);
 
         return redirect()->route('submissions.show', $submission)
@@ -356,9 +344,9 @@ class SubmissionController extends Controller
      */
     public function uploadDocument(Request $request, Submission $submission)
     {
-        $user = $request->user();
-        if ($submission->student_id !== $user->id) abort(403);
-        if ($submission->status !== SubmissionStatus::RESUBMISSION) {
+        $this->authorize('uploadDocument', $submission);
+
+        if ($submission->status !== SubmissionStatus::REVISION_REQUIRED) {
             return back()->with('error', 'Tidak bisa upload dokumen pada status ini.');
         }
 
@@ -380,7 +368,7 @@ class SubmissionController extends Controller
 
         $oldDoc = $submission->documents()->where('document_template_id', $request->document_template_id)->first();
         if ($oldDoc) {
-            if ($oldDoc->type === 'file') {
+            if ($oldDoc->type === 'file' && Storage::disk('public')->exists($oldDoc->file_path)) {
                 Storage::disk('public')->delete($oldDoc->file_path);
             }
             $oldDoc->delete();
@@ -400,8 +388,7 @@ class SubmissionController extends Controller
                 'original_name' => $file->getClientOriginalName(),
                 'mime' => $file->getClientMimeType(),
                 'size' => $file->getSize(),
-                'uploaded_by' => $user->id,
-                'type' => 'file'
+                'uploaded_by' => $request->user()->id,
             ]);
         } else {
             $submission->documents()->create([
@@ -411,23 +398,28 @@ class SubmissionController extends Controller
                 'original_name' => 'Link Google Drive',
                 'mime' => 'text/url',
                 'size' => 0,
-                'uploaded_by' => $user->id,
-                'type' => 'link'
+                'uploaded_by' => $request->user()->id,
             ]);
         }
 
         return back()->with('success', 'Dokumen berkas berhasil diupload.');
     }
 
+    /**
+     * Menghapus dokumen milik pengajuan (scoped binding + safe storage)
+     */
     public function deleteDocument(Request $request, Submission $submission, SubmissionDocument $document)
     {
-        $user = $request->user();
-        if ($submission->student_id !== $user->id) abort(403);
-        if ($submission->status !== SubmissionStatus::RESUBMISSION) {
+        $this->authorize('deleteDocument', $submission);
+
+        if ($submission->status !== SubmissionStatus::REVISION_REQUIRED) {
             return back()->with('error', 'Tidak bisa menghapus dokumen pada status ini.');
         }
 
-        Storage::disk('public')->delete($document->file_path);
+        // Safe storage: hanya hapus file fisik jika bukan hyperlink dan file ada
+        if ($document->type === 'file' && Storage::disk('public')->exists($document->file_path)) {
+            Storage::disk('public')->delete($document->file_path);
+        }
         $document->delete();
 
         return back()->with('success', 'Dokumen berhasil dihapus.');
@@ -435,10 +427,9 @@ class SubmissionController extends Controller
 
     public function confirmEcData(Request $request, Submission $submission)
     {
-        $user = $request->user();
-        if ($submission->student_id !== $user->id) abort(403);
+        $this->authorize('confirmEc', $submission);
 
-        if ($submission->status !== SubmissionStatus::APPROVED) {
+        if ($submission->status !== SubmissionStatus::WAITING_STUDENT_CONFIRMATION) {
             return back()->with('error', 'Status pengajuan tidak valid untuk konfirmasi saat ini.');
         }
 
@@ -446,26 +437,54 @@ class SubmissionController extends Controller
             return back()->with('error', 'Draft Ethical Clearance belum dibuat oleh Admin.');
         }
 
-        $request->validate([
-            'confirmed_title' => 'required|string|max:500',
-            'confirmed_researcher_name' => 'required|string|max:255',
-        ]);
+        // Student now only confirms the pre-filled data, no edits allowed.
+        
+        $this->workflow->transition($submission, SubmissionStatus::WAITING_SIGNATURE, $request->user(), 'Peneliti telah mengonfirmasi draf sertifikat EC.');
 
-        $submission->update([
-            'confirmed_title' => $request->confirmed_title,
-            'confirmed_researcher_name' => $request->confirmed_researcher_name,
-        ]);
-
-        $this->workflow->transition($submission, SubmissionStatus::WAITING_SIGNATURE, $user, 'Peneliti telah mengonfirmasi draf sertifikat EC.');
+        // Notify admins about the confirmation
+        $admins = \App\Models\User::role('admin')->get();
+        foreach ($admins as $admin) {
+            try {
+                $admin->notify(new \App\Notifications\EcDraftConfirmed($submission));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to notify admin on EC confirmation: " . $e->getMessage());
+            }
+        }
 
         return back()->with('success', 'Draf sertifikat berhasil dikonfirmasi. Saat ini menunggu tanda tangan dari Ketua KEP.');
     }
 
+    public function requestEcRevision(Request $request, Submission $submission)
+    {
+        $this->authorize('confirmEc', $submission);
+
+        if ($submission->status !== SubmissionStatus::WAITING_STUDENT_CONFIRMATION) {
+            return back()->with('error', 'Status pengajuan tidak valid untuk aksi ini.');
+        }
+
+        $request->validate([
+            'note' => 'required|string|max:5000',
+        ]);
+
+        // Self-transition untuk mencatat di StatusHistory
+        $this->workflow->transition($submission, SubmissionStatus::WAITING_STUDENT_CONFIRMATION, $request->user(), 'Permintaan perbaikan Draf EC: ' . $request->input('note'));
+
+        // Notify admins
+        $admins = \App\Models\User::role('admin')->get();
+        foreach ($admins as $admin) {
+            try {
+                $admin->notify(new \App\Notifications\EcDraftRevisionRequested($submission));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to notify admin on EC revision request: " . $e->getMessage());
+            }
+        }
+
+        return back()->with('success', 'Permintaan perbaikan draf telah dikirim ke Admin.');
+    }
+
     public function sign(Request $request, Submission $submission)
     {
-        $user = $request->user();
-        if (! $user->hasRole('ketua')) abort(403);
-        if ($submission->signatory_id !== $user->id) abort(403);
+        $this->authorize('sign', $submission);
 
         if ($submission->status !== SubmissionStatus::WAITING_SIGNATURE) {
             return back()->with('error', 'Status pengajuan tidak valid untuk ditandatangani saat ini.');
@@ -483,24 +502,60 @@ class SubmissionController extends Controller
         $generatedPath = $certificateService->generate($submission);
 
         // Perbarui rekam path sertifikat privat ke database submissions
-        $submission->update(['ec_certificate_path' => $generatedPath]);
+        $submission->update([
+            'ec_certificate_path' => $generatedPath,
+            'signed_at' => now()
+        ]);
 
-        $this->workflow->transition($submission, SubmissionStatus::DONE, $user, 'Sertifikat Laik Etik telah ditandatangani oleh Ketua KEP.');
+        $this->workflow->transition($submission, SubmissionStatus::DONE, $request->user(), 'Sertifikat Laik Etik telah ditandatangani oleh Ketua KEP.');
 
         return back()->with('success', 'Sertifikat Laik Etik berhasil ditandatangani.');
     }
 
+    public function previewFinalEc(Request $request, Submission $submission)
+    {
+        $this->authorize('sign', $submission);
+
+        if ($submission->status !== SubmissionStatus::WAITING_SIGNATURE) {
+            return back()->with('error', 'Status pengajuan tidak valid untuk melihat pratinjau final.');
+        }
+
+        $certificateService = new \App\Services\CertificateGenerator();
+        $pdfContent = $certificateService->previewFinal($submission);
+
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="PREVIEW-FINAL-EC-' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $submission->ec_number ?? 'UNASSIGNED') . '.pdf"'
+        ]);
+    }
+
+    public function previewDraftEc(Request $request, Submission $submission)
+    {
+        $this->authorize('confirmEc', $submission);
+
+        if ($submission->status !== SubmissionStatus::WAITING_STUDENT_CONFIRMATION) {
+            return back()->with('error', 'Status pengajuan tidak valid untuk melihat draf.');
+        }
+
+        if (empty($submission->ec_number)) {
+            return back()->with('error', 'Draf belum lengkap.');
+        }
+
+        $certificateService = new \App\Services\CertificateGenerator();
+        $pdfContent = $certificateService->generate($submission, true);
+
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="DRAFT-EC-' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $submission->ec_number ?? 'UNASSIGNED') . '.pdf"'
+        ]);
+    }
+
     /**
-     * PERBAIKAN: Menyelaraskan kueri unduhan sertifikat di menu Ethical Clearance 
-     * agar langsung mengambil file dari generator tanpa mencari baris data kosong di tabel anak documents
+     * Mengunduh sertifikat EC milik mahasiswa
      */
     public function downloadEc(Request $request, Submission $submission)
     {
-        $user = $request->user();
-        
-        if ($user->hasRole('student') && $submission->student_id !== $user->id) {
-            abort(403);
-        }
+        $this->authorize('downloadEc', $submission);
 
         if ($submission->status !== SubmissionStatus::DONE) {
             return back()->with('error', 'Sertifikat Laik Etik belum diterbitkan.');
@@ -518,24 +573,13 @@ class SubmissionController extends Controller
 
     public function downloadCertificate(Request $request, Submission $submission)
     {
-        $user = $request->user();
-
-        $allowed = false;
-        if ($user->hasRole('admin') || $user->hasRole('sekretariat')) {
-            $allowed = true;
-        } elseif ($user->hasRole('student') && $submission->student_id === $user->id) {
-            $allowed = true;
-        } elseif ($user->hasRole('ketua') && $submission->signatory_id === $user->id) {
-            $allowed = true;
-        }
-
-        if (! $allowed) {
-            abort(403);
-        }
+        $this->authorize('downloadCertificate', $submission);
 
         if (empty($submission->ec_certificate_path) || ! Storage::exists($submission->ec_certificate_path)) {
             return back()->with('error', 'Mohon maaf, berkas fisik sertifikat belum terbit di sistem.');
         }
+
+        $user = $request->user();
 
         // Log the download event
         \App\Models\ActivityLog::create([

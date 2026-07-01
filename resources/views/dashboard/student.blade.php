@@ -1,17 +1,33 @@
 <x-layouts.app :title="'Dashboard'">
     {{-- Header Section --}}
-    <div class="mb-6">
-        <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Selamat Datang, {{ auth()->user()->name }}</h1>
-        <p class="text-sm text-text-secondary mt-1.5">Kelola pengajuan etik penelitian dan pantau progress usulan Anda secara real-time.</p>
+    <div class="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
+        <div>
+            <nav class="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">
+                Home <span class="mx-1">/</span> Dashboard
+            </nav>
+            <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Selamat Datang, {{ explode(' ', auth()->user()->name)[0] }}</h1>
+            <p class="text-sm text-text-secondary mt-1">Kelola pengajuan etik penelitian dan pantau progress usulan Anda.</p>
+        </div>
+        <div class="flex flex-col md:items-end gap-3">
+            <div class="text-sm font-semibold text-text-secondary hidden md:block">
+                {{ \Carbon\Carbon::now()->timezone('Asia/Jakarta')->translatedFormat('l, d F Y') }}
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('submissions.create') }}" class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white text-xs font-bold px-4 py-2 rounded-lg transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Buat Pengajuan Baru
+                </a>
+            </div>
+        </div>
     </div>
 
     {{-- Ringkasan Pengajuan (Personal Stats, flat cards) --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         @foreach($metrics as $m)
             @if($m['label'] !== 'Proposal Baru') {{-- Avoid duplicate detail metrics --}}
-                <div class="bg-white border border-border p-5 rounded-xl">
-                    <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">{{ $m['label'] }}</p>
-                    <p class="text-[28px] font-bold text-text mt-2 leading-none">{{ $m['value'] }}</p>
+                <div class="bg-white border border-border p-5 rounded-lg flex flex-col justify-center hover:border-primary/50 transition-colors duration-200">
+                    <p class="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">{{ $m['label'] }}</p>
+                    <p class="text-3xl font-bold text-text leading-none">{{ $m['value'] }}</p>
                 </div>
             @endif
         @endforeach
@@ -23,19 +39,11 @@
 
     @if($latestSub)
         {{-- Revision Alert --}}
-        @if($latestSub->status === \App\Enums\SubmissionStatus::RESUBMISSION)
-            <div class="mb-6 bg-warning-bg border border-warning/30 p-5 rounded-xl flex items-start gap-4">
-                <div class="p-2 bg-white border border-warning/20 text-warning rounded-lg shrink-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-sm font-bold text-warning">Perlu Tindakan: Revisi Proposal Diperlukan</h3>
-                    <p class="text-xs text-text-secondary mt-1">Status pengajuan <strong>{{ $latestSub->code }}</strong> saat ini memerlukan perbaikan dokumen. Harap periksa catatan revisi di halaman detail dan unggah kembali dokumen yang diperbarui.</p>
-                    <a href="{{ route('submissions.show', $latestSub) }}" class="inline-block mt-3 text-xs font-bold text-primary hover:underline">Lihat Catatan & Unggah Revisi →</a>
-                </div>
-            </div>
+        @if($latestSub->status === \App\Enums\SubmissionStatus::REVISION_REQUIRED)
+            <x-alert type="warning" title="Perlu Tindakan: Revisi Proposal Diperlukan" class="mb-6">
+                <p class="mt-1">Status pengajuan <strong>{{ $latestSub->code }}</strong> saat ini memerlukan perbaikan dokumen. Harap periksa catatan revisi di halaman detail dan unggah kembali dokumen yang diperbarui.</p>
+                <a href="{{ route('submissions.show', $latestSub) }}" class="inline-block mt-2 text-xs font-bold text-primary hover:underline">Lihat Catatan & Unggah Revisi →</a>
+            </x-alert>
         @endif
 
         {{-- Document Completion Checklist --}}
@@ -116,7 +124,7 @@
                     $activeStep = 2;
                 } elseif (in_array($statusVal, ['ON_REVIEW'])) {
                     $activeStep = 3;
-                } elseif (in_array($statusVal, ['APPROVED', 'APPROVED_WITH_REVISION', 'REJECTED', 'WAITING_SIGNATURE', 'RESUBMISSION', 'REVISED'])) {
+                } elseif (in_array($statusVal, ['APPROVED', 'REJECTED', 'WAITING_SIGNATURE', 'REVISION_REQUIRED', 'REVISED'])) {
                     $activeStep = 4;
                 } elseif (in_array($statusVal, ['DONE'])) {
                     $activeStep = 5;
@@ -166,7 +174,7 @@
                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border {{ $activeStep >= 5 ? 'bg-primary text-white border-primary' : 'bg-bg text-text-muted border-border' }}">5</div>
                     <div>
                         <p class="text-xs font-bold {{ $activeStep >= 5 ? 'text-text' : 'text-text-muted' }}">Selesai</p>
-                        <p class="text-[10px] text-text-secondary mt-0.5">Sertifikat Etik terbit.</p>
+                        <p class="text-[10px] text-text-secondary mt-0.5">Surat Kelayakan Etik terbit.</p>
                     </div>
                 </div>
             </div>
@@ -175,62 +183,44 @@
 
     {{-- Queue: Waiting EC Confirmation --}}
     @if(isset($waitingEcConfirmation) && $waitingEcConfirmation->isNotEmpty())
-        <div class="mb-6 bg-white border border-border rounded-xl overflow-hidden animate-fade-in">
-            <div class="px-6 py-4 border-b border-border bg-slate-50/70">
-                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-warning">Menunggu Konfirmasi Sertifikat (Waiting EC Confirmation)</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <tbody class="divide-y divide-border">
-                        @foreach($waitingEcConfirmation as $sub)
-                            <tr class="hover:bg-soft-surface/25 transition-colors">
-                                <td class="px-6 py-4 font-mono text-xs text-text-secondary w-24">{{ $sub->code }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="font-semibold text-text">
-                                        {{ \Illuminate\Support\Str::title($sub->title) }}
-                                    </span>
-                                    <span class="text-xs text-text-secondary block mt-0.5">Nomor EC: {{ $sub->ec_number }}</span>
-                                </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
-                                    <a href="{{ route('submissions.show', $sub) }}" class="inline-flex items-center justify-center bg-primary hover:bg-primary-hover text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">
-                                        Konfirmasi Sekarang
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+        <div class="mb-6 bg-white border border-border rounded-xl p-6 animate-fade-in">
+            <h2 class="text-sm font-bold text-text uppercase tracking-wider mb-4">Menunggu Konfirmasi Ethical Clearance</h2>
+            <div class="space-y-4">
+                @foreach($waitingEcConfirmation as $sub)
+                    <div class="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-bold text-text">{{ \Illuminate\Support\Str::title($sub->title) }}</h3>
+                                <p class="text-xs text-text-secondary mt-1">Draft Ethical Clearance telah dikirim oleh Admin. Silakan lakukan pemeriksaan sebelum Ketua melakukan penandatanganan.</p>
+                            </div>
+                            <a href="{{ route('submissions.show', $sub) }}" class="inline-flex items-center justify-center bg-primary hover:bg-primary-hover text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shrink-0">
+                                Lihat Ethical Clearance
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
     @endif
 
     {{-- Queue: Ethical Clearance Ready --}}
     @if(isset($ecReady) && $ecReady->isNotEmpty())
-        <div class="mb-6 bg-white border border-border rounded-xl overflow-hidden animate-fade-in">
-            <div class="px-6 py-4 border-b border-border bg-slate-50/70">
-                <h2 class="text-sm font-bold text-text uppercase tracking-wider text-success">Sertifikat Etik Terbit (Ethical Clearance Ready)</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <tbody class="divide-y divide-border">
-                        @foreach($ecReady as $sub)
-                            <tr class="hover:bg-soft-surface/25 transition-colors">
-                                <td class="px-6 py-4 font-mono text-xs text-text-secondary w-24">{{ $sub->code }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="font-semibold text-text">
-                                        {{ \Illuminate\Support\Str::title($sub->title) }}
-                                    </span>
-                                    <span class="text-xs text-text-secondary block mt-0.5">Nomor EC: {{ $sub->ec_number }}</span>
-                                </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
-                                    <a href="{{ route('submissions.certificate', $sub) }}" class="inline-flex items-center justify-center bg-success hover:bg-success/90 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all">
-                                        Unduh Sertifikat
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+        <div class="mb-6 bg-white border border-border rounded-xl p-6 animate-fade-in">
+            <h2 class="text-sm font-bold text-text uppercase tracking-wider mb-4 text-success">Surat Kelayakan Etik Terbit (Ethical Clearance Ready)</h2>
+            <div class="space-y-4">
+                @foreach($ecReady as $sub)
+                    <div class="border border-border rounded-lg p-4 hover:border-success/30 transition-colors">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-bold text-text">{{ \Illuminate\Support\Str::title($sub->title) }}</h3>
+                                <p class="text-xs text-text-secondary mt-1">Nomor EC: {{ $sub->ec_number }}</p>
+                            </div>
+                            <a href="{{ route('submissions.certificate', $sub) }}" class="inline-flex items-center justify-center bg-success hover:bg-success/90 text-white text-xs font-bold px-4 py-2 rounded-lg transition-all shrink-0">
+                                Unduh Surat Kelayakan Etik
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
             </div>
         </div>
     @endif
@@ -256,7 +246,7 @@
                                     <span class="text-xs text-text-secondary block mt-0.5">{{ $log->description }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap text-xs text-text-secondary w-40">
-                                    {{ $log->created_at->diffForHumans() }}
+                                    {{ $log->created_at->timezone('Asia/Jakarta')->diffForHumans() }}
                                 </td>
                             </tr>
                         @endforeach
@@ -267,10 +257,10 @@
     @endif
 
     {{-- Riwayat Pengajuan --}}
-    <div class="bg-white border border-border rounded-xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-border flex items-center justify-between">
-            <h2 class="text-[20px] font-semibold text-text">Riwayat Pengajuan</h2>
-            <a href="{{ route('submissions.create') }}" class="px-4 py-2 bg-primary hover:bg-primary-hover text-white text-xs font-semibold rounded-lg transition-colors">+ Buat Pengajuan Baru</a>
+    <div class="bg-white border border-border rounded-lg overflow-hidden">
+        <div class="px-5 py-4 border-b border-border flex items-center justify-between">
+            <h2 class="text-sm font-bold text-text uppercase tracking-wider">Riwayat Pengajuan</h2>
+            <a href="{{ route('submissions.create') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua</a>
         </div>
         @if($submissions->isEmpty())
             <div class="text-center py-16 px-6">
@@ -284,43 +274,36 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                            <th class="px-6 py-4 font-semibold">Kode</th>
-                            <th class="px-6 py-4 font-semibold">Judul Penelitian</th>
-                            <th class="px-6 py-4 font-semibold hidden sm:table-cell">Jenis Usulan</th>
-                            <th class="px-6 py-4 font-semibold">Status</th>
-                            <th class="px-6 py-4 font-semibold hidden sm:table-cell">Tanggal Diajukan</th>
-                            <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                        <tr class="text-left text-text-secondary text-[11px] uppercase tracking-wider border-b border-border bg-slate-50/50">
+                            <th class="px-5 py-3 font-semibold">Kode</th>
+                            <th class="px-5 py-3 font-semibold">Judul Penelitian</th>
+                            <th class="px-5 py-3 font-semibold hidden sm:table-cell">Jenis Usulan</th>
+                            <th class="px-5 py-3 font-semibold">Status</th>
+                            <th class="px-5 py-3 font-semibold hidden sm:table-cell">Tanggal Diajukan</th>
+                            <th class="px-5 py-3 font-semibold text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @foreach($submissions as $sub)
-                            <tr class="hover:bg-soft-surface/25 transition-colors">
-                                <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="font-semibold text-text">
+                            <tr class="hover:bg-soft-surface/50 transition-colors">
+                                <td class="px-5 py-3 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
+                                <td class="px-5 py-3">
+                                    <span class="font-semibold text-text line-clamp-1" title="{{ $sub->title }}">
                                         {{ \Illuminate\Support\Str::title($sub->title) }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-text-secondary hidden sm:table-cell">{{ $sub->type }}</td>
-                                <td class="px-6 py-4">
+                                <td class="px-5 py-3 text-text-secondary hidden sm:table-cell">{{ $sub->type }}</td>
+                                <td class="px-5 py-3">
                                     <x-status-badge :status="$sub->status" />
                                 </td>
-                                <td class="px-6 py-4 text-xs text-text-secondary hidden sm:table-cell whitespace-nowrap">{{ $sub->created_at->format('d/m/Y') }}</td>
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-5 py-3 text-xs text-text-secondary hidden sm:table-cell whitespace-nowrap">{{ $sub->created_at->timezone('Asia/Jakarta')->format('d/m/Y') }}</td>
+                                <td class="px-5 py-3 text-right">
                                     <div class="flex items-center justify-end gap-3">
-                                        <a href="{{ route('submissions.show', $sub) }}" class="text-primary hover:text-primary-hover font-bold">Lihat</a>
-                                        @if($sub->status === \App\Enums\SubmissionStatus::APPROVED)
-                                            <form action="{{ route('submissions.confirm', $sub) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button type="submit" class="text-warning hover:text-amber-800 font-bold transition-colors" onclick="return confirm('Pastikan draf sertifikat sudah sesuai. Lanjutkan konfirmasi?')">
-                                                    Konfirmasi Data
-                                                </button>
-                                            </form>
-                                        @elseif($sub->status === \App\Enums\SubmissionStatus::DONE)
+                                        <a href="{{ route('submissions.show', $sub) }}" class="text-xs font-bold text-primary hover:underline">Detail</a>
+                                        @if($sub->status === \App\Enums\SubmissionStatus::DONE)
                                             <a href="{{ route('submissions.download-ec', $sub) }}" class="text-success hover:text-green-800 font-bold transition-colors flex items-center gap-1">
                                                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                                Sertifikat
+                                                Unduh
                                             </a>
                                         @endif
                                     </div>

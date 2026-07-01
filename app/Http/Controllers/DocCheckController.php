@@ -20,8 +20,10 @@ class DocCheckController extends Controller
 
     public function index()
     {
-        $submissions = Submission::whereIn('status', [
-            SubmissionStatus::NEW_PROPOSAL,
+        $this->authorize('viewAnyDocCheck', Submission::class);
+
+        $submissions = Submission::where('secretary_id', auth()->id())->whereIn('status', [
+            SubmissionStatus::PROCESS,
             SubmissionStatus::REVISED
         ])->with('student', 'documents')->latest()->get();
         return view('doccheck.index', compact('submissions'));
@@ -29,17 +31,30 @@ class DocCheckController extends Controller
 
     public function show(Submission $submission)
     {
+        $this->authorize('viewDocCheck', $submission);
+
         $submission->load(['student', 'documents', 'statusHistories.changer']);
         return view('doccheck.show', compact('submission'));
     }
 
     public function approve(Request $request, Submission $submission)
     {
-        if ($submission->status !== SubmissionStatus::NEW_PROPOSAL && $submission->status !== SubmissionStatus::REVISED) {
-            return back()->with('error', 'Status tidak tepat.');
+        $this->authorize('approveDocCheck', $submission);
+
+        if ($submission->status !== SubmissionStatus::PROCESS) {
+            $this->workflow->transition($submission, SubmissionStatus::PROCESS, $request->user(), 'Dokumen dinyatakan lengkap dan masuk tahap proses');
+        } else {
+            \App\Models\ActivityLog::create([
+                'user_id' => $request->user()->id,
+                'submission_id' => $submission->id,
+                'old_status' => $submission->status->value,
+                'new_status' => $submission->status->value,
+                'description' => 'Dokumen dinyatakan lengkap dan diverifikasi.',
+            ]);
         }
-        $this->workflow->transition($submission, SubmissionStatus::PROCESS, $request->user(), 'Dokumen dinyatakan lengkap dan masuk tahap proses');
         
+        $submission->assignments()->update(['status' => 'ASSIGNED']);
+
         $response = redirect()->route('doccheck.index')->with('success', 'Dokumen diterima.');
 
         $submissionId = $submission->id;
@@ -52,11 +67,11 @@ class DocCheckController extends Controller
 
     public function returnToDraft(Request $request, Submission $submission)
     {
+        $this->authorize('returnDocCheck', $submission);
+
         $request->validate(['note' => 'required|string|max:2000']);
-        if ($submission->status !== SubmissionStatus::NEW_PROPOSAL && $submission->status !== SubmissionStatus::REVISED) {
-            return back()->with('error', 'Status tidak tepat.');
-        }
-        $this->workflow->transition($submission, SubmissionStatus::RESUBMISSION, $request->user(), $request->note);
+
+        $this->workflow->transition($submission, SubmissionStatus::REVISION_REQUIRED, $request->user(), $request->note);
         
         $response = redirect()->route('doccheck.index')->with('success', 'Proposal ditolak.');
 
@@ -69,4 +84,3 @@ class DocCheckController extends Controller
         return $response;
     }
 }
-

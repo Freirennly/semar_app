@@ -68,7 +68,7 @@
                                 {{ $message }}
                             </p>
                             <span class="text-[10px] text-gray-400 mt-2 block">
-                                {{ $notification->created_at->diffForHumans() }}
+                                {{ $notification->created_at->timezone('Asia/Jakarta')->diffForHumans() }}
                             </span>
                         </div>
                     </div>

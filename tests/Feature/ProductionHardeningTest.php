@@ -270,14 +270,14 @@ class ProductionHardeningTest extends TestCase
         $workflow->transition($submission, SubmissionStatus::APPROVED, $secretariat);
         Notification::assertSentTo($student, ProposalApproved::class);
 
-        // 4. APPROVED_WITH_REVISION -> ProposalRevisionRequested
+        // 4. REVISION_REQUIRED -> ProposalRevisionRequested
         $submission->status = SubmissionStatus::ON_REVIEW;
         $submission->save();
-        $workflow->transition($submission, SubmissionStatus::APPROVED_WITH_REVISION, $secretariat);
+        $workflow->transition($submission, SubmissionStatus::REVISION_REQUIRED, $secretariat);
         Notification::assertSentTo($student, ProposalRevisionRequested::class);
 
         // 5. WAITING_SIGNATURE -> EcWaitingSignature
-        $submission->status = SubmissionStatus::APPROVED;
+        $submission->status = SubmissionStatus::WAITING_STUDENT_CONFIRMATION;
         $submission->ec_number = 'EC-999';
         $submission->signatory_id = $ketua->id;
         $submission->confirmed_title = 'Confirmed';

@@ -78,7 +78,7 @@
     </div>
 
     {{-- MODAL ADD TEMPLATE --}}
-    <div id="addModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="addModal" class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl border border-border w-full max-w-lg shadow-xl overflow-hidden p-6">
             <h3 class="text-base font-bold text-text mb-4">Tambah Template Baru</h3>
             <form action="{{ route('admin.templates.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
@@ -124,7 +124,7 @@
     </div>
 
     {{-- MODAL EDIT TEMPLATE --}}
-    <div id="editModal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="editModal" class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl border border-border w-full max-w-lg shadow-xl overflow-hidden p-6">
             <h3 class="text-base font-bold text-text mb-4">Edit Data Template</h3>
             <form id="editForm" method="POST" enctype="multipart/form-data" class="space-y-4">

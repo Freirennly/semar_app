@@ -222,11 +222,12 @@
 
     <div class="report-title">LAPORAN ANALISIS DAN STATISTIK PENELITIAN</div>
     <div class="report-period">
-        Periode: 
-        @if($startDate || $endDate)
-            {{ $startDate ? \Carbon\Carbon::parse($startDate)->format('d M Y') : 'Awal' }}
-            s.d
-            {{ $endDate ? \Carbon\Carbon::parse($endDate)->format('d M Y') : 'Sekarang' }}
+        @if(request('year') || request('month') || request('status') || request('type'))
+            Filter: 
+            {{ request('year') ? 'Tahun ' . request('year') : '' }}
+            {{ request('month') ? 'Bulan ' . request('month') : '' }}
+            {{ request('status') ? 'Status: ' . request('status') : '' }}
+            {{ request('type') ? 'Jenis: ' . request('type') : '' }}
         @else
             Kumulatif Semua Data
         @endif
@@ -236,131 +237,60 @@
     <div class="section-title">I. Ringkasan Statistik Utama</div>
     <div class="stats-grid">
         <div class="stats-card">
-            <div class="stats-label">Total Pengajuan</div>
+            <div class="stats-label">Total Proposal</div>
             <div class="stats-value">{{ number_format($metrics['total']) }}</div>
         </div>
         <div class="stats-card">
-            <div class="stats-label">Total Selesai</div>
+            <div class="stats-label">Proposal Aktif</div>
+            <div class="stats-value" style="color: #463ee3;">{{ number_format($metrics['active']) }}</div>
+        </div>
+        <div class="stats-card">
+            <div class="stats-label">Proposal Selesai</div>
             <div class="stats-value" style="color: #16a34a;">{{ number_format($metrics['done']) }}</div>
         </div>
         <div class="stats-card">
-            <div class="stats-label">Sedang Diproses</div>
-            <div class="stats-value" style="color: #ea580c;">{{ number_format($metrics['processed']) }}</div>
-        </div>
-        <div class="stats-card">
-            <div class="stats-label">Ditolak</div>
+            <div class="stats-label">Proposal Ditolak</div>
             <div class="stats-value" style="color: #dc2626;">{{ number_format($metrics['rejected']) }}</div>
         </div>
     </div>
 
-    {{-- Analisis Visual / Grafik Status --}}
+    {{-- Distribusi Status Pengajuan --}}
     <div class="section-title">II. Distribusi Status Pengajuan</div>
-    <table class="chart-table">
-        <tbody>
-            @forelse($statusDistribution as $status => $count)
-                @php
-                    $enum = \App\Enums\SubmissionStatus::tryFrom($status);
-                    $statusLabel = $enum ? $enum->label() : str_replace('_', ' ', $status);
-                    $percent = $metrics['total'] > 0 ? ($count / $metrics['total'] * 100) : 0;
-                @endphp
-                <tr>
-                    <td class="chart-label">{{ $statusLabel }}</td>
-                    <td class="chart-bar-container">
-                        <div class="chart-bar-outer">
-                            <div class="chart-bar-inner" style="width: {{ $percent }}%"></div>
-                        </div>
-                    </td>
-                    <td class="chart-value">{{ $count }} ({{ round($percent) }}%)</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="3" style="text-align: center; color: #64748b; font-style: italic;">Tidak ada data status pengajuan.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    {{-- Tren Keputusan --}}
-    <div class="section-title">III. Tren Keputusan Akhir</div>
-    <table class="chart-table">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 70%;">Status Pengajuan</th>
+                <th style="width: 30%; text-align: right;">Jumlah</th>
+            </tr>
+        </thead>
         <tbody>
             @php
-                $totalDecisions = array_sum($decisionStats);
+                $targetStatuses = [
+                    \App\Enums\SubmissionStatus::NEW_PROPOSAL,
+                    \App\Enums\SubmissionStatus::PROCESS,
+                    \App\Enums\SubmissionStatus::ON_REVIEW,
+                    \App\Enums\SubmissionStatus::REVISION_REQUIRED,
+                    \App\Enums\SubmissionStatus::REVISED,
+                    \App\Enums\SubmissionStatus::APPROVED,
+                    \App\Enums\SubmissionStatus::WAITING_SIGNATURE,
+                    \App\Enums\SubmissionStatus::DONE,
+                    \App\Enums\SubmissionStatus::REJECTED,
+                ];
             @endphp
-            @foreach($decisionStats as $dec => $count)
+            @foreach($targetStatuses as $statusCase)
                 @php
-                    $decLabel = match($dec) {
-                        'APPROVED' => 'Disetujui',
-                        'APPROVED_WITH_REVISION' => 'Disetujui dengan Revisi',
-                        'REJECTED' => 'Ditolak',
-                    };
-                    $percent = $totalDecisions > 0 ? ($count / $totalDecisions * 100) : 0;
+                    $count = $statusDistribution[$statusCase->value] ?? 0;
                 @endphp
                 <tr>
-                    <td class="chart-label">{{ $decLabel }}</td>
-                    <td class="chart-bar-container">
-                        <div class="chart-bar-outer">
-                            <div class="chart-bar-inner" style="width: {{ $percent }}%"></div>
-                        </div>
-                    </td>
-                    <td class="chart-value">{{ $count }} ({{ round($percent) }}%)</td>
+                    <td class="chart-label">{{ $statusCase->label() }}</td>
+                    <td class="chart-value">{{ number_format($count) }}</td>
                 </tr>
             @endforeach
         </tbody>
     </table>
 
-    {{-- Analisis Tren Bulanan --}}
-    <div class="section-title" style="page-break-before: always;">IV. Tren Pengajuan per Bulan (6 Bulan Terakhir)</div>
-    <table class="chart-table">
-        <tbody>
-            @forelse($monthlyTrend as $month => $count)
-                @php
-                    $maxCount = max(max($monthlyTrend), 1);
-                    $percent = ($count / $maxCount) * 100;
-                    $monthName = date('F Y', strtotime($month . '-01'));
-                @endphp
-                <tr>
-                    <td class="chart-label">{{ $monthName }}</td>
-                    <td class="chart-bar-container">
-                        <div class="chart-bar-outer">
-                            <div class="chart-bar-inner" style="width: {{ $percent }}%"></div>
-                        </div>
-                    </td>
-                    <td class="chart-value">{{ $count }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="3" style="text-align: center; color: #64748b; font-style: italic;">Tidak ada data tren pengajuan.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    {{-- Aktivitas Reviewer --}}
-    <div class="section-title">V. Aktivitas Penilaian Reviewer</div>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th style="width: 70%;">Nama Reviewer</th>
-                <th style="width: 30%;">Jumlah Review Diselesaikan</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($reviewerStats as $rev)
-                <tr>
-                    <td><strong>{{ $rev->name }}</strong></td>
-                    <td>{{ $rev->reviews_count }} Penilaian</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="2" style="text-align: center; color: #64748b; font-style: italic;">Tidak ada data reviewer aktif.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
     {{-- Tabel Detail --}}
-    <div class="section-title" style="page-break-before: always;">VI. Tabel Detail Usulan Penelitian</div>
+    <div class="section-title" style="page-break-before: always;">III. Tabel Detail Usulan Penelitian</div>
     <table class="data-table">
         <thead>
             <tr>
@@ -378,11 +308,11 @@
                     <td><strong>{{ \Illuminate\Support\Str::title($sub->title) }}</strong></td>
                     <td>{{ optional($sub->student)->name ?? '-' }}</td>
                     <td>{{ $sub->status ? \App\Enums\SubmissionStatus::tryFrom($sub->status->value ?? $sub->status)?->label() : '-' }}</td>
-                    <td>{{ $sub->created_at->format('d/m/Y') }}</td>
+                    <td>{{ $sub->created_at->timezone('Asia/Jakarta')->format('d/m/Y') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" style="text-align: center; color: #64748b; font-style: italic;">Tidak ada data pengajuan dalam range filter.</td>
+                    <td colspan="5" style="text-align: center; color: #64748b; font-style: italic;">Tidak ada data pengajuan dalam filter ini.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -392,12 +322,12 @@
     <div class="footer-signatures">
         <div class="signature-box">
             <div class="signature-title">Dicetak Pada</div>
-            <div style="font-weight: 600; margin-top: 5px;">{{ \Carbon\Carbon::now()->translatedFormat('d F Y H:i') }} WIB</div>
+            <div style="font-weight: 600; margin-top: 5px;">{{ \Carbon\Carbon::now()->timezone('Asia/Jakarta')->translatedFormat('d F Y H:i') }} WIB</div>
         </div>
         <div class="signature-box">
             <div class="signature-title">Penanggung Jawab Sistem SEMAR</div>
             <div class="signature-space"></div>
-            <div class="signature-name">{{ auth()->user()->name }}</div>
+            <div class="signature-name">{{ auth()->user()->name ?? 'Administrator' }}</div>
             <div class="signature-nip">Administrator LPPM</div>
         </div>
     </div>

@@ -43,6 +43,7 @@ class ProposalRevisionRequested extends Notification implements ShouldQueue
             'message' => 'Anda diminta untuk melakukan revisi pada proposal: "' . $this->submission->title . '"',
             'submission_id' => $this->submission->id,
             'url' => route('submissions.show', $this->submission),
+            'action_url' => route('submissions.show', $this->submission),
             'created_at' => now()->toIso8601String(),
         ];
     }

@@ -12,28 +12,20 @@
 
     {{-- Validation Errors --}}
     @if($errors->any())
-        <div class="mb-4 px-4 py-3 rounded-xl border text-sm"
-             style="background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.2); color:#b91c1c;">
+        <x-alert type="error" class="mb-4">
             <ul class="list-disc list-inside space-y-1">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-        </div>
+        </x-alert>
     @endif
 
     {{-- Usage Warning --}}
     @if($usageCount > 0)
-        <div class="mb-4 px-4 py-3 rounded-xl border text-sm"
-             style="background:rgba(234,179,8,0.08); border-color:rgba(234,179,8,0.25); color:#92400e;">
-            <div class="flex items-start gap-2">
-                <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                <div>
-                    <strong>Template ini sudah digunakan.</strong>
-                    <p class="mt-0.5">Terdapat <strong>{{ $usageCount }}</strong> dokumen pada <strong>{{ $submissionCount }}</strong> pengajuan yang menggunakan template ini. Kode template tidak dapat diubah.</p>
-                </div>
-            </div>
-        </div>
+        <x-alert type="warning" title="Template ini sudah digunakan." class="mb-4">
+            Terdapat <strong>{{ $usageCount }}</strong> dokumen pada <strong>{{ $submissionCount }}</strong> pengajuan yang menggunakan template ini. Kode template tidak dapat diubah.
+        </x-alert>
     @endif
 
     <div class="bg-white border border-border rounded-xl p-6 max-w-2xl">

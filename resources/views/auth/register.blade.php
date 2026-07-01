@@ -3,141 +3,108 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Daftar — SEMAR (Komisi Etik Penelitian)</title>
-    <meta name="description" content="Daftar akun SEMAR — Sistem Manajemen Pengajuan & Validasi Penelitian">
+    <title>Daftar - SEMAR (Komite Etik Penelitian)</title>
+    <meta name="description" content="Daftar akun SEMAR — Sistem Manajemen Etik Riset">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans bg-[#F5F5F5] min-h-screen relative overflow-hidden flex items-center justify-center p-6">
-    <div class="fixed -top-32 -left-32 w-80 h-80 rounded-full bg-[#E6E6FA] opacity-70"></div>
-    <div class="fixed -bottom-48 -right-48 w-96 h-96 rounded-full bg-[#B0E0E6] opacity-50"></div>
-
+<body class="font-sans bg-bg min-h-screen flex items-center justify-center p-6">
     <div class="w-full max-w-5xl mx-auto">
-        <main class="grid grid-cols-1 md:grid-cols-2 rounded-2xl shadow-xl bg-white overflow-hidden relative z-10">
+        <main class="grid grid-cols-1 md:grid-cols-2 rounded-2xl border border-border bg-white overflow-hidden shadow-sm">
             
-            <div class="p-8 md:p-12 flex flex-col justify-center relative">
-                
-                <header class="absolute top-8 left-10 flex items-center hidden sm:flex">
-                    <svg class="w-7 h-7 text-[#463EE3]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    <h1 class="text-xl font-bold text-[#463EE3] ml-2 tracking-tight">SEMAR</h1>
+            <!-- Form Section -->
+            <div class="p-10 md:p-12 flex flex-col justify-center relative">
+                <header class="absolute top-8 left-10 flex items-center gap-2">
+                    <span class="text-xl font-bold text-primary tracking-tight">SEMAR</span>
                 </header>
 
-                <div class="mt-8 mb-6">
-                    <div class="flex items-center space-x-8 border-b border-gray-100 mb-8 pt-6 sm:pt-0">
-                        <a href="{{ route('login') }}" class="text-2xl font-semibold text-gray-400 hover:text-[#463EE3] pb-2 transition-colors">Login</a>
-                        <h2 class="text-2xl font-bold text-[#463EE3] border-b-2 border-[#463EE3] pb-2">Sign up</h2>
+                <div class="mt-12 mb-8">
+                    <div class="flex items-center space-x-8 mb-8">
+                        <a href="{{ route('login') }}" class="text-2xl font-semibold text-text-muted hover:text-primary pb-2 transition-colors">Masuk</a>
+                        <h2 class="text-2xl font-bold text-text border-b-2 border-primary pb-2">Daftar</h2>
                     </div>
 
                     @if($errors->any())
-                    <div class="mb-5 bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded-r-lg text-sm" role="alert">
-                        <ul class="list-disc list-inside">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+                        <x-alert type="error" class="mb-5">
+                            <ul class="list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </x-alert>
                     @endif
 
                     <form method="POST" action="{{ route('register') }}">
                         @csrf
                         
-                        <div class="relative mb-4">
-                            <label for="name" class="sr-only">Nama Lengkap</label>
-                            <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                </svg>
-                            </div>
+                        <div class="relative mb-5">
+                            <label for="name" class="block text-sm font-semibold text-text mb-2">Nama Lengkap</label>
                             <input type="text" name="name" id="name" value="{{ old('name') }}" required autofocus
-                                class="w-full rounded-full bg-[#F5F5F5] px-12 py-3 border-none text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#87CEEB] transition-shadow"
-                                placeholder="Nama Lengkap">
+                                class="w-full rounded-lg bg-bg px-4 py-3 border border-border text-text focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                                placeholder="Nama Lengkap dengan Gelar">
                         </div>
 
-                        <div class="relative mb-4">
-                            <label for="email" class="sr-only">Email</label>
-                            <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
+                        <div class="relative mb-5">
+                            <label for="email" class="block text-sm font-semibold text-text mb-2">Email</label>
                             <input type="email" name="email" id="email" value="{{ old('email') }}" required
-                                class="w-full rounded-full bg-[#F5F5F5] px-12 py-3 border-none text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#87CEEB] transition-shadow"
+                                class="w-full rounded-lg bg-bg px-4 py-3 border border-border text-text focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                                 placeholder="nama@semar.ac.id">
                         </div>
 
-                        <div class="relative mb-4">
-                            <label for="password" class="sr-only">Password</label>
-                            <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                </svg>
-                            </div>
+                        <div class="relative mb-5">
+                            <label for="password" class="block text-sm font-semibold text-text mb-2">Kata Sandi</label>
                             <input type="password" name="password" id="password" required
-                                class="w-full rounded-full bg-[#F5F5F5] px-12 py-3 border-none text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#87CEEB] transition-shadow"
-                                placeholder="Password (Min. 8 Karakter)">
+                                class="w-full rounded-lg bg-bg px-4 py-3 border border-border text-text focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                                placeholder="Minimal 8 Karakter">
                         </div>
 
-                        <div class="relative mb-6">
-                            <label for="password_confirmation" class="sr-only">Konfirmasi Password</label>
-                            <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                                </svg>
-                            </div>
+                        <div class="relative mb-8">
+                            <label for="password_confirmation" class="block text-sm font-semibold text-text mb-2">Konfirmasi Kata Sandi</label>
                             <input type="password" name="password_confirmation" id="password_confirmation" required
-                                class="w-full rounded-full bg-[#F5F5F5] px-12 py-3 border-none text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#87CEEB] transition-shadow"
-                                placeholder="Konfirmasi Password">
+                                class="w-full rounded-lg bg-bg px-4 py-3 border border-border text-text focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                                placeholder="Ketik ulang kata sandi">
                         </div>
 
                         <div class="flex items-center justify-end gap-3 mt-4">
-                            <a href="{{ route('landing') }}" class="rounded-full px-6 py-3 border border-gray-300 text-gray-600 font-semibold text-sm hover:bg-gray-50 hover:text-[#463EE3] hover:border-[#463EE3] focus:outline-none focus:ring-4 focus:ring-gray-100 transition-all inline-flex items-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                                </svg>
-                                Kembali
+                            <a href="{{ route('landing') }}" class="btn-outline px-6 py-3">
+                                Kembali ke Beranda
                             </a>
 
-                            <button type="submit" class="rounded-full px-10 py-3 bg-[#463EE3] text-white font-semibold text-sm shadow-md hover:bg-opacity-90 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-[#E6E6FA] transition-all">
+                            <button type="submit" class="btn-primary px-10 py-3">
                                 Buat Akun
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <p class="mt-auto pt-4 text-xs text-center text-gray-400">&copy; {{ date('Y') }} Universitas Ultramen Surakarta. All rights reserved.</p>
+                <p class="mt-auto pt-4 text-xs text-center text-text-muted">&copy; {{ date('Y') }} Universitas Ultramen. Hak cipta dilindungi.</p>
             </div>
 
-            <div class="hidden md:flex relative bg-gradient-to-br from-[#B0E0E6] to-[#87CEEB] items-center justify-center p-12">
-                <div class="absolute inset-0 overflow-hidden">
-                    <svg class="absolute top-0 right-0 w-full h-full opacity-20" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <path d="M0,0 Q50,100 100,0 V100 H0 Z" fill="#E6E6FA"/>
-                    </svg>
+            <!-- Flat Information Section (Replaces Gradient) -->
+            <div class="hidden md:flex flex-col items-start justify-center p-12 bg-surface border-l border-border">
+                <div class="mb-8">
+                    <div class="w-16 h-16 rounded-xl bg-white border border-border flex items-center justify-center text-primary mb-6">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-text mb-4 leading-snug">Pendaftaran Pengguna Sistem</h3>
+                    <p class="text-base text-text-secondary leading-relaxed">
+                        Bagi pengusul dan peneliti yang belum memiliki kredensial Single Sign-On (SSO) institusi, Anda dapat mendaftarkan akun secara mandiri untuk menggunakan layanan pendaftaran kelayakan etik.
+                    </p>
                 </div>
 
-                <div class="absolute top-10 right-10 text-right z-20">
-                    <h3 class="text-[#463EE3] font-bold text-lg opacity-80">Registrasi Peneliti</h3>
-                    <p class="text-[#463EE3] text-sm opacity-60">Komisi Etik Penelitian</p>
-                </div>
-                
-                <div class="relative z-10 w-full max-w-sm drop-shadow-2xl transform hover:scale-105 transition-transform duration-500">
-                    <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
-                        <circle cx="250" cy="250" r="180" fill="#F5F5F5" fill-opacity="0.2"/>
-                        <circle cx="250" cy="250" r="140" fill="#E6E6FA" fill-opacity="0.4"/>
-                        <rect x="150" y="110" width="200" height="280" rx="20" fill="#F5F5F5" stroke="#463EE3" stroke-width="12"/>
-                        <rect x="225" y="125" width="50" height="15" rx="7.5" fill="#B0E0E6"/>
-                        <circle cx="250" cy="205" r="45" fill="#87CEEB"/>
-                        <path d="M250 180C261.046 180 270 188.954 270 200C270 211.046 261.046 220 250 220C238.954 220 230 211.046 230 200C230 188.954 238.954 180 250 180ZM210 245C210 230 225 220 250 220C275 220 290 230 290 245V250H210V245Z" fill="#463EE3"/>
-                        <line x1="190" y1="280" x2="310" y2="280" stroke="#B0E0E6" stroke-width="10" stroke-linecap="round"/>
-                        <line x1="210" y1="315" x2="290" y2="315" stroke="#B0E0E6" stroke-width="10" stroke-linecap="round"/>
-                        <circle cx="340" cy="340" r="40" fill="#463EE3"/>
-                        <path d="M340 315V365M315 340H365" stroke="#F5F5F5" stroke-width="12" stroke-linecap="round"/>
-                        <path d="M120 180L125 195L140 200L125 205L120 220L115 205L100 200L115 195Z" fill="#F5F5F5"/>
-                        <path d="M380 120L383 130L393 133L383 136L380 146L377 136L367 133L377 130Z" fill="#F5F5F5"/>
-                    </svg>
+                <div class="grid grid-cols-2 gap-4 mt-8 w-full">
+                    <div class="p-4 border border-border rounded-lg bg-white">
+                        <h4 class="text-sm font-bold text-text mb-1">Verifikasi Email</h4>
+                        <p class="text-xs text-text-secondary">Pastikan email aktif untuk notifikasi.</p>
+                    </div>
+                    <div class="p-4 border border-border rounded-lg bg-white">
+                        <h4 class="text-sm font-bold text-text mb-1">Keamanan Data</h4>
+                        <p class="text-xs text-text-secondary">Data peneliti disimpan dalam server aman.</p>
+                    </div>
                 </div>
             </div>
             

@@ -84,12 +84,12 @@ class DocCheckService
             ];
         }
 
-        // In shadow mode, legacy will transition to RESUBMISSION.
+        // In shadow mode, legacy will transition to REVISION_REQUIRED.
         // Valid previous statuses were NEW_PROPOSAL or REVISED.
         $validStatuses = [
             \App\Enums\SubmissionStatus::NEW_PROPOSAL,
             \App\Enums\SubmissionStatus::REVISED,
-            \App\Enums\SubmissionStatus::RESUBMISSION,
+            \App\Enums\SubmissionStatus::REVISION_REQUIRED,
         ];
 
         $isValid = in_array($submission->status, $validStatuses);
@@ -110,7 +110,7 @@ class DocCheckService
             'computed_state' => [
                 'submission_id' => $submissionId,
                 'current_status' => $submission->status->value,
-                'target_status' => \App\Enums\SubmissionStatus::RESUBMISSION->value,
+                'target_status' => \App\Enums\SubmissionStatus::REVISION_REQUIRED->value,
                 'note' => $note,
             ]
         ];

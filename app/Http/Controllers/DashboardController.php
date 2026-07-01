@@ -38,19 +38,19 @@ class DashboardController extends Controller
                 SubmissionStatus::PROCESS,
                 SubmissionStatus::ON_REVIEW,
                 SubmissionStatus::REVISED,
+                SubmissionStatus::WAITING_STUDENT_CONFIRMATION,
                 SubmissionStatus::WAITING_SIGNATURE
             ])->count(), 'color' => 'violet'],
-            ['label' => 'Perlu Revisi', 'value' => $submissions->where('status', SubmissionStatus::RESUBMISSION)->count(), 'color' => 'amber'],
+            ['label' => 'Perlu Revisi', 'value' => $submissions->where('status', SubmissionStatus::REVISION_REQUIRED)->count(), 'color' => 'amber'],
             ['label' => 'Selesai', 'value' => $submissions->whereIn('status', [
                 SubmissionStatus::APPROVED,
-                SubmissionStatus::APPROVED_WITH_REVISION,
                 SubmissionStatus::REJECTED,
                 SubmissionStatus::DONE
             ])->count(), 'color' => 'emerald'],
         ];
 
         $waitingEcConfirmation = $user->submissions()
-            ->where('status', SubmissionStatus::APPROVED)
+            ->where('status', SubmissionStatus::WAITING_STUDENT_CONFIRMATION)
             ->whereNotNull('ec_number')
             ->latest()
             ->get();
@@ -106,12 +106,22 @@ class DashboardController extends Controller
     {
         $assignments = Assignment::where('reviewer_id', $user->id)->with('submission.student')->latest()->get();
         $reviews = Review::where('reviewer_id', $user->id)->get();
+        
+        $upcomingFullboard = \App\Models\FullboardMeeting::with('submission')
+            ->where('scheduled_at', '>=', now())
+            ->whereHas('submission.reviews', function ($q) use ($user) {
+                $q->where('reviewer_id', $user->id);
+            })
+            ->orderBy('scheduled_at', 'asc')
+            ->limit(5)
+            ->get();
+
         $metrics = [
             ['label' => 'Ditugaskan', 'value' => $assignments->count(), 'color' => 'blue'],
             ['label' => 'Belum Direview', 'value' => $assignments->count() - $reviews->whereNotNull('submitted_at')->count(), 'color' => 'amber'],
             ['label' => 'Selesai', 'value' => $reviews->whereNotNull('submitted_at')->count(), 'color' => 'emerald'],
         ];
-        return view('dashboard.reviewer', compact('assignments', 'metrics'));
+        return view('dashboard.reviewer', compact('assignments', 'metrics', 'upcomingFullboard'));
     }
 
     private function ketua()
@@ -133,27 +143,35 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        $upcomingFullboard = \App\Models\FullboardMeeting::with('submission')
+            ->where('scheduled_at', '>=', now())
+            ->orderBy('scheduled_at', 'asc')
+            ->limit(5)
+            ->get();
+
         $metrics = [
             ['label' => 'Menunggu Tanda Tangan', 'value' => $waitingSignature->count(), 'color' => 'amber'],
             ['label' => 'Total Pengajuan Aktif', 'value' => Submission::whereNotIn('status', [SubmissionStatus::REJECTED, SubmissionStatus::DONE])->count(), 'color' => 'violet'],
         ];
-        return view('dashboard.ketua', compact('waitingSignature', 'recentlySigned', 'metrics', 'verifiedLogs'));
+        return view('dashboard.ketua', compact('waitingSignature', 'recentlySigned', 'metrics', 'verifiedLogs', 'upcomingFullboard'));
     }
 
     private function sekretariat()
     {
-        $submitted = Submission::whereIn('status', [
-            SubmissionStatus::NEW_PROPOSAL,
+        $userId = auth()->id();
+
+        $submitted = Submission::where('secretary_id', $userId)->whereIn('status', [
+            SubmissionStatus::PROCESS,
             SubmissionStatus::REVISED
         ])->with('student')->latest()->get();
 
-        $pendingDecision = Submission::where('status', SubmissionStatus::ON_REVIEW)
+        $pendingDecision = Submission::where('secretary_id', $userId)->where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'reviews.reviewer', 'assignments.reviewer')->latest()->get();
 
-        $needAssign = Submission::where('status', SubmissionStatus::PROCESS)
+        $needAssign = Submission::where('secretary_id', $userId)->where('status', SubmissionStatus::PROCESS)
             ->whereDoesntHave('assignments')->with('student')->latest()->get();
 
-        $assigned = Submission::where('status', SubmissionStatus::ON_REVIEW)
+        $assigned = Submission::where('secretary_id', $userId)->where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'assignments.reviewer')->latest()->get();
 
         $metrics = [
