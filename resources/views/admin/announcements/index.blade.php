@@ -1,8 +1,8 @@
 <x-layouts.app :title="'Manajemen Pengumuman'">
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-12 animate-fade-in">
         <div>
-            <h2 class="text-xl font-bold text-text">Manajemen Pengumuman</h2>
-            <p class="text-sm text-text-secondary mt-1">Kelola informasi publik dan pengumuman sistem.</p>
+            <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Manajemen Pengumuman</h1>
+            <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Kelola informasi publik dan pengumuman sistem.</p>
         </div>
         
         <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -25,11 +25,11 @@
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
-                    <tr class="text-left text-text-muted text-[10px] uppercase tracking-widest border-b border-border bg-bg/30">
-                        <th class="px-6 py-4 font-bold min-w-[200px]">Judul Pengumuman</th>
-                        <th class="px-6 py-4 font-bold">Tanggal Publish</th>
-                        <th class="px-6 py-4 font-bold">Status</th>
-                        <th class="px-6 py-4 font-bold text-right">Aksi</th>
+                    <tr class="text-left border-b border-border bg-bg/30">
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] min-w-[200px]">Judul Pengumuman</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Tanggal Publish</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Status</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">

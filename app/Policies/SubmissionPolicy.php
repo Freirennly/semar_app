@@ -27,6 +27,13 @@ class SubmissionPolicy
     {
         return $user->hasPermissionTo('submission.update_own_draft')
             && $submission->student_id === $user->id
-            && $submission->status === SubmissionStatus::RESUBMISSION;
+            && in_array($submission->status, [SubmissionStatus::DRAFT, SubmissionStatus::RESUBMISSION]);
+    }
+    
+    public function delete(User $user, Submission $submission): bool
+    {
+        return $user->hasPermissionTo('submission.update_own_draft')
+            && $submission->student_id === $user->id
+            && $submission->status === SubmissionStatus::DRAFT;
     }
 }

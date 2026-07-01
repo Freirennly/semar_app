@@ -1,15 +1,15 @@
 <x-layouts.app :title="'Dashboard Reviewer'">
     {{-- Header Section --}}
-    <div class="mb-6">
-        <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Dashboard Reviewer</h1>
-        <p class="text-sm text-text-secondary mt-1.5">Kelola penugasan review etik penelitian Anda secara profesional.</p>
+    <div class="mb-12">
+        <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Dashboard Reviewer</h1>
+        <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Kelola penugasan review etik penelitian Anda secara profesional.</p>
     </div>
 
     {{-- Statistik Review Pribadi (Flat cards, no global stats) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
         @foreach($metrics as $m)
             <div class="bg-white border border-border p-5 rounded-xl">
-                <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">{{ $m['label'] }}</p>
+                <p class="text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">{{ $m['label'] }}</p>
                 <p class="text-[28px] font-bold text-text mt-2 leading-none">{{ $m['value'] }}</p>
             </div>
         @endforeach
@@ -21,11 +21,10 @@
     @endphp
 
     {{-- Main Content Grid --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Left: Active Tasks (70% or lg:col-span-2) --}}
-        <div class="lg:col-span-2 bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-6">
+        <div class="lg:col-span-7 bg-white border border-border rounded-xl flex flex-col overflow-hidden">
             <div class="px-6 py-4 border-b border-border bg-white">
-                <h2 class="text-[20px] font-semibold text-text">Tugas Review Aktif</h2>
+                <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Tugas Review Aktif</h2>
             </div>
             
             @if($activeAssignments->isEmpty())
@@ -40,18 +39,18 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                <th class="px-6 py-4 font-semibold">Pengusul</th>
-                                <th class="px-6 py-4 font-semibold">Batas Waktu</th>
-                                <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                            <tr class="text-left border-b border-border bg-slate-50/70">
+                                <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan</th>
+                                <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Pengusul</th>
+                                <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Batas Waktu</th>
+                                <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach($activeAssignments as $a)
                                 <tr class="hover:bg-soft-surface/25 transition-colors">
                                     <td class="px-6 py-4">
-                                        <div class="font-semibold text-text">{{ \Illuminate\Support\Str::title($a->submission->title) }}</div>
+                                        <div class="font-serif text-text">{{ $a->submission->title }}</div>
                                         <div class="text-xs text-text-secondary font-mono mt-0.5">{{ $a->submission->code }}</div>
                                     </td>
                                     <td class="px-6 py-4 text-text-secondary">{{ optional($a->submission->student)->name ?? '-' }}</td>
@@ -72,9 +71,9 @@
         </div>
 
         {{-- Right: Completed Review History (30% or lg:col-span-1) --}}
-        <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+        <div class="lg:col-span-3 bg-white border border-border rounded-xl flex flex-col overflow-hidden">
             <div class="px-6 py-4 border-b border-border bg-white">
-                <h2 class="text-[20px] font-semibold text-text">Riwayat Review</h2>
+                <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Riwayat Review</h2>
             </div>
             
             @if($completedAssignments->isEmpty())
@@ -85,7 +84,7 @@
                 <div class="divide-y divide-border overflow-y-auto max-h-[400px]">
                     @foreach($completedAssignments as $a)
                         <div class="p-4 hover:bg-soft-surface/20 transition-colors">
-                            <p class="text-xs font-semibold text-text line-clamp-2">{{ \Illuminate\Support\Str::title($a->submission->title) }}</p>
+                            <p class="text-xs font-serif text-text line-clamp-2">{{ $a->submission->title }}</p>
                             <div class="flex items-center justify-between mt-2.5 text-[10px] text-text-secondary">
                                 <span class="font-mono">{{ $a->submission->code }}</span>
                                 <span class="font-bold text-success">Selesai Dinilai</span>

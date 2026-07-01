@@ -21,7 +21,10 @@ class ProposalController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Submission::with('student')->latest();
+        // 🟢 FIX: Menyembunyikan status DRAFT agar tidak mengotori antrean admin/sekretariat/ketua
+        $query = Submission::with('student')
+            ->where('status', '!=', SubmissionStatus::DRAFT)
+            ->latest();
 
         if ($request->filled('q')) {
             $searchTerm = $request->q;
@@ -201,10 +204,10 @@ class ProposalController extends Controller
             ->first();
 
         if (!$document) {
-            $document = $proposal->documents()->where('type', 'file')->first();
+            $document = $proposal->documents()->where('mime', '!=', 'text/url')->first();
         }
 
-        if (!$document || $document->type !== 'file') {
+        if (!$document || $document->mime === 'text/url') {
             return back()->with('error', 'Berkas proposal utama tidak ditemukan atau hanya berupa link.');
         }
 

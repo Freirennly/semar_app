@@ -1,17 +1,13 @@
 <x-layouts.app :title="'Manajemen Template Dokumen'">
 
     {{-- Page Header --}}
-    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="mb-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in">
         <div>
-            <div class="flex items-center gap-2 mb-1.5">
-                <div class="w-4 h-[2px]" style="background:#463EE3;"></div>
-                <p class="text-[11px] font-bold tracking-widest uppercase" style="color:#463EE3">Administrasi</p>
-            </div>
-            <h1 class="text-2xl font-bold tracking-tight" style="color:#0F0E2E">Manajemen Template Dokumen</h1>
-            <p class="text-sm font-light mt-1" style="color:#5A587A">Kelola template, ketentuan wajib, visibilitas, dan arsip dokumen.</p>
+            <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Manajemen Template Dokumen</h1>
+            <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Kelola template, ketentuan wajib, visibilitas, dan arsip dokumen.</p>
         </div>
         <a href="{{ route('admin.templates.create') }}"
-           class="bg-primary hover:bg-primary-hover text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all inline-flex items-center gap-2 self-start">
+           class="bg-primary hover:bg-primary-hover text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all inline-flex items-center gap-2 self-start shadow-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Tambah Template
         </a>
@@ -32,27 +28,27 @@
     @endif
 
     {{-- Stat Cards --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Total Template</p>
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-[0.05em]">Total Template</p>
             <p class="text-[28px] font-bold text-text mt-2 leading-none">{{ $stats['total'] }}</p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Aktif</p>
-            <p class="text-[28px] font-bold mt-2 leading-none" style="color:#15803d">{{ $stats['active'] }}</p>
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-[0.05em]">Aktif</p>
+            <p class="text-[28px] font-bold mt-2 leading-none text-success">{{ $stats['active'] }}</p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Tersembunyi</p>
-            <p class="text-[28px] font-bold mt-2 leading-none" style="color:#8E8CAD">{{ $stats['hidden'] }}</p>
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-[0.05em]">Tersembunyi</p>
+            <p class="text-[28px] font-bold mt-2 leading-none text-text-muted">{{ $stats['hidden'] }}</p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Diarsipkan</p>
-            <p class="text-[28px] font-bold mt-2 leading-none" style="color:#b91c1c">{{ $stats['archived'] }}</p>
+            <p class="text-xs font-semibold text-text-secondary uppercase tracking-[0.05em]">Diarsipkan</p>
+            <p class="text-[28px] font-bold mt-2 leading-none text-danger">{{ $stats['archived'] }}</p>
         </div>
     </div>
 
     {{-- Search & Filter Bar --}}
-    <div class="bg-white border border-border rounded-xl p-4 mb-4 flex flex-col sm:flex-row gap-3">
+    <div class="bg-white border border-border rounded-xl p-4 mb-12 flex flex-col sm:flex-row gap-3">
         <form method="GET" action="{{ route('admin.templates.index') }}" class="flex-1 flex gap-2">
             <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama atau kode template..."
                    class="flex-1 px-4 py-2 bg-soft-surface border border-border rounded-xl focus:outline-none focus:border-primary text-sm">
@@ -79,13 +75,14 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="bg-soft-surface text-[10px] font-bold text-text-muted uppercase tracking-wider border-b border-border">
-                        <th class="px-5 py-3.5">Kode</th>
-                        <th class="px-5 py-3.5">Nama Template</th>
-                        <th class="px-5 py-3.5 hidden md:table-cell">Ukuran</th>
-                        <th class="px-5 py-3.5">Status</th>
-                        <th class="px-5 py-3.5 hidden lg:table-cell">Penggunaan</th>
-                        <th class="px-5 py-3.5 text-right">Aksi</th>
+                <thead>
+                    <tr class="bg-soft-surface border-b border-border">
+                        <th class="px-5 py-3.5 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode</th>
+                        <th class="px-5 py-3.5 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Nama Template</th>
+                        <th class="px-5 py-3.5 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] hidden md:table-cell">Ukuran</th>
+                        <th class="px-5 py-3.5 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Status</th>
+                        <th class="px-5 py-3.5 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] hidden lg:table-cell">Penggunaan</th>
+                        <th class="px-5 py-3.5 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border text-sm">

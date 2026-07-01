@@ -18,8 +18,6 @@
         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
         Pengajuan Saya
     </a>
-    
-    {{-- UBAH MENU DI SINI --}}
     <a href="{{ route('ethical-clearance.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'ethical-clearance') ? 'bg-primary-light text-primary font-semibold' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Ethical Clearance">
         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-6.75a1.125 1.125 0 00-1.125 1.125v3.375m9 0M9 10.5c.621 0 1.125-.504 1.125-1.125v-3a1.125 1.125 0 00-1.125-1.125H3.75A1.125 1.125 0 002.625 7.5v3c0 .621.504 1.125 1.125 1.125H9zM21.375 7.5v3c0 .621-.504 1.125-1.125 1.125H15c-.621 0-1.125-.504-1.125-1.125v-3c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125z"/></svg>
         Ethical Clearance
@@ -43,6 +41,10 @@
     <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ $r === 'dashboard' ? 'bg-primary-light text-primary font-semibold' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Overview Dashboard">
         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
         Overview
+    </a>
+    <a href="{{ route('chairman.monitoring') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ str_starts_with($r, 'chairman.monitoring') ? 'bg-primary-light text-primary font-semibold' : 'text-text-secondary hover:bg-soft-surface hover:text-primary' }}" aria-label="Pemantauan & Riwayat">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Pemantauan & Riwayat
     </a>
     @endrole
 
@@ -107,20 +109,22 @@
     @endrole
 </nav>
 
-{{-- User footer --}}
-<div class="p-4 border-t border-border bg-surface sticky bottom-0 mt-auto space-y-2">
-    <a href="{{ route('landing') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:bg-soft-surface hover:text-primary transition-colors">
-        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+{{-- Sidebar Footer: 2-Line Actions --}}
+<div class="p-4 border-t border-border bg-surface mt-auto">
+    {{-- Line 1: Kembali ke Beranda (13px, Regular) --}}
+    <a href="{{ route('landing') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-normal text-text-secondary hover:bg-soft-surface hover:text-primary transition-colors">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
         Kembali ke Beranda
     </a>
-    
-    <form method="POST" action="{{ route('logout') }}" class="block w-full">
+
+    {{-- Line 2: Keluar (14px, SemiBold) — 16px spacing from Line 1 --}}
+    <form method="POST" action="{{ route('logout') }}" class="block w-full mt-4">
         @csrf
-        <button type="submit" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-text-secondary hover:bg-danger-bg hover:text-danger w-full transition-colors" aria-label="Keluar dari Sistem">
+        <button type="submit" class="flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] font-semibold text-text-secondary hover:bg-danger-bg hover:text-danger w-full transition-colors" aria-label="Keluar dari Sistem">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
             </svg>
-            Logout
+            Keluar
         </button>
     </form>
 </div>

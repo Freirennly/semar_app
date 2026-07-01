@@ -2,6 +2,7 @@
 @php
 $s = is_string($status) ? $status : $status->value;
 $map = [
+    'DRAFT'                  => ['Draf',                     'text-gray-500'],
     'NEW_PROPOSAL'           => ['Proposal Baru',            'text-blue-600'],
     'PROCESS'                => ['Diproses Sekretariat',      'text-blue-600'],
     'ON_REVIEW'              => ['Sedang Direview',           'text-purple-600'],

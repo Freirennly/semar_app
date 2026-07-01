@@ -1,9 +1,9 @@
 <x-layouts.app :title="'Laporan & Statistik'">
     {{-- Header Section --}}
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-12 animate-fade-in">
         <div>
-            <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Laporan & Statistik</h1>
-            <p class="text-sm text-text-secondary mt-1.5">
+            <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Laporan & Statistik</h1>
+            <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">
                 Periode: 
                 @if(request('start_date') || request('end_date'))
                     {{ request('start_date') ? \Carbon\Carbon::parse(request('start_date'))->format('d M Y') : 'Awal' }}
@@ -15,7 +15,7 @@
             </p>
         </div>
         <div class="shrink-0">
-            <a href="{{ route('admin.reports.print', request()->query()) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-lg transition-colors">
+            <a href="{{ route('admin.reports.print', request()->query()) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-xl transition-all shadow-sm">
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
                 </svg>
@@ -25,7 +25,7 @@
     </div>
 
     {{-- Filter Section --}}
-    <div class="bg-white border border-border p-6 rounded-xl mb-6">
+    <div class="bg-white border border-border p-6 rounded-xl mb-12">
         <form method="GET" action="{{ route('admin.reports.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             <div>
                 <label for="start_date" class="block text-xs font-semibold text-text-secondary uppercase mb-2">Tanggal Mulai</label>
@@ -69,7 +69,7 @@
     </div>
 
     {{-- Ringkasan Statistik (4 cards, flat) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <div class="bg-white border border-border p-6 rounded-xl">
             <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Total Pengajuan</p>
             <p class="text-[32px] font-bold text-text mt-2 leading-none">{{ number_format($metrics['total']) }}</p>
@@ -89,9 +89,9 @@
     </div>
 
     {{-- Analisis Visual Grid --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {{-- Kiri: Tren Pengajuan (Line Chart) & Distribusi Status (70% or lg:col-span-2) --}}
-        <div class="lg:col-span-2 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-6 mb-12">
+        {{-- Kiri: Tren Pengajuan (Line Chart) & Distribusi Status (70% or lg:col-span-7) --}}
+        <div class="lg:col-span-7 space-y-6">
             {{-- Tren Pengajuan per Bulan (Grafik Garis Sederhana SVG) --}}
             <div class="bg-white p-6 border border-border rounded-xl">
                 <h2 class="text-[24px] font-semibold text-text mb-6">Tren Pengajuan per Bulan</h2>
@@ -167,7 +167,7 @@
         </div>
 
         {{-- Kanan: Tren Keputusan (Bar Chart) & Aktivitas Reviewer (30% or lg:col-span-1) --}}
-        <div class="space-y-6">
+        <div class="lg:col-span-3 space-y-6">
             {{-- Tren Keputusan (Grafik Batang Sederhana) --}}
             <div class="bg-white p-6 border border-border rounded-xl">
                 <h2 class="text-[24px] font-semibold text-text mb-4">Tren Keputusan</h2>
@@ -220,19 +220,19 @@
     </div>
 
     {{-- Tabel Detail --}}
-    <div class="bg-white border border-border rounded-xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-border flex items-center justify-between">
-            <h2 class="text-[24px] font-semibold text-text">Daftar Detail Pengajuan</h2>
+    <div class="bg-white border border-border rounded-xl overflow-hidden mb-12">
+        <div class="px-6 py-4 border-b border-border flex items-center justify-between mb-4">
+            <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Daftar Detail Pengajuan</h2>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
-                    <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                        <th class="px-6 py-4 font-semibold w-24">Kode</th>
-                        <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                        <th class="px-6 py-4 font-semibold">Pengusul</th>
-                        <th class="px-6 py-4 font-semibold">Status</th>
-                        <th class="px-6 py-4 font-semibold">Tanggal Diajukan</th>
+                    <tr class="text-left border-b border-border bg-slate-50/70">
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] w-24">Kode</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Pengusul</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Status</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Tanggal Diajukan</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -240,8 +240,8 @@
                         <tr class="hover:bg-soft-surface/25 transition-colors">
                             <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
                             <td class="px-6 py-4">
-                                <span class="font-semibold text-text" title="{{ $sub->title }}">
-                                    {{ \Illuminate\Support\Str::title($sub->title) }}
+                                <span class="font-serif text-text" title="{{ $sub->title }}">
+                                    {{ $sub->title }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>

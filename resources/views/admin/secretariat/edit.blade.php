@@ -1,15 +1,15 @@
 <x-layouts.app :title="'Edit Sekretaris'">
-    <div class="mb-6 flex items-center gap-3">
+    <div class="mb-12 flex items-center gap-3 animate-fade-in">
         <a href="{{ route('admin.secretariat.index') }}" class="p-2 rounded-lg bg-white border border-border text-text-secondary hover:text-primary hover:border-primary/30 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         </a>
         <div>
-            <h2 class="text-xl font-bold text-text">Edit Sekretaris</h2>
-            <p class="text-sm text-text-secondary mt-1">Perbarui data profil dan status staf sekretariat.</p>
+            <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Edit Sekretaris</h1>
+            <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Perbarui data profil dan status staf sekretariat.</p>
         </div>
     </div>
 
-    <div class="card p-6 border-primary/10 shadow-sm max-w-3xl">
+    <div class="card p-6 border-primary/10 shadow-sm max-w-3xl mb-12">
         <form method="POST" action="{{ route('admin.secretariat.update', $secretariat) }}" class="space-y-5">
             @csrf
             @method('PUT')

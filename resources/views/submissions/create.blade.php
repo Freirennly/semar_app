@@ -1,19 +1,31 @@
 <x-layouts.app :title="'Buat Pengajuan'">
-    {{-- Header & Breadcrumb --}}
-    <div class="mb-6 animate-fade-in">
-        <nav class="text-[12px] text-text-secondary mb-2" aria-label="Breadcrumb">
+    {{-- Atas: Navigasi Breadcrumb & Tombol Kembali Premium --}}
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in">
+        <nav class="text-[12px] text-text-secondary" aria-label="Breadcrumb">
             <a href="{{ route('submissions.index') }}" class="hover:text-primary transition-colors">Pengajuan</a> 
             <span class="mx-1">/</span> 
-            <span class="text-text">Buat Baru</span>
+            <span class="text-text font-medium">Buat Baru</span>
         </nav>
-        <h1 class="text-3xl md:text-[36px] font-bold text-text">Buat Pengajuan Baru</h1>
-        <p class="text-[14px] text-text-secondary mt-1">Silakan lengkapi berkas administrasi dan unggah dokumen pendukung penelitian Anda.</p>
+        
+        {{-- Tombol Kembali --}}
+        <a href="{{ route('submissions.index') }}" class="inline-flex items-center gap-2 px-3.5 py-1.5 border border-border bg-white hover:bg-slate-50 text-text-secondary hover:text-text text-[13px] font-semibold rounded-xl transition-all shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Kembali ke Daftar
+        </a>
+    </div>
+
+    {{-- Kotak Judul Premium --}}
+    <div class="mb-12 p-6 bg-white border border-border rounded-2xl shadow-sm animate-fade-in">
+        <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Buat Pengajuan Baru</h1>
+        <p class="text-[14px] text-text-secondary mt-2 leading-[1.2]">Silakan lengkapi berkas administrasi dan unggah dokumen pendukung penelitian Anda.</p>
     </div>
 
     {{-- Kotak Notifikasi Validasi Error --}}
     @if($errors->any())
         <div class="mb-6 bg-danger-bg border border-danger/20 text-danger rounded-xl px-5 py-3 text-[14px] shadow-sm">
-            <p class="font-bold mb-1">⚠️ Gagal menyimpan data. Mohon periksa kembali inputan Anda:</p>
+            <p class="font-bold mb-1">Gagal menyimpan data. Mohon periksa kembali inputan Anda:</p>
             <ul class="list-disc pl-5 space-y-0.5 text-[12px]">
                 @foreach($errors->all() as $e)
                     <li>{{ $e }}</li>
@@ -22,13 +34,13 @@
         </div>
     @endif
 
-    {{-- FORM UTAMA MASUKAN DATA (LAYOUT MEMANJANG PREMIUM) --}}
+    {{-- FORM UTAMA MASUKAN DATA --}}
     <form method="POST" action="{{ route('submissions.store') }}" enctype="multipart/form-data" class="space-y-6 max-w-5xl">
         @csrf
 
         {{-- KARTU 1: DATA INFORMASI DASAR --}}
-        <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
-            <h2 class="text-xl md:text-[24px] font-semibold text-text border-b border-border pb-2">Informasi Penelitian</h2>
+        <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6 mb-12">
+            <h2 class="text-[24px] font-semibold text-text leading-[1.4] border-b border-border pb-2 mb-4">Informasi Penelitian</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {{-- Judul Penelitian --}}
@@ -57,9 +69,9 @@
         </div>
 
         {{-- SEKSI 2: SUBMISSION DOCUMENTS --}}
-        <div class="space-y-6">
-            <div class="border-b border-border pb-1">
-                <h2 class="text-xl md:text-[24px] font-semibold text-text">Submission Documents</h2>
+        <div class="space-y-6 mb-12">
+            <div class="border-b border-border pb-1 mb-4">
+                <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Dokumen Pengajuan (Submission Documents)</h2>
             </div>
 
             <div class="space-y-6">

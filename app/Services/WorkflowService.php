@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\DB;
 class WorkflowService
 {
     private const TRANSITIONS = [
-        'NEW_PROPOSAL' => ['PROCESS', 'REJECTED', 'RESUBMISSION'],
+        // 🟢 FIX: Daftarkan status DRAFT ke dalam alur state machine resmi KEP
+        'DRAFT' => ['NEW_PROPOSAL'],
+        'NEW_PROPOSAL' => ['PROCESS', 'REJECTED', 'RESUBMISSION', 'DRAFT'], 
         'PROCESS' => ['ON_REVIEW', 'REJECTED'],
         'ON_REVIEW' => ['APPROVED', 'APPROVED_WITH_REVISION', 'REJECTED', 'PROCESS'],
         'APPROVED' => ['WAITING_SIGNATURE'],
@@ -72,7 +74,6 @@ class WorkflowService
                 $submission->ec_certificate_path = $path;
                 $submission->save();
 
-                // DONE state invariant hardening
                 if (
                     is_null($submission->status) ||
                     is_null($submission->ec_number) ||
@@ -88,7 +89,6 @@ class WorkflowService
                     ]);
                 }
 
-                // Log Status History (legacy model)
                 StatusHistory::create([
                     'submission_id' => $submission->id,
                     'from_status' => $oldStatus,
@@ -98,7 +98,6 @@ class WorkflowService
                     'created_at' => now(),
                 ]);
 
-                // Log Activity (new custom model)
                 \App\Models\ActivityLog::create([
                     'user_id' => $actor->id,
                     'submission_id' => $submission->id,
@@ -108,13 +107,11 @@ class WorkflowService
                 ]);
             });
 
-            // Dispatch database notifications after commit
             $this->dispatchNotifications($submission, $newStatus);
         } else {
             $submission->status = $newStatus;
             $submission->save();
 
-            // Log Status History (legacy model)
             StatusHistory::create([
                 'submission_id' => $submission->id,
                 'from_status' => $oldStatus,
@@ -124,7 +121,6 @@ class WorkflowService
                 'created_at' => now(),
             ]);
 
-            // Log Activity (new custom model)
             \App\Models\ActivityLog::create([
                 'user_id' => $actor->id,
                 'submission_id' => $submission->id,
@@ -133,14 +129,12 @@ class WorkflowService
                 'description' => $note ?? "Status berubah dari {$oldStatus} menjadi {$newStatus->value}.",
             ]);
 
-            // Dispatch database notifications
             $this->dispatchNotifications($submission, $newStatus);
         }
     }
 
     private function dispatchNotifications(Submission $submission, SubmissionStatus $newStatus): void
     {
-        // Safe dispatch of new production-grade queued notifications
         try {
             switch ($newStatus) {
                 case SubmissionStatus::NEW_PROPOSAL:
@@ -188,7 +182,6 @@ class WorkflowService
             \Illuminate\Support\Facades\Log::error("Failed to dispatch production-grade notifications: " . $e->getMessage());
         }
 
-        // Keep legacy database notifications to prevent dashboard breaking
         switch ($newStatus) {
             case SubmissionStatus::NEW_PROPOSAL:
                 $admins = User::role('admin')->get();

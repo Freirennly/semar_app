@@ -1,14 +1,15 @@
 <x-layouts.app :title="'Edit Pengajuan'">
     {{-- Header & Breadcrumb --}}
-    <div class="mb-6 animate-fade-in">
+    <div class="mb-12 animate-fade-in">
         <nav class="text-[12px] text-text-secondary mb-2" aria-label="Breadcrumb">
             <a href="{{ route('submissions.index') }}" class="hover:text-primary transition-colors">Pengajuan</a> 
             <span class="mx-1">/</span> 
             <a href="{{ route('submissions.show', $submission) }}" class="hover:text-primary transition-colors">{{ $submission->code }}</a> 
             <span class="mx-1">/</span> 
-            <span class="text-text">Edit</span>
+            <span class="text-text font-medium">Edit</span>
         </nav>
-        <h1 class="text-3xl md:text-[36px] font-bold text-text">Edit Pengajuan</h1>
+        <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Edit Pengajuan</h1>
+        <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Perbarui detail informasi penelitian dan unggah ulang berkas persyaratan jika diperlukan.</p>
     </div>
 
     {{-- Kotak Notifikasi Validasi Error --}}
@@ -29,8 +30,8 @@
         @method('PUT')
 
         {{-- KARTU 1: DATA INFORMASI DASAR --}}
-        <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
-            <h2 class="text-xl md:text-[24px] font-semibold text-text border-b border-border pb-2">Informasi Penelitian</h2>
+        <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6 mb-12">
+            <h2 class="text-[24px] font-semibold text-text leading-[1.4] border-b border-border pb-2 mb-4">Informasi Penelitian</h2>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {{-- Judul Penelitian --}}
@@ -58,9 +59,9 @@
         </div>
 
         {{-- SEKSI 2: SUBMISSION DOCUMENTS --}}
-        <div class="space-y-6">
-            <div class="border-b border-border pb-1">
-                <h2 class="text-xl md:text-[24px] font-semibold text-text">Submission Documents</h2>
+        <div class="space-y-6 mb-12">
+            <div class="border-b border-border pb-1 mb-4">
+                <h2 class="text-[24px] font-semibold text-text leading-[1.4]">Dokumen Pengajuan (Submission Documents)</h2>
             </div>
 
             <div class="space-y-6">

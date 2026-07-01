@@ -1,9 +1,9 @@
 <x-layouts.app :title="'Manajemen Pengajuan'">
     {{-- Header & Search/Filter Section --}}
-    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-12">
         <div>
-            <h2 class="text-xl font-bold text-text">Manajemen Pengajuan</h2>
-            <p class="text-sm text-text-secondary mt-1">Pantau dan kelola seluruh pengajuan proposal dalam sistem SEMAR.</p>
+            <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Manajemen Pengajuan</h1>
+            <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Pantau dan kelola seluruh pengajuan proposal dalam sistem SEMAR.</p>
         </div>
         
         {{-- Unified Form for Search and Status Filter --}}
@@ -19,9 +19,12 @@
                 <select name="status" onchange="this.form.submit()" class="input-field py-2 px-3 w-full text-sm bg-white cursor-pointer appearance-none">
                     <option value="">Semua Status</option>
                     @foreach(\App\Enums\SubmissionStatus::cases() as $status)
-                        <option value="{{ $status->value }}" {{ request('status') === $status->value ? 'selected' : '' }}>
-                            {{ str_replace('_', ' ', $status->value) }}
-                        </option>
+                        {{-- 🟢 FIX: Sembunyikan status DRAFT dari dropdown filter pencarian admin --}}
+                        @if($status !== \App\Enums\SubmissionStatus::DRAFT)
+                            <option value="{{ $status->value }}" {{ request('status') === $status->value ? 'selected' : '' }}>
+                                {{ str_replace('_', ' ', $status->value) }}
+                            </option>
+                        @endif
                     @endforeach
                 </select>
             </div>
@@ -37,19 +40,17 @@
         </form>
     </div>
 
-
-
     <div class="card overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead>
-                    <tr class="text-left text-text-muted text-[10px] uppercase tracking-widest border-b border-border bg-bg/30">
-                        <th class="px-6 py-4 font-bold w-24">Kode</th>
-                        <th class="px-6 py-4 font-bold min-w-[200px]">Judul & Pengusul</th>
-                        <th class="px-6 py-4 font-bold">Kategori</th>
-                        <th class="px-6 py-4 font-bold">Status</th>
-                        <th class="px-6 py-4 font-bold">Tanggal</th>
-                        <th class="px-6 py-4 font-bold text-right">Aksi</th>
+                    <tr class="text-left border-b border-border bg-bg/30">
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] w-24">Kode</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] min-w-[200px]">Judul & Pengusul</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kategori</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Status</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Tanggal</th>
+                        <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border">
@@ -57,8 +58,8 @@
                     <tr class="hover:bg-soft-surface/30 transition-colors group">
                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $p->code }}</td>
                         <td class="px-6 py-4">
-                            <p class="font-semibold text-text group-hover:text-primary transition-colors line-clamp-2" title="{{ $p->title }}">
-                                {{ \Illuminate\Support\Str::title($p->title) }}
+                            <p class="font-serif text-text group-hover:text-primary transition-colors line-clamp-2" title="{{ $p->title }}">
+                                {{ $p->title }}
                             </p>
                             <p class="text-xs text-text-muted mt-1 flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>

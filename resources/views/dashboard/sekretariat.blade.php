@@ -1,22 +1,22 @@
 <x-layouts.app :title="'Dashboard Sekretariat'">
     {{-- Header Section --}}
-    <div class="mb-6">
-        <h1 class="text-[32px] md:text-[36px] font-bold text-text tracking-tight">Dashboard Sekretariat</h1>
-        <p class="text-sm text-text-secondary mt-1.5">Kelola verifikasi dokumen persyaratan pengajuan dan rekomendasi akhir Komite Etik Penelitian.</p>
+    <div class="mb-12">
+        <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Dashboard Sekretariat</h1>
+        <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Kelola verifikasi dokumen persyaratan pengajuan dan rekomendasi akhir Komite Etik Penelitian.</p>
     </div>
 
     {{-- Ringkasan Tugas (Flat cards) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Perlu Cek Dokumen</p>
+            <p class="text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Perlu Cek Dokumen</p>
             <p class="text-[28px] font-bold text-warning mt-2 leading-none">{{ $submitted->count() }}</p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Perlu Assign Reviewer</p>
+            <p class="text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Perlu Assign Reviewer</p>
             <p class="text-[28px] font-bold text-primary mt-2 leading-none">{{ $needAssign->count() }}</p>
         </div>
         <div class="bg-white border border-border p-5 rounded-xl">
-            <p class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Menunggu Keputusan Akhir</p>
+            <p class="text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Menunggu Keputusan Akhir</p>
             <p class="text-[28px] font-bold text-violet-600 mt-2 leading-none">{{ $pendingDecision->count() }}</p>
         </div>
     </div>
@@ -34,13 +34,13 @@
     @endphp
 
     {{-- Main Grid (70/30 Split) --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-10 gap-6 mb-12">
         {{-- Left: Tasks (70% or lg:col-span-2) --}}
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-7 space-y-6">
             {{-- Perlu Cek Dokumen --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border flex items-center justify-between">
-                    <h2 class="text-[20px] font-semibold text-text">Perlu Cek Dokumen</h2>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Perlu Cek Dokumen</h2>
                     <a href="{{ route('doccheck.index') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
                 @if($submitted->isEmpty())
@@ -51,19 +51,19 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold">Pengusul</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                                <tr class="text-left border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Pengusul</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach($submitted as $sub)
                                     <tr class="hover:bg-soft-surface/25 transition-colors">
                                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
-                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        <td class="px-6 py-4 font-serif text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                            {{ $sub->title }}
                                         </td>
                                         <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
                                         <td class="px-6 py-4 text-right">
@@ -82,7 +82,7 @@
             {{-- Perlu Assign Reviewer --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border flex items-center justify-between bg-white">
-                    <h2 class="text-[20px] font-semibold text-text">Perlu Assign Reviewer</h2>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Perlu Assign Reviewer</h2>
                     <a href="{{ route('assignments.index') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
                 @if($needAssign->isEmpty())
@@ -93,19 +93,19 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold font-medium">Pengaju</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                                <tr class="text-left border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Pengaju</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach($needAssign as $sub)
                                     <tr class="hover:bg-soft-surface/25 transition-colors">
                                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
-                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        <td class="px-6 py-4 font-serif text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                            {{ $sub->title }}
                                         </td>
                                         <td class="px-6 py-4 text-text-secondary">{{ optional($sub->student)->name ?? '-' }}</td>
                                         <td class="px-6 py-4 text-right">
@@ -124,7 +124,7 @@
             {{-- Proposal Dalam Review --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border bg-white">
-                    <h2 class="text-[20px] font-semibold text-text">Proposal Dalam Review</h2>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Proposal Dalam Review</h2>
                 </div>
                 @if($assigned->isEmpty())
                     <div class="text-center py-12 px-6">
@@ -134,19 +134,19 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold">Reviewer Ditugaskan</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Progress</th>
+                                <tr class="text-left border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Reviewer Ditugaskan</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Progress</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach($assigned as $sub)
                                     <tr class="hover:bg-soft-surface/25 transition-colors">
                                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[180px]" title="{{ $sub->title }}">
-                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        <td class="px-6 py-4 font-serif text-text truncate max-w-[180px]" title="{{ $sub->title }}">
+                                            {{ $sub->title }}
                                         </td>
                                         <td class="px-6 py-4 text-xs text-text-secondary">
                                             <div class="space-y-1">
@@ -178,7 +178,7 @@
             {{-- Menunggu Keputusan --}}
             <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
                 <div class="px-6 py-4 border-b border-border flex items-center justify-between">
-                    <h2 class="text-[20px] font-semibold text-text">Menunggu Keputusan Akhir</h2>
+                    <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Menunggu Keputusan Akhir</h2>
                     <a href="{{ route('decisions.index') }}" class="text-xs font-bold text-primary hover:underline">Lihat Semua →</a>
                 </div>
                 @if($pendingDecision->isEmpty())
@@ -189,19 +189,19 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left text-text-secondary text-[12px] uppercase tracking-wider border-b border-border bg-slate-50/70">
-                                    <th class="px-6 py-4 font-semibold">Kode</th>
-                                    <th class="px-6 py-4 font-semibold">Judul Usulan</th>
-                                    <th class="px-6 py-4 font-semibold">Penilaian</th>
-                                    <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                                <tr class="text-left border-b border-border bg-slate-50/70">
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Kode</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Judul Usulan</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em]">Penilaian</th>
+                                    <th class="px-6 py-4 text-[12px] font-semibold text-text-secondary uppercase tracking-[0.05em] text-right">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-border">
                                 @foreach($pendingDecision as $sub)
                                     <tr class="hover:bg-soft-surface/25 transition-colors">
                                         <td class="px-6 py-4 font-mono text-xs text-text-secondary">{{ $sub->code }}</td>
-                                        <td class="px-6 py-4 font-semibold text-text truncate max-w-[200px]" title="{{ $sub->title }}">
-                                            {{ \Illuminate\Support\Str::title($sub->title) }}
+                                        <td class="px-6 py-4 font-serif text-text truncate max-w-[200px]" title="{{ $sub->title }}">
+                                            {{ $sub->title }}
                                         </td>
                                         <td class="px-6 py-4 text-xs text-text-secondary">
                                             <span class="font-bold text-primary">{{ $sub->reviews->count() }}</span> Masuk
@@ -220,10 +220,10 @@
             </div>
         </div>
 
-        {{-- Right: Recent Validation History (30% or lg:col-span-1) --}}
-        <div class="bg-white border border-border rounded-xl flex flex-col overflow-hidden">
+        {{-- Right: Recent Validation History (30% or lg:col-span-3) --}}
+        <div class="lg:col-span-3 bg-white border border-border rounded-xl flex flex-col">
             <div class="px-6 py-4 border-b border-border">
-                <h2 class="text-[20px] font-semibold text-text">Riwayat Validasi</h2>
+                <h2 class="text-[24px] font-semibold text-text leading-[1.4] mb-4">Riwayat Validasi</h2>
             </div>
             
             @if($recentValidations->isEmpty())
@@ -233,10 +233,10 @@
             @else
                 <div class="divide-y divide-border overflow-y-auto max-h-[500px]">
                     @foreach($recentValidations as $sub)
-                        <div class="p-4 hover:bg-soft-surface/20 transition-colors">
-                            <p class="text-xs font-semibold text-text line-clamp-2">{{ \Illuminate\Support\Str::title($sub->title) }}</p>
-                            <p class="text-[10px] text-text-secondary mt-1">Pengusul: {{ optional($sub->student)->name ?? '-' }}</p>
-                            <div class="flex items-center justify-between mt-3">
+                        <div class="p-4 hover:bg-soft-surface/20 transition-colors w-full min-w-0 break-words">
+                            <p class="text-xs font-serif text-text w-full min-w-0 break-words leading-[1.75]">{{ $sub->title }}</p>
+                            <p class="text-[10px] text-text-secondary mt-1 w-full min-w-0 break-words">Pengusul: {{ optional($sub->student)->name ?? '-' }}</p>
+                            <div class="flex items-center justify-between mt-3 w-full min-w-0">
                                 <span class="text-[10px] text-text-muted font-mono">{{ $sub->code }}</span>
                                 <x-status-badge :status="$sub->status" />
                             </div>

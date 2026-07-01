@@ -1,13 +1,10 @@
 <x-layouts.app :title="'Cek Dokumen: ' . $submission->title">
 
-{{-- ═══════════════════════════════════════════════════
-     PAGE HEADER
-════════════════════════════════════════════════════ --}}
 <div class="mb-8">
     {{-- Breadcrumb --}}
     <nav class="flex items-center gap-1.5 mb-4 text-xs font-medium" style="color:#8E8CAD">
         <a href="{{ route('doccheck.index') }}"
-           class="transition-colors duration-150 hover:underline"
+           class="transition-colors duration-150 hover:text-primary hover:underline"
            style="color:#463EE3">Cek Dokumen</a>
         <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
@@ -42,17 +39,13 @@
     </div>
 </div>
 
-{{-- ═══════════════════════════════════════════════════
-     MAIN GRID
-════════════════════════════════════════════════════ --}}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-    {{-- ── Dokumen Panel ──────────────────────────── --}}
+    {{-- Dokumen Panel --}}
     <div class="lg:col-span-2 bg-white rounded-2xl border overflow-hidden"
          style="border-color:rgba(70,62,227,0.14);
                 box-shadow: 0 2px 16px rgba(70,62,227,0.07);">
 
-        {{-- Panel header --}}
         <div class="flex items-center gap-2.5 px-5 py-4"
              style="border-bottom:1.5px solid rgba(70,62,227,0.08);
                     background:rgba(70,62,227,0.025);">
@@ -74,6 +67,9 @@
                 }
                 $totalCnt    = count($documentTemplates);
                 $allComplete = $uploadedCnt >= $totalCnt;
+                
+                $requiredCount = $submission->getRequiredDocumentCount() > 0 ? $submission->getRequiredDocumentCount() : 1;
+                $calcProgress = min(100, round(($submission->getDocumentCount() / $requiredCount) * 100));
             @endphp
             <span class="ml-auto text-[10px] font-bold px-2.5 py-1 rounded-full"
                   style="background:{{ $allComplete ? 'rgba(34,197,94,0.12)' : '#E6E6FA' }};
@@ -82,7 +78,6 @@
             </span>
         </div>
 
-        {{-- Document rows --}}
         <div class="divide-y" style="border-color:rgba(70,62,227,0.05);">
             @foreach($documentTemplates as $template)
                 @php $doc = $submission->documents->firstWhere('document_template_id', $template->id); @endphp
@@ -91,7 +86,6 @@
                      onmouseout="this.style.background='transparent'">
 
                     <div class="flex items-center gap-3.5 min-w-0">
-                        {{-- Status icon --}}
                         @if($doc)
                         <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                              style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.2);">
@@ -109,7 +103,6 @@
                         </div>
                         @endif
 
-                        {{-- Label & file name --}}
                         <div class="min-w-0">
                             <p class="text-sm font-semibold" style="color:#0F0E2E">
                                 {{ $template->name }}
@@ -129,27 +122,19 @@
 
                     @if($doc)
                         @if($doc->type === 'file')
-                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank"
+                        <a href="{{ route('submissions.view-document', $doc->id) }}" target="_blank"
                            class="text-xs font-bold px-3.5 py-1.5 rounded-lg border flex-shrink-0 ml-4 inline-flex items-center gap-1.5 transition-all duration-150"
-                           style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white;
-                                  box-shadow:0 1px 4px rgba(70,62,227,0.08);"
+                           style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white; box-shadow:0 1px 4px rgba(70,62,227,0.08);"
                            onmouseover="this.style.background='#463EE3'; this.style.color='white'; this.style.borderColor='#463EE3'; this.style.boxShadow='0 3px 10px rgba(70,62,227,0.25)'"
                            onmouseout="this.style.background='white'; this.style.color='#463EE3'; this.style.borderColor='rgba(70,62,227,0.22)'; this.style.boxShadow='0 1px 4px rgba(70,62,227,0.08)'">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                            </svg>
                             Lihat
                         </a>
                         @else
                         <a href="{{ $doc->file_path }}" target="_blank"
                            class="text-xs font-bold px-3.5 py-1.5 rounded-lg border flex-shrink-0 ml-4 inline-flex items-center gap-1.5 transition-all duration-150"
-                           style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white;
-                                  box-shadow:0 1px 4px rgba(70,62,227,0.08);"
+                           style="color:#463EE3; border-color:rgba(70,62,227,0.22); background:white; box-shadow:0 1px 4px rgba(70,62,227,0.08);"
                            onmouseover="this.style.background='#463EE3'; this.style.color='white'; this.style.borderColor='#463EE3'; this.style.boxShadow='0 3px 10px rgba(70,62,227,0.25)'"
                            onmouseout="this.style.background='white'; this.style.color='#463EE3'; this.style.borderColor='rgba(70,62,227,0.22)'; this.style.boxShadow='0 1px 4px rgba(70,62,227,0.08)'">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                            </svg>
                             Buka Link
                         </a>
                         @endif
@@ -164,7 +149,7 @@
         </div>
     </div>
 
-    {{-- ── Aksi Panel ─────────────────────────────── --}}
+    {{-- Aksi Panel --}}
     <div class="flex flex-col gap-4">
 
         {{-- Status card --}}
@@ -199,11 +184,10 @@
                 @endif
             </div>
 
-            {{-- Progress bar --}}
             <div class="px-5 pb-4">
-                <div class="h-full rounded-full transition-all duration-500"
-                        style="width:{{ $progress }}%;
-                                background:{{ $submission->hasAllDocuments() ? '#22C55E' : '#F59E0B' }};">
+                <div class="w-full h-1.5 rounded-full overflow-hidden" style="background:rgba(0,0,0,0.06);">
+                    <div class="h-full rounded-full transition-all duration-500"
+                         style="width:{{ $calcProgress }}%; background:{{ $submission->hasAllDocuments() ? '#22C55E' : '#F59E0B' }};">
                     </div>
                 </div>
             </div>
@@ -215,8 +199,7 @@
                     box-shadow: 0 2px 16px rgba(70,62,227,0.07);">
 
             <div class="flex items-center gap-2.5 px-5 py-4"
-                 style="border-bottom:1.5px solid rgba(70,62,227,0.08);
-                        background:rgba(70,62,227,0.025);">
+                 style="border-bottom:1.5px solid rgba(70,62,227,0.08); background:rgba(70,62,227,0.025);">
                 <div class="w-8 h-8 rounded-xl flex items-center justify-center"
                      style="background:#E6E6FA; box-shadow:0 1px 4px rgba(70,62,227,0.15);">
                     <svg class="w-4 h-4" fill="none" stroke="#463EE3" stroke-width="2" viewBox="0 0 24 24">
@@ -227,63 +210,91 @@
             </div>
 
             <div class="p-5 space-y-4">
+                {{-- 🟢 FIX: Gunakan guard status ketat agar form hanya muncul saat berkas baru masuk atau hasil revisi --}}
+                @if(in_array($submission->status, [\App\Enums\SubmissionStatus::NEW_PROPOSAL, \App\Enums\SubmissionStatus::REVISED]))
 
-                {{-- Approve --}}
-                <form method="POST" action="{{ route('doccheck.approve', $submission) }}">
-                    @csrf
-                    <button type="submit"
-                            @if(!$submission->hasAllDocuments()) disabled @endif
-                            class="w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-150 flex items-center justify-center gap-2"
-                            style="{{ $submission->hasAllDocuments()
-                                ? 'background:#463EE3; color:white; box-shadow:0 2px 8px rgba(70,62,227,0.28); cursor:pointer;'
-                                : 'background:#F5F5F5; color:#b0aec8; cursor:not-allowed; border:1px solid rgba(0,0,0,0.06);' }}"
-                            @if($submission->hasAllDocuments())
-                            onmouseover="this.style.background='#332DB8'; this.style.boxShadow='0 5px 16px rgba(70,62,227,0.35)'"
-                            onmouseout="this.style.background='#463EE3'; this.style.boxShadow='0 2px 8px rgba(70,62,227,0.28)'"
-                            @endif>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Terima Dokumen
-                    </button>
-                </form>
+                    {{-- 1. Jalur Normal: Terima Dokumen untuk Lanjut ke Penugasan Reviewer --}}
+                    <form method="POST" action="{{ route('doccheck.approve', $submission) }}">
+                        @csrf
+                        <button type="submit"
+                                @if(!$submission->hasAllDocuments()) disabled @endif
+                                class="w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-150 flex items-center justify-center gap-2"
+                                style="{{ $submission->hasAllDocuments()
+                                    ? 'background:#463EE3; color:white; box-shadow:0 2px 8px rgba(70,62,227,0.28); cursor:pointer;'
+                                    : 'background:#F5F5F5; color:#b0aec8; cursor:not-allowed; border:1px solid rgba(0,0,0,0.06);' }}"
+                                @if($submission->hasAllDocuments())
+                                onmouseover="this.style.background='#332DB8'; this.style.boxShadow='0 5px 16px rgba(70,62,227,0.35)'"
+                                onmouseout="this.style.background='#463EE3'; this.style.boxShadow='0 2px 8px rgba(70,62,227,0.28)'"
+                                @endif>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Terima Dokumen
+                        </button>
+                    </form>
 
-                {{-- Divider --}}
-                <div class="flex items-center gap-3">
-                    <div class="flex-1 h-px" style="background:rgba(70,62,227,0.07);"></div>
-                    <span class="text-[10px] font-bold uppercase tracking-widest" style="color:#b0aec8">atau</span>
-                    <div class="flex-1 h-px" style="background:rgba(70,62,227,0.07);"></div>
-                </div>
+                    {{-- 2. Jalur Cepat Baru: Auto Approve Pengajuan Tanpa Melalui Reviewer --}}
+                    <form method="POST" action="{{ route('doccheck.auto-approve', $submission) }}" onsubmit="return confirm('Apakah Anda yakin ingin menyetujui langsung pengajuan ini tanpa melalui penilaian Reviewer?')">
+                        @csrf
+                        <button type="submit"
+                                @if(!$submission->hasAllDocuments()) disabled @endif
+                                class="w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-150 flex items-center justify-center gap-2 mt-3"
+                                style="{{ $submission->hasAllDocuments()
+                                    ? 'background:#059669; color:white; box-shadow:0 2px 8px rgba(5,150,105,0.28); cursor:pointer;'
+                                    : 'background:#F5F5F5; color:#b0aec8; cursor:not-allowed; border:1px solid rgba(0,0,0,0.06);' }}"
+                                @if($submission->hasAllDocuments())
+                                onmouseover="this.style.background='#047857'; this.style.boxShadow='0 5px 16px rgba(5,150,105,0.35)'"
+                                onmouseout="this.style.background='#059669'; this.style.boxShadow='0 2px 8px rgba(5,150,105,0.28)'"
+                                @endif>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                            </svg>
+                            Auto Approve Pengajuan
+                        </button>
+                    </form>
 
-                {{-- Return --}}
-                <form method="POST" action="{{ route('doccheck.return', $submission) }}" class="space-y-3">
-                    @csrf
-                    <div>
-                        <label for="note" class="block text-xs font-bold mb-1.5" style="color:#5A587A">
-                            Catatan Pengembalian
-                            <span style="color:#EF4444">*</span>
-                        </label>
-                        <textarea name="note" id="note" rows="3"
-                                  class="w-full text-sm rounded-xl border px-3.5 py-2.5 outline-none transition-all duration-150 resize-none font-light"
-                                  style="border-color:rgba(70,62,227,0.18); color:#0F0E2E; background:#fafafa;"
-                                  placeholder="Jelaskan dokumen apa yang perlu diperbaiki..."
-                                  onfocus="this.style.borderColor='#463EE3'; this.style.boxShadow='0 0 0 3px rgba(70,62,227,0.1)'; this.style.background='white'"
-                                  onblur="this.style.borderColor='rgba(70,62,227,0.18)'; this.style.boxShadow='none'; this.style.background='#fafafa'">{{ old('note') }}</textarea>
-                        @error('note')
-                            <p class="text-xs mt-1 font-medium" style="color:#b91c1c">{{ $message }}</p>
-                        @enderror
+                    <div class="flex items-center gap-3 my-2">
+                        <div class="flex-1 h-px" style="background:rgba(70,62,227,0.07);"></div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest" style="color:#b0aec8">atau</span>
+                        <div class="flex-1 h-px" style="background:rgba(70,62,227,0.07);"></div>
                     </div>
-                    <button type="submit"
-                            class="w-full py-2.5 rounded-xl text-sm font-bold border transition-all duration-150 flex items-center justify-center gap-2"
-                            style="color:#b45309; border-color:rgba(245,158,11,0.3); background:white; box-shadow:0 1px 4px rgba(245,158,11,0.1);"
-                            onmouseover="this.style.background='rgba(245,158,11,0.08)'; this.style.borderColor='rgba(245,158,11,0.5)'; this.style.boxShadow='0 3px 10px rgba(245,158,11,0.15)'"
-                            onmouseout="this.style.background='white'; this.style.borderColor='rgba(245,158,11,0.3)'; this.style.boxShadow='0 1px 4px rgba(245,158,11,0.1)'">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
-                        </svg>
-                        Kembalikan ke Student
-                    </button>
-                </form>
+
+                    {{-- 3. Jalur Penolakan: Kembalikan Berkas ke Draf Mahasiswa --}}
+                    <form method="POST" action="{{ route('doccheck.return', $submission) }}" class="space-y-3">
+                        @csrf
+                        <div>
+                            <label for="note" class="block text-xs font-bold mb-1.5" style="color:#5A587A">
+                                Catatan Pengembalian
+                                <span style="color:#EF4444">*</span>
+                            </label>
+                            <textarea name="note" id="note" rows="3"
+                                      class="w-full text-sm rounded-xl border px-3.5 py-2.5 outline-none transition-all duration-150 resize-none font-light"
+                                      style="border-color:rgba(70,62,227,0.18); color:#0F0E2E; background:#fafafa;"
+                                      placeholder="Jelaskan dokumen apa yang perlu diperbaiki..."
+                                      onfocus="this.style.borderColor='#463EE3'; this.style.boxShadow='0 0 0 3px rgba(70,62,227,0.1)'; this.style.background='white'"
+                                      onblur="this.style.borderColor='rgba(70,62,227,0.18)'; this.style.boxShadow='none'; this.style.background='#fafafa'">{{ old('note') }}</textarea>
+                            @error('note')
+                                <p class="text-xs mt-1 font-medium" style="color:#b91c1c">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <button type="submit"
+                                class="w-full py-2.5 rounded-xl text-sm font-bold border transition-all duration-150 flex items-center justify-center gap-2"
+                                style="color:#b45309; border-color:rgba(245,158,11,0.3); background:white; box-shadow:0 1px 4px rgba(245,158,11,0.1);"
+                                onmouseover="this.style.background='rgba(245,158,11,0.08)'; this.style.borderColor='rgba(245,158,11,0.5)'; this.style.boxShadow='0 3px 10px rgba(245,158,11,0.15)'"
+                                onmouseout="this.style.background='white'; this.style.borderColor='rgba(245,158,11,0.3)'; this.style.boxShadow='0 1px 4px rgba(245,158,11,0.1)'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                            </svg>
+                            Kembalikan ke Student
+                        </button>
+                    </form>
+
+                @else
+                    {{-- Blok Tampilan Alternatif Jika Status Sudah Berubah --}}
+                    <div class="p-4 bg-slate-50 border border-border rounded-xl text-center text-xs text-text-secondary italic">
+                        Pengajuan ini telah melewati tahap verifikasi dokumen awal. Aksi keputusan dinonaktifkan.
+                    </div>
+                @endif
             </div>
         </div>
 

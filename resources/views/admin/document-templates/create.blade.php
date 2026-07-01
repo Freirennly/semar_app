@@ -1,13 +1,9 @@
 <x-layouts.app :title="'Tambah Template Dokumen'">
 
     {{-- Page Header --}}
-    <div class="mb-6">
-        <div class="flex items-center gap-2 mb-1.5">
-            <div class="w-4 h-[2px]" style="background:#463EE3;"></div>
-            <p class="text-[11px] font-bold tracking-widest uppercase" style="color:#463EE3">Administrasi</p>
-        </div>
-        <h1 class="text-2xl font-bold tracking-tight" style="color:#0F0E2E">Tambah Template Baru</h1>
-        <p class="text-sm font-light mt-1" style="color:#5A587A">Buat template dokumen baru untuk digunakan oleh mahasiswa pada pengajuan etik.</p>
+    <div class="mb-12 animate-fade-in">
+        <h1 class="text-3xl md:text-[36px] font-bold text-text tracking-tight leading-[1.3]">Tambah Template Baru</h1>
+        <p class="text-sm font-medium text-text-secondary mt-2 leading-[1.2]">Buat template dokumen baru untuk digunakan oleh mahasiswa pada pengajuan etik.</p>
     </div>
 
     {{-- Validation Errors --}}
@@ -22,7 +18,7 @@
         </div>
     @endif
 
-    <div class="bg-white border border-border rounded-xl p-6 max-w-2xl">
+    <div class="bg-white border border-border rounded-xl p-6 max-w-2xl mb-12">
         <form action="{{ route('admin.templates.store') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
             @csrf
 
