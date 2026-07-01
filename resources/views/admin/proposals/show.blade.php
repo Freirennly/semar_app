@@ -76,7 +76,7 @@
                                 </p>
                             </div>
                             <div class="shrink-0">
-                                <a href="{{ \Illuminate\Support\Facades\Storage::url($doc->file_path) }}" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-text border border-border rounded-lg text-xs font-semibold transition-all">
+                                <a href="{{ route('submissions.view-document', $doc->id) }}" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-text border border-border rounded-lg text-xs font-semibold transition-all">
                                     Lihat File
                                 </a>
                             </div>

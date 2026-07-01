@@ -176,7 +176,7 @@
                     
                     <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
                         @if($doc)
-                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
+                            <a href="{{ route('submissions.view-document', $doc->id) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
                             @if($canUpload)
                                 <form method="POST" action="{{ route('submissions.delete-document', [$submission, $doc]) }}" class="inline">
                                     @csrf 
