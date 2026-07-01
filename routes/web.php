@@ -88,9 +88,14 @@ Route::middleware('auth')->group(function () {
     Route::get('submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
     Route::get('submissions/{submission}/certificate', [SubmissionController::class, 'downloadCertificate'])->name('submissions.certificate')->middleware('throttle:downloads');
 
-    // Ketua: signing only
+    // Ketua: signing overview, and monitoring modules
     Route::middleware('role:ketua')->group(function () {
         Route::post('submissions/{submission}/sign', [SubmissionController::class, 'sign'])->name('submissions.sign');
+        
+        // Rute Baru: Halaman Pemantauan Kerja Reviewer & Riwayat Keputusan Ketua KEP
+        Route::get('chairman/monitoring', function() {
+            return view('dashboard.monitoring'); 
+        })->name('chairman.monitoring');
     });
 
     // Reviewer: reviews
