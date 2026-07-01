@@ -100,14 +100,17 @@
 
                         {{-- Tampilkan info dokumen saat ini jika sudah ada --}}
                         @if($doc)
-                            <div class="px-4 py-3 bg-slate-50 rounded mb-4 border border-border flex items-start justify-between text-xs">
-                                <div>
-                                    <p class="font-bold text-text-secondary uppercase tracking-wider mb-1">Dokumen Terunggah:</p>
-                                    @if($doc->type === 'file')
-                                        <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="text-primary hover:underline font-bold">{{ $doc->original_name }}</a>
-                                    @else
-                                        <a href="{{ $doc->file_path }}" target="_blank" class="text-primary hover:underline font-bold">Tautan Google Drive</a>
-                                    @endif
+                            <div class="p-4 bg-soft-surface rounded-xl border border-border flex items-center justify-between text-[12px]">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                    <span>
+                                        Dokumen saat ini: 
+                                        @if($doc->type === 'file')
+                                            <a href="{{ Storage::url($doc->file_path) }}" target="_blank" class="text-primary hover:underline font-semibold">{{ $doc->original_name }}</a>
+                                        @else
+                                            <a href="{{ $doc->file_path }}" target="_blank" class="text-primary hover:underline font-semibold">Link Google Drive</a>
+                                        @endif
+                                    </span>
                                 </div>
                                 <span class="text-text-muted hidden md:block">Ganti dengan mengunggah berkas baru.</span>
                             </div>

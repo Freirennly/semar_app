@@ -72,7 +72,7 @@ class SubmissionController extends Controller
             'title'         => 'required|string|max:255',
             'type'          => 'required|string',
             'abstract'      => 'nullable|string',
-            'files.*'       => 'nullable|file|mimes:pdf|max:2048', // Batas validasi file Laravel
+            'files.*'       => 'nullable|file|mimes:pdf|max:2048', 
             'hyperlinks.*'  => 'nullable|url',
         ]);
 
@@ -95,7 +95,7 @@ class SubmissionController extends Controller
             'title'      => $request->title,
             'type'       => $request->type,
             'abstract'   => $request->abstract,
-            'status'     => SubmissionStatus::NEW_PROPOSAL, // Menggunakan Enum asli terstandar proyek KEP SEMAR
+            'status'     => SubmissionStatus::NEW_PROPOSAL,
             'submitted_at' => now(),
         ]);
 

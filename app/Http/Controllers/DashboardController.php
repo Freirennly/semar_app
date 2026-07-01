@@ -28,6 +28,8 @@ class DashboardController extends Controller
 
         abort(403);
     }
+
+    // Dashboard untuk Mahasiswa
     private function student($user)
     {
         $submissions = $user->submissions()->latest()->get();
@@ -54,7 +56,7 @@ class DashboardController extends Controller
             ->whereNotNull('ec_number')
             ->latest()
             ->get();
-
+            
         $ecReady = $user->submissions()
             ->where('status', SubmissionStatus::DONE)
             ->whereNotNull('ec_certificate_path')
@@ -68,13 +70,13 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
-        // Document completion metrics for latest active submission
+        // Metrik kelengkapan dokumen untuk pengajuan aktif terakhir
         $docCompletionData = null;
         $latestActive = $submissions->whereNotIn('status', [
             SubmissionStatus::REJECTED,
             SubmissionStatus::DONE,
         ])->first();
-
+        // Dokumen template
         if ($latestActive) {
             $requiredTemplates = \App\Models\DocumentTemplate::visible()
                 ->where('is_required', true)->get();
@@ -86,7 +88,7 @@ class DashboardController extends Controller
             $uploadedCount = count(array_intersect($requiredTemplates->pluck('id')->toArray(), $uploadedIds));
             $totalRequired = $requiredTemplates->count();
             $completionPct = $totalRequired > 0 ? round(($uploadedCount / $totalRequired) * 100) : 100;
-
+            
             $docCompletionData = [
                 'submission' => $latestActive,
                 'required' => $requiredTemplates,

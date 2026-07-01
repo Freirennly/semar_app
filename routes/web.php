@@ -97,10 +97,9 @@ Route::middleware('auth')->group(function () {
     Route::get('submissions/{submission}', [SubmissionController::class, 'show'])->name('submissions.show');
     Route::get('submissions/{submission}/certificate', [SubmissionController::class, 'downloadCertificate'])->name('submissions.certificate')->middleware('throttle:downloads');
 
-    // Ketua: signing only
+    // Ketua: signing overview, and monitoring modules
     Route::middleware('role:ketua')->group(function () {
         Route::post('submissions/{submission}/sign', [SubmissionController::class, 'sign'])->name('submissions.sign');
-        Route::get('submissions/{submission}/preview-final', [SubmissionController::class, 'previewFinalEc'])->name('submissions.preview-final');
     });
 
     // Reviewer: reviews (dengan Throttle pada submit review)
