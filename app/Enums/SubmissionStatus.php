@@ -14,6 +14,8 @@ enum SubmissionStatus: string
     case WAITING_STUDENT_CONFIRMATION = 'WAITING_STUDENT_CONFIRMATION';
     case WAITING_SIGNATURE = 'WAITING_SIGNATURE';
     case DONE = 'DONE';
+    case DRAFT_OLD = 'DRAFT'; 
+    case APPROVED_WITH_REVISION = 'APPROVED_WITH_REVISION';
 
     public function label(): string
     {
@@ -28,6 +30,10 @@ enum SubmissionStatus: string
             self::WAITING_STUDENT_CONFIRMATION => 'Menunggu Konfirmasi Mahasiswa',
             self::WAITING_SIGNATURE => 'Menunggu Tanda Tangan',
             self::DONE => 'Selesai',
+            
+            // Pemetaan label untuk status variasi alternatif
+            self::DRAFT_OLD => 'Draft',
+            self::APPROVED_WITH_REVISION => 'Disetujui dengan Revisi',
         };
     }
 
@@ -44,6 +50,10 @@ enum SubmissionStatus: string
             self::WAITING_STUDENT_CONFIRMATION => 'bg-blue-50 text-blue-700',
             self::WAITING_SIGNATURE => 'bg-rose-50 text-rose-700',
             self::DONE => 'bg-emerald-100 text-emerald-800',
+            
+            // Pemetaan class style untuk status variasi alternatif
+            self::DRAFT_OLD => 'bg-slate-100 text-slate-600',
+            self::APPROVED_WITH_REVISION => 'bg-emerald-50 text-emerald-600 font-medium',
         };
     }
 
@@ -60,6 +70,10 @@ enum SubmissionStatus: string
             self::WAITING_STUDENT_CONFIRMATION => 'border-l-blue-500',
             self::WAITING_SIGNATURE => 'border-l-rose-500',
             self::DONE => 'border-l-emerald-600',
+            
+            // Pemetaan border color untuk status variasi alternatif
+            self::DRAFT_OLD => 'border-l-slate-400',
+            self::APPROVED_WITH_REVISION => 'border-l-emerald-400',
         };
     }
 }

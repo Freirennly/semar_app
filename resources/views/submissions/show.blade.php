@@ -107,7 +107,7 @@
                                         @if($attachment)
                                             <div class="mt-2 text-xs flex items-center gap-1 border-t border-amber-200/50 pt-2">
                                                 <span class="text-text-secondary font-medium">Lampiran:</span>
-                                                <a href="{{ route('submissions.view-document', [$submission, $attachment]) }}" target="_blank" class="text-primary hover:text-primary-hover font-semibold inline-flex items-center gap-1">
+                                                <a href="{{ route('submissions.view-document', ['submission' => $submission->id, 'document' => $attachment->id]) }}" target="_blank" class="text-primary hover:text-primary-hover font-semibold inline-flex items-center gap-1">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                                     {{ $attachment->original_name }}
                                                 </a>
@@ -305,146 +305,146 @@
     {{-- KONTEN TAB 2: DOKUMEN --}}
     @if($tab === 'documents')
     <div class="space-y-6">
-    <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
-        <div>
-            <h2 class="text-xl md:text-[24px] font-semibold text-text">Lampiran Persyaratan</h2>
-            <p class="text-[14px] text-text-secondary mt-1">Semua dokumen wajib harus diupload dalam format PDF, DOC, DOCX (maks. 5MB) atau link Google Drive.</p>
-        </div>
-        <div class="space-y-4">
-            @foreach($documentTemplates as $template)
-                @php
-                    $doc = $submission->documents->firstWhere('document_template_id', $template->id);
-                    $canUpload = auth()->user()->hasRole('student') && $submission->status === \App\Enums\SubmissionStatus::REVISION_REQUIRED;
-                @endphp
-                <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl {{ $doc ? 'bg-surface' : 'bg-slate-50/50' }} gap-4">
-                    <div class="flex items-start gap-4 min-w-0">
-                        @if($doc)
-                            <div class="w-10 h-10 rounded-xl bg-success-bg flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                            </div>
-                        @else
-                            <div class="w-10 h-10 rounded-xl bg-danger-bg flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-                            </div>
-                        @endif
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <p class="text-[14px] font-semibold text-text">{{ $template->name }}</p>
-                                @if($template->is_required)
-                                    <span class="text-[10px] font-bold px-1.5 bg-red-50 text-red-500 rounded border border-red-100 uppercase">Wajib</span>
+        <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
+            <div>
+                <h2 class="text-xl md:text-[24px] font-semibold text-text">Lampiran Persyaratan</h2>
+                <p class="text-[14px] text-text-secondary mt-1">Semua dokumen wajib harus diupload dalam format PDF, DOC, DOCX (maks. 5MB) atau link Google Drive.</p>
+            </div>
+            <div class="space-y-4">
+                @foreach($documentTemplates as $template)
+                    @php
+                        $doc = $submission->documents->firstWhere('document_template_id', $template->id);
+                        $canUpload = auth()->user()->hasRole('student') && $submission->status === \App\Enums\SubmissionStatus::REVISION_REQUIRED;
+                    @endphp
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl {{ $doc ? 'bg-surface' : 'bg-slate-50/50' }} gap-4">
+                        <div class="flex items-start gap-4 min-w-0">
+                            @if($doc)
+                                <div class="w-10 h-10 rounded-xl bg-success-bg flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                </div>
+                            @else
+                                <div class="w-10 h-10 rounded-xl bg-danger-bg flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+                                </div>
+                            @endif
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <p class="text-[14px] font-semibold text-text">{{ $template->name }}</p>
+                                    @if($template->is_required)
+                                        <span class="text-[10px] font-bold px-1.5 bg-red-50 text-red-500 rounded border border-red-100 uppercase">Wajib</span>
+                                    @endif
+                                </div>
+                                @if($doc)
+                                    <p class="text-[12px] text-text-secondary mt-1 truncate max-w-md">{{ $doc->original_name }} · {{ number_format($doc->size / 1024, 0) }} KB</p>
+                                @else
+                                    <p class="text-[12px] text-danger mt-1">Belum diupload</p>
                                 @endif
                             </div>
-                            @if($doc)
-                                <p class="text-[12px] text-text-secondary mt-1 truncate max-w-md">{{ $doc->original_name }} · {{ number_format($doc->size / 1024, 0) }} KB</p>
-                            @else
-                                <p class="text-[12px] text-danger mt-1">Belum diupload</p>
-                            @endif
                         </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
-                        @if($doc)
-                            <a href="{{ route('submissions.view-document', $doc->id) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
-                            @if($canUpload)
-                                <form method="POST" action="{{ route('submissions.delete-document', [$submission, $doc]) }}" class="inline">
-                                    @csrf 
-                                    @method('DELETE')
-                                    <button type="button" class="text-[12px] text-danger hover:text-danger/80 font-bold px-3 py-1.5 border border-danger/20 rounded-lg hover:bg-danger-bg transition-colors" onclick="event.preventDefault(); window.confirmModal('Hapus dokumen ini?', this.closest('form'));" aria-label="Hapus dokumen {{ $template->name }}">Hapus</button>
-                                </form>
-                            @endif
-                        @endif
                         
-                        @if($canUpload && !$doc)
-                            <form method="POST" action="{{ route('submissions.upload-document', $submission) }}" enctype="multipart/form-data" class="w-full bg-soft-surface/50 p-4 rounded-xl border border-border mt-2">
-                                @csrf
-                                <input type="hidden" name="document_template_id" value="{{ $template->id }}">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                                    <div class="space-y-2">
-                                        <label class="block text-[12px] font-semibold text-text-secondary">Unggah Berkas Baru</label>
-                                        <input type="file" name="file" accept=".pdf,.doc,.docx" class="w-full text-[12px] text-text border border-border rounded-lg bg-white file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-[12px] file:font-semibold file:bg-slate-100 file:text-text-secondary hover:file:bg-slate-200 cursor-pointer" aria-label="Pilih file {{ $template->name }}">
-                                    </div>
-                                    <div class="space-y-2">
-                                        <label class="block text-[12px] font-semibold text-text-secondary">Atau Link Google Drive</label>
-                                        <div class="flex gap-2">
-                                            <input type="url" name="hyperlink" placeholder="https://drive.google.com/..." class="input-field py-2">
-                                            <button type="submit" class="btn-primary text-xs shrink-0 py-2">Upload</button>
+                        <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
+                            @if($doc)
+                                <a href="{{ route('submissions.view-document', ['submission' => $submission->id, 'document' => $doc->id]) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
+                                @if($canUpload)
+                                    <form method="POST" action="{{ route('submissions.delete-document', [$submission, $doc]) }}" class="inline">
+                                        @csrf 
+                                        @method('DELETE')
+                                        <button type="button" class="text-[12px] text-danger hover:text-danger/80 font-bold px-3 py-1.5 border border-danger/20 rounded-lg hover:bg-danger-bg transition-colors" onclick="event.preventDefault(); window.confirmModal('Hapus dokumen ini?', this.closest('form'));" aria-label="Hapus dokumen {{ $template->name }}">Hapus</button>
+                                    </form>
+                                @endif
+                            @endif
+                            
+                            @if($canUpload && !$doc)
+                                <form method="POST" action="{{ route('submissions.upload-document', $submission) }}" enctype="multipart/form-data" class="w-full bg-soft-surface/50 p-4 rounded-xl border border-border mt-2">
+                                    @csrf
+                                    <input type="hidden" name="document_template_id" value="{{ $template->id }}">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                                        <div class="space-y-2">
+                                            <label class="block text-[12px] font-semibold text-text-secondary">Unggah Berkas Baru</label>
+                                            <input type="file" name="file" accept=".pdf,.doc,.docx" class="w-full text-[12px] text-text border border-border rounded-lg bg-white file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-[12px] file:font-semibold file:bg-slate-100 file:text-text-secondary hover:file:bg-slate-200 cursor-pointer" aria-label="Pilih file {{ $template->name }}">
+                                        </div>
+                                        <div class="space-y-2">
+                                            <label class="block text-[12px] font-semibold text-text-secondary">Atau Link Google Drive</label>
+                                            <div class="flex gap-2">
+                                                <input type="url" name="hyperlink" placeholder="https://drive.google.com/..." class="input-field py-2">
+                                                <button type="submit" class="btn-primary text-xs shrink-0 py-2">Upload</button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </form>
-                        @endif
+                                </form>
+                            @endif
+                        </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
-    </div>
-    
-    <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
-        <div>
-            <h2 class="text-xl md:text-[24px] font-semibold text-text">Dokumen Hasil Review</h2>
-            <p class="text-[14px] text-text-secondary mt-1">Catatan etik dan dokumen balasan dari reviewer.</p>
+        
+        <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6">
+            <div>
+                <h2 class="text-xl md:text-[24px] font-semibold text-text">Dokumen Hasil Review</h2>
+                <p class="text-[14px] text-text-secondary mt-1">Catatan etik dan dokumen balasan dari reviewer.</p>
+            </div>
+            <div class="space-y-4">
+                @php
+                    $reviewerDocs = $submission->documents->filter(function($doc) {
+                        return str_starts_with($doc->doc_type, 'REVIEW_ATTACHMENT_');
+                    });
+                @endphp
+                @forelse($reviewerDocs as $rDoc)
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl bg-surface gap-4">
+                        <div class="flex items-start gap-4 min-w-0">
+                            <div class="w-10 h-10 rounded-xl bg-info-bg flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5 text-info" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[14px] font-semibold text-text">{{ $rDoc->original_name }}</p>
+                                <p class="text-[12px] text-text-secondary mt-1 truncate max-w-md">Ukuran: {{ number_format($rDoc->size / 1024, 0) }} KB</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
+                            <a href="{{ route('submissions.view-document', ['submission' => $submission->id, 'document' => $rDoc->id]) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-[14px] text-text-secondary italic">Belum ada dokumen hasil review yang diunggah.</p>
+                @endforelse
+            </div>
         </div>
-        <div class="space-y-4">
-            @php
-                $reviewerDocs = $submission->documents->filter(function($doc) {
-                    return str_starts_with($doc->doc_type, 'REVIEW_ATTACHMENT_');
-                });
-            @endphp
-            @forelse($reviewerDocs as $rDoc)
+        
+        {{-- Dokumen Revisi (Dari Mahasiswa) --}}
+        @php
+            $revisionDocs = $submission->documents->where('doc_type', 'REVISION');
+        @endphp
+        @if($revisionDocs->count() > 0)
+        <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6 mt-6">
+            <div>
+                <h2 class="text-xl md:text-[24px] font-semibold text-text">Lampiran Revisi</h2>
+                <p class="text-[14px] text-text-secondary mt-1">Dokumen tambahan yang diunggah oleh mahasiswa saat revisi.</p>
+            </div>
+            <div class="space-y-4">
+                @foreach($revisionDocs as $doc)
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl bg-surface gap-4">
                     <div class="flex items-start gap-4 min-w-0">
-                        <div class="w-10 h-10 rounded-xl bg-info-bg flex items-center justify-center shrink-0">
-                            <svg class="w-5 h-5 text-info" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                         </div>
                         <div class="min-w-0">
-                            <p class="text-[14px] font-semibold text-text">{{ $rDoc->original_name }}</p>
-                            <p class="text-[12px] text-text-secondary mt-1 truncate max-w-md">Ukuran: {{ number_format($rDoc->size / 1024, 0) }} KB</p>
+                            <p class="text-[14px] font-semibold text-text">{{ $doc->original_name }}</p>
+                            <p class="text-[12px] text-text-secondary mt-1 truncate max-w-md">Diupload: {{ $doc->created_at->format('d M Y H:i') }}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
-                        <a href="{{ route('submissions.view-document', [$submission, $rDoc]) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
+                        @if($doc->type === 'file')
+                            <a href="{{ route('submissions.view-document', ['submission' => $submission->id, 'document' => $doc->id]) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
+                        @else
+                            <a href="{{ $doc->file_path }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Buka Tautan</a>
+                        @endif
                     </div>
                 </div>
-            @empty
-                <p class="text-[14px] text-text-secondary italic">Belum ada dokumen hasil review yang diunggah.</p>
-            @endforelse
-        </div>
-    </div>
-    
-    {{-- Dokumen Revisi (Dari Mahasiswa) --}}
-    @php
-        $revisionDocs = $submission->documents->where('doc_type', 'REVISION');
-    @endphp
-    @if($revisionDocs->count() > 0)
-    <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-6 mt-6">
-        <div>
-            <h2 class="text-xl md:text-[24px] font-semibold text-text">Lampiran Revisi</h2>
-            <p class="text-[14px] text-text-secondary mt-1">Dokumen tambahan yang diunggah oleh mahasiswa saat revisi.</p>
-        </div>
-        <div class="space-y-4">
-            @foreach($revisionDocs as $doc)
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between p-4 border border-border rounded-xl bg-surface gap-4">
-                <div class="flex items-start gap-4 min-w-0">
-                    <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-[14px] font-semibold text-text">{{ $doc->original_name }}</p>
-                        <p class="text-[12px] text-text-secondary mt-1 truncate max-w-md">Diupload: {{ $doc->created_at->format('d M Y H:i') }}</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
-                    @if($doc->type === 'file')
-                        <a href="{{ route('submissions.view-document', [$submission, $doc]) }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Lihat</a>
-                    @else
-                        <a href="{{ $doc->file_path }}" target="_blank" class="btn-outline text-[12px] px-3 py-1.5">Buka Tautan</a>
-                    @endif
-                </div>
+                @endforeach
             </div>
-            @endforeach
         </div>
-    </div>
-    @endif
+        @endif
     </div>
     @endif
 
@@ -476,7 +476,7 @@
                                 </p>
                                 @if($h->note)
                                     <div class="text-[14px] text-text-secondary mt-2 bg-slate-50 rounded-xl px-4 py-3 border border-border italic">
-                                        "{{ $h->note }}"
+                                        " {{ $h->note }} "
                                     </div>
                                 @endif
                             </div>

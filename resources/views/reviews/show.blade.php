@@ -28,7 +28,7 @@
                     <svg class="w-5 h-5 text-success shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                     <div class="min-w-0">
                         @if($doc->type === 'file')
-                            <a href="{{ route('submissions.view-document', $doc->id) }}" target="_blank" class="text-[14px] text-primary hover:text-primary-hover font-semibold transition-colors">{{ $doc->documentTemplate->name ?? 'Dokumen' }}</a>
+                            <a href="{{ route('submissions.view-document', ['submission' => $submission->id, 'document' => $doc->id]) }}" target="_blank" class="text-[14px] text-primary hover:text-primary-hover font-semibold transition-colors">{{ $doc->documentTemplate->name ?? 'Dokumen' }}</a>
                             <p class="text-[12px] text-text-secondary truncate mt-0.5">{{ $doc->original_name }}</p>
                         @else
                             <a href="{{ $doc->file_path }}" target="_blank" class="text-[14px] text-primary hover:text-primary-hover font-semibold transition-colors">{{ $doc->documentTemplate->name ?? 'Dokumen' }}</a>
@@ -86,7 +86,7 @@
                                         @if($attachment)
                                             <div class="mt-2 text-xs flex items-center gap-1 border-t border-amber-200/50 pt-2">
                                                 <span class="text-text-secondary font-medium">Lampiran:</span>
-                                                <a href="{{ route('submissions.view-document', [$submission, $attachment]) }}" target="_blank" class="text-primary hover:text-primary-hover font-semibold inline-flex items-center gap-1">
+                                                <a href="{{ route('submissions.view-document', ['submission' => $submission->id, 'document' => $attachment->id]) }}" target="_blank" class="text-primary hover:text-primary-hover font-semibold inline-flex items-center gap-1">
                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                                     {{ $attachment->original_name }}
                                                 </a>
@@ -134,7 +134,7 @@
                 @if($attachment)
                     <div class="mt-2 text-xs flex items-center gap-1">
                         <span class="text-text-secondary font-medium">Lampiran:</span>
-                        <a href="{{ route('submissions.view-document', [$submission, $attachment]) }}" target="_blank" class="text-primary hover:text-primary-hover font-semibold inline-flex items-center gap-1">
+                        <a href="{{ route('submissions.view-document', ['submission' => $submission->id, 'document' => $attachment->id]) }}" target="_blank" class="text-primary hover:text-primary-hover font-semibold inline-flex items-center gap-1">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             {{ $attachment->original_name }}
                         </a>
