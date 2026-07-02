@@ -195,11 +195,11 @@ class SubmissionWorkflowTest extends TestCase
         $this->assertCount(1, $studentNotifications);
         $this->assertEquals('Proposal Disetujui', $studentNotifications->first()->data['title'] ?? 'Proposal Disetujui');
 
-        // Step 5b: Admin creates EC draft -> status remains APPROVED
         $response = $this->actingAs($admin)
             ->post(route('admin.proposals.store-draft', $submission), [
                 'ec_number' => 'EC/2026/001',
                 'signatory_id' => $ketua->id,
+                'confirmed_title' => 'Penelitian Kanker Serviks Baru',
             ]);
 
         $response->assertRedirect();
@@ -654,6 +654,7 @@ class SubmissionWorkflowTest extends TestCase
             ->post(route('admin.proposals.store-draft', $submission), [
                 'ec_number' => 'EC/999',
                 'signatory_id' => User::role('ketua')->first()->id,
+                'confirmed_title' => 'Judul Test Valid',
             ]);
 
         $response->assertStatus(403);
@@ -716,6 +717,7 @@ class SubmissionWorkflowTest extends TestCase
             ->post(route('admin.proposals.store-draft', $submission), [
                 'ec_number' => 'EC/LIFECYCLE/001',
                 'signatory_id' => $ketuaA->id,
+                'confirmed_title' => 'Judul Test Valid',
             ]);
         $response->assertRedirect();
         $submission->refresh();
@@ -744,6 +746,7 @@ class SubmissionWorkflowTest extends TestCase
             ->post(route('admin.proposals.store-draft', $submission), [
                 'ec_number' => 'EC/LIFECYCLE/EDITED',
                 'signatory_id' => $ketuaA->id,
+                'confirmed_title' => 'Judul Test Valid',
             ]);
         $response->assertStatus(403);
 

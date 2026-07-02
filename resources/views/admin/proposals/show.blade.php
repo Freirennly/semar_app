@@ -24,8 +24,6 @@
         </div>
     </div>
 
-
-
     {{-- LAYOUT UTAMA: 2 KOLOM PREMIUM --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
@@ -56,7 +54,7 @@
                 <div class="flex items-center justify-between border-b border-border pb-3 flex-wrap gap-2">
                     <h3 class="text-sm font-bold text-text uppercase tracking-wider">Dokumen Lampiran Persyaratan</h3>
                     
-                    {{-- Tombol Utama Unduh Berkas Proposal Asli (Menuju Fungsi downloadProposal Baru) --}}
+                    {{-- Tombol Utama Unduh Berkas Proposal Asli --}}
                     <a href="{{ route('admin.proposals.download', $proposal) }}" class="inline-flex items-center gap-1.5 bg-primary text-white hover:bg-primary-hover px-3 py-1.5 rounded-xl text-xs font-bold transition-all">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                         Unduh File Utama
@@ -76,7 +74,7 @@
                                 </p>
                             </div>
                             <div class="shrink-0">
-                                <a href="{{ route('submissions.view-document', $doc->id) }}" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-text border border-border rounded-lg text-xs font-semibold transition-all">
+                                <a href="{{ route('submissions.view-document', ['submission' => $proposal->id, 'document' => $doc->id]) }}" target="_blank" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-text border border-border rounded-lg text-xs font-semibold transition-all">
                                     Lihat File
                                 </a>
                             </div>
@@ -149,20 +147,41 @@
                         </div>
                     @endif
 
-                    @if($errors->has('ec_number') || $errors->has('signatory_id'))
-                        <x-alert type="error" :message="$errors->first('ec_number') ?: $errors->first('signatory_id')" />
+                    @if($errors->any())
+                        <x-alert type="error" :message="$errors->first('ec_number') ?: ($errors->first('signatory_id') ?: $errors->first('confirmed_title'))" />
                     @endif
 
                     <form action="{{ route('admin.proposals.store-draft', $proposal) }}" method="POST" class="space-y-4">
                         @csrf
+                        
+                        {{-- FIELD NOMOR EC --}}
                         <div>
                             <label for="ec_number" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Nomor EC</label>
-                            <input type="text" name="ec_number" id="ec_number" value="{{ old('ec_number', $proposal->ec_number) }}" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors {{ $isDraftReadonly ? 'opacity-70 cursor-not-allowed' : '' }}" placeholder="Contoh: EC/2026/001" {{ $isDraftReadonly ? 'readonly' : 'required' }}>
+                            <input type="text" name="ec_number" id="ec_number" value="{{ old('ec_number', $proposal->ec_number) }}" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors {{ $isDraftReadonly ? 'opacity-70 cursor-not-allowed bg-slate-100 text-text-muted' : '' }}" placeholder="Contoh: EC/2026/001" {{ $isDraftReadonly ? 'readonly' : 'required' }}>
                         </div>
 
+                        {{-- NEW FIELD: JUDUL PENELITIAN (Dapat diperbaiki / diedit) --}}
+                        <div>
+                            <label for="confirmed_title" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Judul Penelitian (Sertifikat)</label>
+                            <textarea name="confirmed_title" id="confirmed_title" rows="2" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors {{ $isDraftReadonly ? 'opacity-70 cursor-not-allowed bg-slate-100 text-text-muted' : '' }}" placeholder="Masukkan Judul Resmi Penelitian..." {{ $isDraftReadonly ? 'readonly' : 'required' }}>{{ old('confirmed_title', $proposal->confirmed_title ?? $proposal->title) }}</textarea>
+                        </div>
+
+                        {{-- FIELD NAMA PENELITI (Dapat diperbaiki / diedit) --}}
+                        <div>
+                            <label for="confirmed_researcher_name" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Nama Peneliti</label>
+                            <input type="text" 
+                                   name="confirmed_researcher_name" 
+                                   id="researcher_name" 
+                                   value="{{ old('confirmed_researcher_name', $proposal->confirmed_researcher_name ?? $proposal->student->name) }}" 
+                                   class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors {{ $isDraftReadonly ? 'opacity-70 cursor-not-allowed bg-slate-100 text-text-muted' : '' }}" 
+                                   placeholder="Masukkan nama peneliti"
+                                   {{ $isDraftReadonly ? 'readonly' : 'required' }}>
+                        </div>
+
+                        {{-- FIELD KETUA PENANDATANGAN --}}
                         <div>
                             <label for="signatory_id" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">Ketua Penandatangan</label>
-                            <select name="signatory_id" id="signatory_id" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors {{ $isDraftReadonly ? 'opacity-70 cursor-not-allowed' : '' }}" {{ $isDraftReadonly ? 'disabled' : 'required' }}>
+                            <select name="signatory_id" id="signatory_id" class="w-full bg-slate-50 border border-border rounded-xl px-3 py-2 text-xs font-medium text-text focus:outline-none focus:border-primary transition-colors {{ $isDraftReadonly ? 'opacity-70 cursor-not-allowed bg-slate-100 text-text-muted' : '' }}" {{ $isDraftReadonly ? 'disabled' : 'required' }}>
                                 <option value="">-- Pilih Ketua KEP --</option>
                                 @foreach($chairmen as $chairman)
                                     <option value="{{ $chairman->id }}" {{ old('signatory_id', $proposal->signatory_id) == $chairman->id ? 'selected' : '' }}>
@@ -177,7 +196,7 @@
 
                         @if(!$isDraftReadonly)
                         <div class="flex flex-col gap-2 mt-4">
-                            <button type="submit" formaction="{{ route('admin.proposals.store-draft', $proposal) }}" class="w-full bg-slate-100 hover:bg-slate-200 text-text border border-border text-xs font-bold py-2.5 rounded-xl transition-all duration-150">
+                            <button type="submit"  class="w-full bg-slate-100 hover:bg-slate-200 text-text border border-border text-xs font-bold py-2.5 rounded-xl transition-all duration-150">
                                 Simpan Draft
                             </button>
                             <button type="submit" formaction="{{ route('admin.proposals.send-draft', $proposal) }}" class="w-full bg-primary hover:bg-primary-hover text-white text-xs font-bold py-2.5 rounded-xl transition-all duration-150">

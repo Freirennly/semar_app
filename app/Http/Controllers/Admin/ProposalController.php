@@ -76,10 +76,14 @@ class ProposalController extends Controller
         ]);
     }
 
+    /**
+     * Menyimpan draf Ethical Clearance ke database
+     */
     public function storeDraft(Request $request, Submission $proposal)
     {
-        if ($proposal->status !== SubmissionStatus::APPROVED) {
-            abort(403, 'Draft Ethical Clearance hanya dapat dibuat jika proposal telah disetujui (APPROVED).');
+        // Izinkan simpan jika status APPROVED atau sedang dalam tahap revisi draf WAITING_STUDENT_CONFIRMATION
+        if (!in_array($proposal->status, [SubmissionStatus::APPROVED, SubmissionStatus::WAITING_STUDENT_CONFIRMATION])) {
+            abort(403, 'Draft Ethical Clearance hanya dapat dibuat jika proposal telah disetujui (APPROVED) atau dalam status revisi draf.');
         }
 
         $validated = $request->validate([
@@ -90,6 +94,8 @@ class ProposalController extends Controller
                 \Illuminate\Validation\Rule::unique('submissions', 'ec_number')->ignore($proposal->id)
             ],
             'signatory_id' => 'required|exists:users,id',
+            'confirmed_title' => 'required|string|max:1000', // Validasi input Judul Terkonfirmasi
+            'confirmed_researcher_name' => 'nullable|string|max:255',
         ], [
             'ec_number.unique' => 'Nomor Ethical Clearance sudah digunakan oleh proposal lain.'
         ]);
@@ -99,29 +105,44 @@ class ProposalController extends Controller
             return back()->withErrors(['signatory_id' => 'Penandatangan harus memiliki peran ketua.'])->withInput();
         }
 
-        // Auto-fill confirmed_title and confirmed_researcher_name if empty to prepare draft
-        if (empty($proposal->confirmed_title)) {
-            $proposal->confirmed_title = $proposal->title;
-        }
-        if (empty($proposal->confirmed_researcher_name)) {
-            $proposal->confirmed_researcher_name = optional($proposal->student)->name;
-        }
+        // Tentukan nilai baru berdasarkan data dari form yang dikirimkan Admin
+        $confirmedTitle = $validated['confirmed_title'];
+        $confirmedResearcherName = $request->filled('confirmed_researcher_name') 
+            ? $validated['confirmed_researcher_name'] 
+            : ($proposal->confirmed_researcher_name ?: optional($proposal->student)->name);
 
         $proposal->update([
             'ec_number' => $validated['ec_number'],
             'signatory_id' => $validated['signatory_id'],
-            'confirmed_title' => $proposal->confirmed_title,
-            'confirmed_researcher_name' => $proposal->confirmed_researcher_name,
+            'confirmed_title' => $confirmedTitle,
+            'confirmed_researcher_name' => $confirmedResearcherName,
         ]);
 
         return redirect()->route('admin.proposals.show', $proposal)
             ->with('success', 'Draft Ethical Clearance berhasil disimpan (Belum dikirim).');
     }
 
+    /**
+     * Mengirimkan draf Ethical Clearance ke mahasiswa untuk dikonfirmasi
+     */
     public function sendDraft(Request $request, Submission $proposal)
     {
-        if ($proposal->status !== SubmissionStatus::APPROVED) {
-            abort(403, 'Hanya draft pada proposal yang berstatus APPROVED yang dapat dikirim.');
+        // Izinkan kirim jika status APPROVED atau sedang draf ulang revisi WAITING_STUDENT_CONFIRMATION
+        if (!in_array($proposal->status, [SubmissionStatus::APPROVED, SubmissionStatus::WAITING_STUDENT_CONFIRMATION])) {
+            abort(403, 'Hanya draft pada proposal yang berstatus APPROVED atau dalam masa revisi draf yang dapat dikirim.');
+        }
+
+        // Update data judul dan nama jika ada perubahan instan langsung saat menekan kirim
+        $updateData = [];
+        if ($request->has('confirmed_title')) {
+            $updateData['confirmed_title'] = $request->confirmed_title;
+        }
+        if ($request->has('confirmed_researcher_name')) {
+            $updateData['confirmed_researcher_name'] = $request->confirmed_researcher_name;
+        }
+        
+        if (!empty($updateData)) {
+            $proposal->update($updateData);
         }
 
         if (empty($proposal->ec_number) || empty($proposal->signatory_id) || empty($proposal->confirmed_title) || empty($proposal->confirmed_researcher_name)) {
@@ -134,7 +155,7 @@ class ProposalController extends Controller
             $proposal, 
             SubmissionStatus::WAITING_STUDENT_CONFIRMATION, 
             auth()->user(), 
-            'Admin telah mengirim draf Ethical Clearance ke mahasiswa untuk konfirmasi'
+            'Admin telah mengirim ulang draf Ethical Clearance hasil perbaikan ke mahasiswa untuk konfirmasi'
         );
 
         return redirect()->route('admin.proposals.show', $proposal)
@@ -159,13 +180,10 @@ class ProposalController extends Controller
             return back()->with('error', 'User yang dipilih tidak memiliki peran sekretariat.');
         }
 
-        // Simpan secretary_id
         $proposal->update(['secretary_id' => $secretary->id]);
 
-        // Transisi menggunakan WorkflowService agar ActivityLog & StatusHistory tercatat konsisten
-        $this->workflow->transition($proposal, SubmissionStatus::PROCESS, auth()->user(), 'Admin menugaskan Sekretariat: ' . $secretary->name);
+        $this->workflow->transition($proposal, SubmissionStatus::PROCESS, auth()->user(), 'Admin menugaskan Secretariat: ' . $secretary->name);
 
-        // Kirim notifikasi
         try {
             $secretary->notify(new \App\Notifications\ProposalAssignedToSecretary($proposal));
         } catch (\Throwable $e) {
@@ -189,14 +207,12 @@ class ProposalController extends Controller
      */
     public function update(Request $request, Submission $proposal)
     {
-        // Validasi dibuat fleksibel karena title hanya wajib jika datang dari form edit biasa
         $validated = $request->validate([
             'status'       => 'required|string',
             'title'        => 'nullable|string|max:500',
             'secretary_id' => 'nullable|exists:users,id' 
         ]);
 
-        // Ambil data lama jika title tidak dikirim (berarti eksekusi datang dari tombol cepat kolom kanan)
         if (!$request->filled('title')) {
             $validated['title'] = $proposal->title;
         }
@@ -236,16 +252,13 @@ class ProposalController extends Controller
             $this->workflow->transition($proposal, $newStatus, $request->user(), 'Status diperbarui oleh Admin');
         }
 
-        // Bersihkan cache statistik report admin
         Cache::forget('admin_reports_stats');
 
-        // LOGIKA REDIRECT FIX: Dipaksa melempar ID secara eksplisit ke rute Admin agar tidak tabrakan dengan rute global
         if ($request->has('secretary_id') || !$request->has('title')) {
             return redirect()->route('admin.proposals.show', ['proposal' => $proposal->id])
                 ->with('success', 'Alur pengajuan berhasil diperbarui ke tahap berikutnya!');
         }
 
-        // Jika datang dari form edit biasa, kembalikan ke index utama
         return redirect()->route('admin.proposals.index')
             ->with('success', 'Pengajuan berhasil diperbarui.');
     }
@@ -279,9 +292,7 @@ class ProposalController extends Controller
     public function destroy(Submission $proposal)
     {
         $proposal->delete();
-        
         Cache::forget('admin_reports_stats');
-        
         return redirect()->route('admin.proposals.index')->with('success', 'Pengajuan berhasil dihapus.');
     }
 }

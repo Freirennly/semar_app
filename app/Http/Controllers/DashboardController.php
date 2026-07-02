@@ -151,11 +151,23 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $totalApproved = Submission::whereIn('status', [
+            SubmissionStatus::APPROVED,
+            SubmissionStatus::DONE
+        ])->count();
+        $totalRejected = Submission::where('status', SubmissionStatus::REJECTED)->count();
+        $waitingDecision = Submission::where('status', SubmissionStatus::ON_REVIEW)
+            ->has('reviews')
+            ->with('student', 'reviews')
+            ->latest()
+            ->limit(5)
+            ->get();
+
         $metrics = [
             ['label' => 'Menunggu Tanda Tangan', 'value' => $waitingSignature->count(), 'color' => 'amber'],
             ['label' => 'Total Pengajuan Aktif', 'value' => Submission::whereNotIn('status', [SubmissionStatus::REJECTED, SubmissionStatus::DONE])->count(), 'color' => 'violet'],
         ];
-        return view('dashboard.ketua', compact('waitingSignature', 'recentlySigned', 'metrics', 'verifiedLogs', 'upcomingFullboard'));
+        return view('dashboard.ketua', compact('waitingSignature', 'recentlySigned', 'metrics', 'verifiedLogs', 'upcomingFullboard', 'totalApproved', 'totalRejected', 'waitingDecision'));
     }
 
     private function sekretariat()
@@ -181,12 +193,17 @@ class DashboardController extends Controller
         $assigned = Submission::where('secretary_id', $userId)->where('status', SubmissionStatus::ON_REVIEW)
             ->with('student', 'assignments.reviewer')->latest()->get();
 
+        $recentValidations = Submission::whereNotIn('status', [
+            SubmissionStatus::NEW_PROPOSAL,
+            SubmissionStatus::REVISED
+        ])->with('student')->latest('updated_at')->limit(6)->get();
+
         $metrics = [
             ['label' => 'Perlu Cek Dokumen', 'value' => $submitted->count(), 'color' => 'amber'],
             ['label' => 'Perlu Assign Reviewer', 'value' => $needAssign->count(), 'color' => 'blue'],
             ['label' => 'Menunggu Keputusan', 'value' => $pendingDecision->count(), 'color' => 'violet'],
         ];
-        return view('dashboard.sekretariat', compact('submitted', 'pendingDecision', 'needAssign', 'assigned', 'metrics'));
+        return view('dashboard.sekretariat', compact('submitted', 'pendingDecision', 'needAssign', 'assigned', 'metrics', 'recentValidations'));
     }
 
     private function admin()

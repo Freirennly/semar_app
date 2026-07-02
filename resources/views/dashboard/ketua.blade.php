@@ -20,22 +20,6 @@
         </div>
     </div>
 
-    @php
-        // Fetch decision stats and waiting decision list directly
-        $totalApproved = \App\Models\Submission::whereIn('status', [
-            \App\Enums\SubmissionStatus::APPROVED,
-            \App\Enums\SubmissionStatus::DONE
-        ])->count();
-
-        $totalRejected = \App\Models\Submission::where('status', \App\Enums\SubmissionStatus::REJECTED)->count();
-
-        $waitingDecision = \App\Models\Submission::where('status', \App\Enums\SubmissionStatus::ON_REVIEW)
-            ->has('reviews')
-            ->with('student', 'reviews')
-            ->latest()
-            ->limit(5)
-            ->get();
-    @endphp
 
     {{-- Ringkasan Statistik Keputusan & Tugas (Flat cards) --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
@@ -46,7 +30,7 @@
         <div class="bg-white border border-border p-5 rounded-lg flex flex-col justify-center hover:border-primary/50 transition-colors duration-200">
             <p class="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">Total Pengajuan Aktif</p>
             <p class="text-3xl font-bold text-text leading-none">
-                {{ \App\Models\Submission::whereNotIn('status', [\App\Enums\SubmissionStatus::REJECTED, \App\Enums\SubmissionStatus::DONE])->count() }}
+                {{ $metrics[1]['value'] }}
             </p>
         </div>
         <div class="bg-white border border-border p-5 rounded-lg flex flex-col justify-center hover:border-primary/50 transition-colors duration-200">
