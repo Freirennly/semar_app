@@ -4,9 +4,7 @@
             <!-- Brand Column -->
             <div class="col-span-1 md:col-span-1">
                 <a href="{{ route('landing') }}" class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-lg">
-                        S
-                    </div>
+                    <img src="{{ Vite::asset('resources/assets/logo.png') }}" alt="SEMAR Logo" class="h-8 w-auto object-contain" height="32" loading="lazy" decoding="async">
                     <div>
                         <h2 class="font-bold text-lg leading-none text-text">SEMAR</h2>
                     </div>

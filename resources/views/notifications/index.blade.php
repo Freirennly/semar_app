@@ -11,7 +11,7 @@
         <p class="text-sm font-light mt-1" style="color:#5A587A">Berikut adalah daftar aktivitas dan perubahan status terbaru pada usulan Anda.</p>
     </div>
     
-    @if(auth()->user()->unreadNotifications->isNotEmpty())
+    @if(auth()->user()->unreadNotifications()->count() > 0)
         <form action="{{ route('notifications.read-all') }}" method="POST">
             @csrf
             <button type="submit" class="text-xs font-bold px-4 py-2.5 rounded-xl border flex items-center gap-1.5 transition-all duration-150"

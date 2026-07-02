@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentIntegrityService
 {
+    public const CACHE_KEY = 'document_integrity_metrics';
+
     /**
      * Validate all documents for a given submission.
      *
@@ -101,40 +103,42 @@ class DocumentIntegrityService
      */
     public function validateAll(): array
     {
-        $submissions = Submission::with('documents.template')->get();
+        return \Illuminate\Support\Facades\Cache::remember(self::CACHE_KEY, 3600, function () {
+            $submissions = Submission::with('documents.template')->get();
 
-        $globalErrors = [];
-        $globalWarnings = [];
-        $totalMissing = 0;
-        $totalBroken = 0;
-        $totalInvalidLinks = 0;
-        $totalOrphans = 0;
-        $totalDuplicates = 0;
+            $globalErrors = [];
+            $globalWarnings = [];
+            $totalMissing = 0;
+            $totalBroken = 0;
+            $totalInvalidLinks = 0;
+            $totalOrphans = 0;
+            $totalDuplicates = 0;
 
-        foreach ($submissions as $submission) {
-            $result = $this->validateSubmissionDocuments($submission);
-            $globalErrors = array_merge($globalErrors, $result['errors']);
-            $globalWarnings = array_merge($globalWarnings, $result['warnings']);
-            $totalMissing += $result['missing_required'];
-            $totalBroken += $result['broken_files'];
-            $totalInvalidLinks += $result['invalid_links'];
-            $totalOrphans += $result['orphan_records'];
-            $totalDuplicates += $result['duplicate_templates'];
-        }
+            foreach ($submissions as $submission) {
+                $result = $this->validateSubmissionDocuments($submission);
+                $globalErrors = array_merge($globalErrors, $result['errors']);
+                $globalWarnings = array_merge($globalWarnings, $result['warnings']);
+                $totalMissing += $result['missing_required'];
+                $totalBroken += $result['broken_files'];
+                $totalInvalidLinks += $result['invalid_links'];
+                $totalOrphans += $result['orphan_records'];
+                $totalDuplicates += $result['duplicate_templates'];
+            }
 
-        $totalIssues = $totalMissing + $totalBroken + $totalInvalidLinks + $totalOrphans + $totalDuplicates;
-        $healthScore = $submissions->isEmpty() ? 100 : max(0, 100 - ($totalIssues * 5));
+            $totalIssues = $totalMissing + $totalBroken + $totalInvalidLinks + $totalOrphans + $totalDuplicates;
+            $healthScore = $submissions->isEmpty() ? 100 : max(0, 100 - ($totalIssues * 5));
 
-        return [
-            'submissions_checked' => $submissions->count(),
-            'errors' => $globalErrors,
-            'warnings' => $globalWarnings,
-            'health_score' => $healthScore,
-            'missing_required' => $totalMissing,
-            'broken_files' => $totalBroken,
-            'invalid_links' => $totalInvalidLinks,
-            'orphan_records' => $totalOrphans,
-            'duplicate_templates' => $totalDuplicates,
-        ];
+            return [
+                'submissions_checked' => $submissions->count(),
+                'errors' => $globalErrors,
+                'warnings' => $globalWarnings,
+                'health_score' => $healthScore,
+                'missing_required' => $totalMissing,
+                'broken_files' => $totalBroken,
+                'invalid_links' => $totalInvalidLinks,
+                'orphan_records' => $totalOrphans,
+                'duplicate_templates' => $totalDuplicates,
+            ];
+        });
     }
 }

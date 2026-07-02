@@ -104,7 +104,21 @@ Route::middleware('auth')->group(function () {
         
         // Rute Baru: Halaman Pemantauan Kerja Reviewer & Riwayat Keputusan Ketua KEP
         Route::get('chairman/monitoring', function() {
-            return view('dashboard.monitoring'); 
+            $allVerifiedLogs = \App\Models\ActivityLog::with('submission.student')
+                ->where('description', 'like', '%Sertifikat%')
+                ->latest()
+                ->paginate(10, ['*'], 'logs_page');
+
+            $reviewersPerformance = \App\Models\User::role('reviewer')->get()->map(function($user) {
+                $user->total_tugas = \App\Models\Assignment::where('reviewer_id', $user->id)->count();
+                $user->tugas_selesai = \App\Models\Assignment::where('reviewer_id', $user->id)
+                    ->whereHas('submission', function($query) {
+                        $query->where('status', \App\Enums\SubmissionStatus::DONE);
+                    })->count();
+                return $user;
+            });
+
+            return view('dashboard.monitoring', compact('allVerifiedLogs', 'reviewersPerformance')); 
         })->name('chairman.monitoring');
     });
 

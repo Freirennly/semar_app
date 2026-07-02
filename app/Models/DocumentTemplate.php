@@ -70,6 +70,14 @@ class DocumentTemplate extends Model
                 ]);
             }
         });
+
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget(\App\Services\DocumentIntegrityService::CACHE_KEY);
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget(\App\Services\DocumentIntegrityService::CACHE_KEY);
+        });
     }
 
     // ─── Relationships ────────────────────────────────────────────

@@ -22,6 +22,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\View::composer('components.layouts.partials.topbar', function ($view) {
+            $unreadCount = 0;
+            if (auth()->check()) {
+                $unreadCount = auth()->user()->unreadNotifications()->count();
+            }
+            $view->with('unreadCount', $unreadCount);
+        });
+
         RateLimiter::for('downloads', function (Request $request) {
             return Limit::perMinute(20)->by($request->user()?->id ?: $request->ip());
         });

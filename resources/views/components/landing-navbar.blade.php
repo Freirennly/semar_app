@@ -4,7 +4,7 @@
             <!-- Brand -->
             <div class="flex-shrink-0 flex items-center gap-3">
                 <a href="{{ route('landing') }}" class="flex items-center gap-2 group">
-                    <img src="{{ asset('assets/logo.png') }}" alt="SEMAR Logo" class="h-10 w-auto object-contain">
+                    <img src="{{ Vite::asset('resources/assets/logo.png') }}" alt="SEMAR Logo" class="h-10 w-auto object-contain brightness-0 invert" height="40" fetchpriority="high" decoding="async">
                     <div>
                         <h1 class="font-bold text-xl leading-none text-white transition-colors">SEMAR</h1>
                         <p class="text-[0.65rem] text-white/70 font-medium tracking-wider uppercase mt-0.5">Portal Manajemen Riset</p>

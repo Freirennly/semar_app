@@ -38,11 +38,19 @@ class AdminDashboardController extends Controller
             $statusDistribution[$key] = $item->count;
         }
 
+        $userSummary = DB::table('roles')
+            ->leftJoin('model_has_roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->select('roles.name', DB::raw('count(model_has_roles.model_id) as count'))
+            ->groupBy('roles.name')
+            ->get();
+
+        $roleCounts = $userSummary->pluck('count', 'name');
+
         $metrics = [
             'total_users' => User::count(),
-            'total_students' => User::role('student')->count(),
-            'total_reviewers' => User::role('reviewer')->count(),
-            'total_secretariat' => User::role('sekretariat')->count(),
+            'total_students' => $roleCounts->get('student', 0),
+            'total_reviewers' => $roleCounts->get('reviewer', 0),
+            'total_secretariat' => $roleCounts->get('sekretariat', 0),
             
             'total_submissions' => Submission::count(),
             'new_proposal' => ($statusDistribution[SubmissionStatus::NEW_PROPOSAL->value] ?? 0),
@@ -64,13 +72,6 @@ class AdminDashboardController extends Controller
             ->latest()
             ->limit(10)
             ->get();
-
-        $userSummary = DB::table('roles')
-            ->leftJoin('model_has_roles', 'roles.id', '=', 'model_has_roles.role_id')
-            ->select('roles.name', DB::raw('count(model_has_roles.model_id) as count'))
-            ->groupBy('roles.name')
-            ->get();
-
 
 
         $backupDir = storage_path('app/private/backups/ec');

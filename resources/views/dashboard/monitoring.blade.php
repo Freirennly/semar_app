@@ -5,25 +5,7 @@
         <p class="text-sm text-text-secondary mt-1.5">Audit menyeluruh riwayat keputusan etik pengajuan dan pemantauan performa penugasan reviewer.</p>
     </div>
 
-    @php
-        // 1. Ambil seluruh log aktivitas verifikasi sertifikat terbit
-        $allVerifiedLogs = \App\Models\ActivityLog::with('submission.student')
-            ->where('description', 'like', '%Sertifikat%')
-            ->latest()
-            ->paginate(10, ['*'], 'logs_page');
 
-        // 2. Perbaikan: Hitung statistik penugasan langsung dari model Assignment untuk menghindari ketiadaan method relasi di model User
-        $reviewersPerformance = \App\Models\User::role('reviewer')->get()->map(function($user) {
-            $user->total_tugas = \App\Models\Assignment::where('reviewer_id', $user->id)->count();
-            
-            $user->tugas_selesai = \App\Models\Assignment::where('reviewer_id', $user->id)
-                ->whereHas('submission', function($query) {
-                    $query->where('status', \App\Enums\SubmissionStatus::DONE);
-                })->count();
-                
-            return $user;
-        });
-    @endphp
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Kiri: Tabel Riwayat Log Verifikasi & Penerbitan Komprehensif (70%) --}}

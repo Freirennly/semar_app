@@ -6,11 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="SEMAR — Sistem Manajemen Pengajuan & Validasi Penelitian">
     <title>{{ $title ?? 'Dashboard' }} — SEMAR</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
+    <link rel="preload" href="{{ Vite::asset('resources/assets/static/PlusJakartaSans-Regular.ttf') }}" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="{{ Vite::asset('resources/assets/static/PlusJakartaSans-Bold.ttf') }}" as="font" type="font/ttf" crossorigin>
+    <link rel="preconnect" href="https://ui-avatars.com">
+    <link rel="icon" type="image/png" href="{{ Vite::asset('resources/assets/logo.png') }}">
 </head>
 <body class="font-sans bg-bg text-text">
     <div class="flex h-screen overflow-hidden">

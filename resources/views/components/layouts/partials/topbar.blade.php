@@ -10,13 +10,13 @@
     <div class="flex items-center gap-2 sm:gap-4 justify-end">
         {{-- Notifications --}}
         @php
-            $unreadCount = auth()->user()->unreadNotifications->count();
+            $count = $unreadCount ?? 0;
         @endphp
         <a href="{{ route('notifications.index') }}" class="p-1.5 text-text-muted hover:text-primary rounded-lg hover:bg-soft-surface transition-colors relative" aria-label="Notifikasi">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
-            @if($unreadCount > 0)
+            @if($count > 0)
                 <span class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-danger text-white text-[9px] font-extrabold px-1 rounded-full flex items-center justify-center border border-white">
-                    {{ $unreadCount }}
+                    {{ $count }}
                 </span>
             @endif
         </a>
@@ -28,7 +28,7 @@
                 <p class="text-xs font-bold text-text leading-none">{{ auth()->user()->name }}</p>
                 <p class="text-[10px] font-bold text-text-muted uppercase tracking-tighter mt-1">{{ auth()->user()->roles->first()?->name ?? 'User' }}</p>
             </div>
-            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=463EE3&color=fff" class="w-8 h-8 rounded-lg border border-border" alt="Profile">
+            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=463EE3&color=fff" class="w-8 h-8 rounded-lg border border-border" alt="Profile" width="32" height="32" loading="lazy" decoding="async">
         </div>
     </div>
 </header>
