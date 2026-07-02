@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - SEMAR (Komite Etik Penelitian)</title>
     <meta name="description" content="Masuk ke SEMAR — Sistem Manajemen Etik Riset">
-
-    <link rel="icon" type="image/png" href="{{ Vite::asset('resources/assets/logo.png') }}">
-    <link rel="preload" href="{{ Vite::asset('resources/assets/static/PlusJakartaSans-Regular.ttf') }}" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="{{ Vite::asset('resources/assets/static/PlusJakartaSans-Bold.ttf') }}" as="font" type="font/ttf" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans bg-bg min-h-screen flex items-center justify-center p-6">
@@ -19,7 +19,7 @@
             <div class="p-10 md:p-14 flex flex-col justify-center relative">
                 <header class="absolute top-8 left-10 flex items-center gap-2">
                     <a href="{{ route('landing') }}" class="flex items-center gap-2">
-                        <img src="{{ Vite::asset('resources/assets/logo.png') }}" alt="SEMAR Logo" class="h-8 w-auto" height="32" fetchpriority="high" decoding="async">
+                        <img src="{{ asset('assets/logo.png') }}" alt="SEMAR Logo" class="h-8 w-auto">
                         <span class="text-xl font-bold text-primary tracking-tight">SEMAR</span>
                     </a>
                 </header>

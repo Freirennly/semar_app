@@ -5,38 +5,6 @@
 @source "../**/*.blade.php";
 @source "../**/*.js";
 
-@font-face {
-    font-family: 'Plus Jakarta Sans';
-    src: url('../assets/static/PlusJakartaSans-Regular.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Plus Jakarta Sans';
-    src: url('../assets/static/PlusJakartaSans-Medium.ttf') format('truetype');
-    font-weight: 500;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Plus Jakarta Sans';
-    src: url('../assets/static/PlusJakartaSans-SemiBold.ttf') format('truetype');
-    font-weight: 600;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Plus Jakarta Sans';
-    src: url('../assets/static/PlusJakartaSans-Bold.ttf') format('truetype');
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-}
-
 @theme {
     --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
     --font-serif: "Lora", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;

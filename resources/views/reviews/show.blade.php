@@ -49,7 +49,15 @@
 
         {{-- Right: Review Form & History --}}
         <div class="lg:col-span-2 space-y-6">
-
+            @php
+                $currentRound = $submission->decisions()->where('decision', \App\Enums\DecisionType::REVISION_REQUIRED->value)->count() + 1;
+                $previousReviews = $submission->reviews->whereNotNull('submitted_at')
+                    ->where('revision_round', '<', $currentRound)
+                    ->where('reviewer_id', auth()->id())
+                    ->groupBy('revision_round')
+                    ->sortKeys();
+                $revisionHistories = $submission->statusHistories()->where('to_status', \App\Enums\SubmissionStatus::REVISED)->orderBy('created_at', 'asc')->get();
+            @endphp
             
             @if($previousReviews->isNotEmpty())
             <div class="card p-6 bg-white border border-border rounded-2xl shadow-sm space-y-4">

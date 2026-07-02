@@ -1,6 +1,6 @@
 {{-- Logo --}}
 <a href="{{ route('landing') }}" class="h-16 flex items-center px-6 border-b border-border hover:bg-soft-surface transition-colors">
-    <img src="{{ Vite::asset('resources/assets/logo.png') }}" alt="SEMAR Logo" class="h-8 w-auto" height="32" fetchpriority="high" decoding="async">
+    <img src="{{ asset('assets/logo.png') }}" alt="SEMAR Logo" class="h-8 w-auto">
     <span class="text-xl font-bold text-primary tracking-tight ml-2">SEMAR</span>
     <span class="text-[10px] text-text-muted ml-1.5 mt-1">v1.0</span>
 </a>

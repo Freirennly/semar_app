@@ -23,17 +23,6 @@ class SubmissionDocument extends Model
         //
     ];
 
-    protected static function booted(): void
-    {
-        static::saved(function () {
-            \Illuminate\Support\Facades\Cache::forget(\App\Services\DocumentIntegrityService::CACHE_KEY);
-        });
-
-        static::deleted(function () {
-            \Illuminate\Support\Facades\Cache::forget(\App\Services\DocumentIntegrityService::CACHE_KEY);
-        });
-    }
-
     /**
      * Relasi ke Master Template Dokumen (Dinamis dari DB)
      */

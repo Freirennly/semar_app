@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="SEMAR — Portal Manajemen Riset. Automasi pengajuan protokol penelitian dan pemantauan klirens etik secara real-time.">
     <title>{{ $title ?? 'SEMAR — Portal Manajemen Riset' }}</title>
-    <link rel="preload" href="{{ Vite::asset('resources/assets/static/PlusJakartaSans-Regular.ttf') }}" as="font" type="font/ttf" crossorigin>
-    <link rel="preload" href="{{ Vite::asset('resources/assets/static/PlusJakartaSans-Bold.ttf') }}" as="font" type="font/ttf" crossorigin>
-    <link rel="icon" type="image/png" href="{{ Vite::asset('resources/assets/logo.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ asset('assets/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans bg-bg text-text antialiased selection:bg-primary selection:text-white">

@@ -42,19 +42,7 @@ class ReviewController extends Controller
 
         $submission->load(['documents', 'student']);
 
-        $currentRound = $round;
-        $previousReviews = $submission->reviews->whereNotNull('submitted_at')
-            ->where('revision_round', '<', $currentRound)
-            ->where('reviewer_id', $user->id)
-            ->groupBy('revision_round')
-            ->sortKeys();
-            
-        $revisionHistories = $submission->statusHistories()
-            ->where('to_status', \App\Enums\SubmissionStatus::REVISED)
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-        return view('reviews.show', compact('submission', 'assignment', 'review', 'currentRound', 'previousReviews', 'revisionHistories'));
+        return view('reviews.show', compact('submission', 'assignment', 'review'));
     }
 
     /**
