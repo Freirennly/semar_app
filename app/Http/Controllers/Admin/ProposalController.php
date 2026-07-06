@@ -263,28 +263,7 @@ class ProposalController extends Controller
             ->with('success', 'Pengajuan berhasil diperbarui.');
     }
 
-    /**
-     * Mengunduh berkas proposal utama mahasiswa
-     */
-    public function downloadProposal(Submission $proposal)
-    {
-        $document = $proposal->documents()
-            ->where(function($q) {
-                $q->where('doc_type', \App\Enums\DocType::PROPOSAL->value ?? 'PROPOSAL')
-                  ->orWhere('original_name', 'like', '%proposal%');
-            })
-            ->first();
 
-        if (!$document) {
-            $document = $proposal->documents()->where('mime', '!=', 'text/url')->first();
-        }
-
-        if (!$document || $document->mime === 'text/url') {
-            return back()->with('error', 'Berkas proposal utama tidak ditemukan atau hanya berupa link.');
-        }
-
-        return Storage::disk('public')->download($document->file_path, $document->original_name);
-    }
 
     /**
      * Menghapus Proposal Permanen

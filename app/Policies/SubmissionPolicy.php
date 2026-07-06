@@ -21,6 +21,8 @@ class SubmissionPolicy
      */
     public function view(User $user, Submission $submission): bool
     {
+        if ($user->hasRole('admin')) return true;
+        
         if ($user->hasPermissionTo('submission.view_all')) {
             if ($user->hasRole('sekretariat')) {
                 return $submission->secretary_id == $user->id;

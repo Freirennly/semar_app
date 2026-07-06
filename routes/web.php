@@ -149,8 +149,7 @@ Route::middleware('auth')->group(function () {
         Route::put('users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
-        // Rute Khusus Unduh Berkas Proposal Admin (Dikunci di atas resource proposals)
-        Route::get('proposals/{proposal}/download', [ProposalController::class, 'downloadProposal'])->name('proposals.download');
+
         Route::post('proposals/{proposal}/draft', [ProposalController::class, 'storeDraft'])->name('proposals.store-draft');
         Route::post('proposals/{proposal}/send-draft', [ProposalController::class, 'sendDraft'])->name('proposals.send-draft');
         Route::post('proposals/{proposal}/assign-secretary', [ProposalController::class, 'assignSecretary'])->name('proposals.assign-secretary');

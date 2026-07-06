@@ -54,11 +54,7 @@
                 <div class="flex items-center justify-between border-b border-border pb-3 flex-wrap gap-2">
                     <h3 class="text-sm font-bold text-text uppercase tracking-wider">Dokumen Lampiran Persyaratan</h3>
                     
-                    {{-- Tombol Utama Unduh Berkas Proposal Asli --}}
-                    <a href="{{ route('admin.proposals.download', $proposal) }}" class="inline-flex items-center gap-1.5 bg-primary text-white hover:bg-primary-hover px-3 py-1.5 rounded-xl text-xs font-bold transition-all">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        Unduh File Utama
-                    </a>
+
                 </div>
 
                 {{-- Daftar Berkas Lampiran Hasil Loop Template Database --}}

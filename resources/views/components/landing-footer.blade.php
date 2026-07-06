@@ -4,9 +4,7 @@
             <!-- Brand Column -->
             <div class="col-span-1 md:col-span-1">
                 <a href="{{ route('landing') }}" class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center font-bold text-lg">
-                        S
-                    </div>
+                    <img src="{{ asset('assets/logo.png') }}" alt="SEMAR Logo" class="w-8 h-8 object-contain">
                     <div>
                         <h2 class="font-bold text-lg leading-none text-text">SEMAR</h2>
                     </div>
